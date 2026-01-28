@@ -5,7 +5,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
-import '../../chat/screens/chat_screen.dart';
 
 class ServiceBoyTaskDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -140,38 +139,6 @@ class _ServiceBoyTaskDetailsScreenState
 
             const SizedBox(height: 16),
 
-            // Chat with Customer Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => ChatScreen(
-                            currentUserId: 'service_boy_1',
-                            currentUserName: 'Service Provider',
-                            otherUserId: 'customer_1',
-                            otherUserName: 'John Doe',
-                            otherUserImage: '',
-                          ),
-                    ),
-                  );
-                },
-                icon: const Icon(Iconsax.message),
-                label: const Text('Chat with Customer'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ),
-
             const SizedBox(height: 24),
 
             // Note Section
@@ -281,26 +248,7 @@ class _ServiceBoyTaskDetailsScreenState
                   ),
                 ),
 
-            const SizedBox(height: 24),
-
-            // Payment Summary
-            Text('Payment Summary', style: AppTextStyles.labelLarge),
-            const SizedBox(height: 12),
-            _buildDetailSection(
-              children: [
-                _buildDetailRow(Iconsax.wallet, 'Service Cost', '\$45.00'),
-                _buildDetailRow(Iconsax.ticket_discount, 'Discount', '-\$5.00'),
-                const Divider(height: 24),
-                _buildDetailRow(
-                  Iconsax.wallet_2,
-                  'Total Amount',
-                  '\$40.00',
-                  valueStyle: AppTextStyles.labelLarge.copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
+            const SizedBox(height: 16),
 
             const SizedBox(height: 40),
 

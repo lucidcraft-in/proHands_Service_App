@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
 import '../../../core/services/dummy_data_service.dart';
+import '../../../core/widgets/full_screen_image_viewer.dart';
 import 'service_boy_signup_screen.dart';
 import 'service_boy_task_details_screen.dart';
 
@@ -382,93 +383,98 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              _galleryImages.isEmpty
-                  ? GestureDetector(
-                    onTap: _pickGalleryImage,
-                    child: Container(
-                      height: 120,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: AppColors.border,
-                          style: BorderStyle.solid,
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                ),
+                itemCount: _galleryImages.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == _galleryImages.length) {
+                    return GestureDetector(
+                      onTap: _pickGalleryImage,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.shadowLight,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.shadowLight,
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        child: const Icon(
+                          Iconsax.add,
+                          color: AppColors.primary,
+                          size: 32,
+                        ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Iconsax.gallery_add,
-                            color: AppColors.textTertiary.withOpacity(0.5),
-                            size: 40,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Add your work samples',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textTertiary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                  : SizedBox(
-                    height: 120,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _galleryImages.length,
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () => _showGalleryActions(index),
-                          child: Container(
-                            width: 120,
-                            margin: const EdgeInsets.only(right: 16),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              image: DecorationImage(
-                                image: FileImage(File(_galleryImages[index])),
-                                fit: BoxFit.cover,
+                    );
+                  }
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => FullScreenImageViewer(
+                                imagePath: _galleryImages[index],
+                                tag: 'dashboard_gallery_$index',
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.shadowLight,
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                        ),
+                      );
+                    },
+                    child: Hero(
+                      tag: 'dashboard_gallery_$index',
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          image: DecorationImage(
+                            image: FileImage(File(_galleryImages[index])),
+                            fit: BoxFit.cover,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.shadowLight,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                            child: Align(
-                              alignment: Alignment.topRight,
-                              child: Container(
-                                margin: const EdgeInsets.all(8),
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: AppColors.white.withOpacity(0.8),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Iconsax.edit_2,
-                                  size: 14,
-                                  color: AppColors.primary,
-                                ),
+                          ],
+                        ),
+                        child: Align(
+                          alignment: Alignment.topRight,
+                          child: GestureDetector(
+                            onTap: () => _showGalleryActions(index),
+                            child: Container(
+                              margin: const EdgeInsets.all(8),
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: AppColors.white.withOpacity(0.8),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Iconsax.edit_2,
+                                size: 14,
+                                color: AppColors.primary,
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
-                  ),
+                  );
+                },
+              ),
 
               const SizedBox(height: 32),
 

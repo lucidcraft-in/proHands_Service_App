@@ -120,7 +120,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                     },
                     {
                       'title': 'Express AC Service',
-                      'subtitle': 'Starts from \$29',
+                      'subtitle': 'Professional Care',
                       'image': 'assets/images/ac_repair_service.png',
                       'color': const Color(0xFFF5A623),
                     },

@@ -6,7 +6,7 @@ import '../../../core/widgets/custom_text_field.dart';
 
 import '../../../core/services/dummy_data_service.dart';
 import 'signup_screen.dart';
-import 'forgot_password_screen.dart';
+
 import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {

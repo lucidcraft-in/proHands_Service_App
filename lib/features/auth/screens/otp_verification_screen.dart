@@ -7,6 +7,7 @@ import '../../../core/models/user_type.dart';
 import '../../../core/services/dummy_data_service.dart';
 import '../../home/screens/main_screen.dart';
 import '../../service_boy/screens/service_boy_main_screen.dart';
+import '../../../core/services/storage_service.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String identifier;
@@ -109,6 +110,10 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           widget.userType,
         );
         print('User ${user?.userType} logged in successfully.');
+
+        // Save user type to shared preferences
+        await StorageService.saveUserType(widget.userType);
+
         if (widget.userType == UserType.customer) {
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => const MainScreen()),

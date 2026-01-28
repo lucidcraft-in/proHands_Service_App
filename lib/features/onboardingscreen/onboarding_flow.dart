@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:service_app/features/onboardingscreen/Onboardingpagetype.dart';
 import 'package:service_app/features/auth/screens/login_screen.dart';
+import 'package:service_app/core/theme/app_colors.dart';
+import 'package:service_app/core/theme/app_text_styles.dart';
 
 class OnboardingFlow extends StatefulWidget {
   const OnboardingFlow({super.key});
@@ -56,16 +58,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
     }
   }
 
-  void _previousPage() {
-    if (_currentPage > 0) {
-      _pageController.animateToPage(
-        _currentPage - 1,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
-
   void _skipToLast() {
     _pageController.animateToPage(
       _pages.length - 1,
@@ -83,66 +75,33 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
             // Header
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Language Selector
-                  Row(
-                    children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'assets/us_flag.png', // Add your flag image
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.blue,
-                                child: const Center(
-                                  child: Text(
-                                    '🇺🇸',
-                                    style: TextStyle(fontSize: 20),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'EN',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const Icon(Icons.arrow_drop_down, color: Colors.grey),
-                    ],
-                  ),
-                  // Skip Button
-                  TextButton(
-                    onPressed: _skipToLast,
-                    child: const Text(
-                      'SKIP',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  // Logo or App Name
+                  Text(
+                    'proHands',
+                    style: AppTextStyles.h3.copyWith(
+                      color: AppColors.primary,
+                      letterSpacing: -0.5,
                     ),
                   ),
+                  // Skip Button
+                  if (_currentPage < _pages.length - 1)
+                    TextButton(
+                      onPressed: _skipToLast,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.textTertiary,
+                      ),
+                      child: Text('Skip', style: AppTextStyles.labelMedium),
+                    ),
                 ],
               ),
             ),
@@ -161,66 +120,60 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
 
             // Navigation Footer
             Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Previous Button
-                  IconButton(
-                    onPressed: _currentPage > 0 ? _previousPage : null,
-                    icon: const Icon(Icons.chevron_left),
-                    iconSize: 32,
-                    color:
-                        _currentPage > 0
-                            ? Colors.grey.shade700
-                            : Colors.grey.shade300,
-                  ),
-
                   // Dots Indicator
                   Row(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       _pages.length,
                       (index) => AnimatedContainer(
                         duration: const Duration(milliseconds: 300),
                         margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: _currentPage == index ? 32 : 8,
+                        width: _currentPage == index ? 24 : 8,
                         height: 8,
                         decoration: BoxDecoration(
                           color:
                               _currentPage == index
-                                  ? Colors.blue.shade600
-                                  : Colors.grey.shade300,
+                                  ? AppColors.primary
+                                  : AppColors.primary.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
                   ),
-
+                  const SizedBox(height: 32),
                   // Next/Get Started Button
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade600,
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
                       onPressed:
                           _currentPage < _pages.length - 1
                               ? _nextPage
                               : () {
-                                Navigator.of(context).push(
+                                Navigator.of(context).pushReplacement(
                                   MaterialPageRoute(
                                     builder: (context) => const LoginScreen(),
                                   ),
                                 );
                               },
-                      icon: Icon(
-                        _currentPage < _pages.length - 1
-                            ? Icons.chevron_right
-                            : Icons.check,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      iconSize: 32,
-                      color: Colors.white,
+                      child: Text(
+                        _currentPage < _pages.length - 1
+                            ? 'Continue'
+                            : 'Get Started',
+                        style: AppTextStyles.button,
+                      ),
                     ),
                   ),
                 ],

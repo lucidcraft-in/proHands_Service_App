@@ -11,12 +11,20 @@ import '../../cart/screens/cart_screen.dart';
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
+  static MainScreenState? of(BuildContext context) {
+    return context.findAncestorStateOfType<MainScreenState>();
+  }
+
   @override
-  State<MainScreen> createState() => _MainScreenState();
+  State<MainScreen> createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+class MainScreenState extends State<MainScreen> {
+  int currentIndex = 0;
+
+  void setIndex(int index) {
+    setState(() => currentIndex = index);
+  }
 
   final List<Widget> _screens = const [
     HomeTabScreen(),
@@ -29,7 +37,7 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: _screens[currentIndex],
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           boxShadow: [
@@ -41,9 +49,9 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
+          currentIndex: currentIndex,
           onTap: (index) {
-            setState(() => _currentIndex = index);
+            setIndex(index);
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: AppColors.white,

@@ -400,7 +400,6 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
                     ...[
                       'Schedule Conflict',
                       'Location too far',
-                      'Incorrect Pricing',
                       'Technical Issues',
                       'Other',
                     ].map(

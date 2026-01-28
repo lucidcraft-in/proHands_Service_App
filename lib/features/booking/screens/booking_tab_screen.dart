@@ -4,7 +4,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import 'booking_detail_screen.dart';
-import '../../chat/screens/chat_screen.dart';
 
 class BookingTabScreen extends StatelessWidget {
   const BookingTabScreen({super.key});
@@ -193,24 +192,6 @@ class _BookingCard extends StatelessWidget {
                         style: AppTextStyles.labelLarge.copyWith(fontSize: 16),
                       ),
                       const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                            '\$$price',
-                            style: AppTextStyles.priceMedium.copyWith(
-                              fontSize: 16,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          if (discount > 0)
-                            Text(
-                              '($discount%)',
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.error,
-                              ),
-                            ),
-                        ],
-                      ),
                     ],
                   ),
                 ),
@@ -308,60 +289,36 @@ class _BookingCard extends StatelessWidget {
 
             Row(
               children: [
-                // Tappable profile section to open chat
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ChatScreen(
-                              currentUserId: 'current_user',
-                              currentUserName: 'You',
-                              otherUserId: 'provider_$bookingId',
-                              otherUserName: providerName,
-                              otherUserImage: '',
-                            ),
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      child: const Icon(
+                        Icons.person,
+                        size: 20,
+                        color: AppColors.primary,
                       ),
-                    );
-                  },
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 16,
-                        backgroundColor: AppColors.primary.withOpacity(0.1),
-                        child: const Icon(
-                          Icons.person,
-                          size: 20,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Provider', style: AppTextStyles.caption),
-                          Row(
-                            children: [
-                              Text(
-                                providerName,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Iconsax.message,
-                                size: 14,
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Provider', style: AppTextStyles.caption),
+                        Row(
+                          children: [
+                            Text(
+                              providerName,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                fontWeight: FontWeight.w600,
                                 color: AppColors.primary,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
                 const Spacer(),
                 const Icon(Icons.star, color: Color(0xFFFFA928), size: 16),

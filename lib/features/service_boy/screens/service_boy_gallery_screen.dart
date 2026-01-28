@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/full_screen_image_viewer.dart';
 
 class ServiceBoyGalleryScreen extends StatefulWidget {
   const ServiceBoyGalleryScreen({super.key});
@@ -191,7 +192,19 @@ class _ServiceBoyGalleryScreenState extends State<ServiceBoyGalleryScreen> {
                     );
                   }
                   return GestureDetector(
-                    onTap: () => _showImageActions(index),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => FullScreenImageViewer(
+                                imagePath: _images[index],
+                                tag: 'gallery_$index',
+                              ),
+                        ),
+                      );
+                    },
+                    onLongPress: () => _showImageActions(index),
                     child: Hero(
                       tag: 'gallery_$index',
                       child: Container(

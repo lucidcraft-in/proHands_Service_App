@@ -1,9 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/widgets/full_screen_image_viewer.dart';
 
 class ServiceBoySignUpScreen extends StatefulWidget {
   const ServiceBoySignUpScreen({super.key});
@@ -27,9 +30,25 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
   final List<String> _selectedDistricts = [];
   bool _icAttached = false;
   bool _aadhaarAttached = false;
-  final List<String> _galleryImages = []; // Simulated gallery
+  final List<String> _galleryImages = [];
+  final ImagePicker _picker = ImagePicker();
 
   bool _isLoading = false;
+
+  Future<void> _pickGalleryImage() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      setState(() {
+        _galleryImages.add(image.path);
+      });
+    }
+  }
+
+  void _removeGalleryImage(int index) {
+    setState(() {
+      _galleryImages.removeAt(index);
+    });
+  }
 
   final List<String> _services = [
     'Cleaning',
@@ -336,107 +355,94 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
                     }).toList(),
               ),
 
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildSectionTitle('My Feed'),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _galleryImages.add(
-                          'Simulated Image ${_galleryImages.length + 1}',
-                        );
-                      });
-                    },
-                    icon: const Icon(
-                      Iconsax.add_circle,
-                      color: AppColors.primary,
-                      size: 28,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _galleryImages.isEmpty
-                  ? Container(
-                    height: 100,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: AppColors.border,
-                        style: BorderStyle.solid,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Iconsax.image,
-                          color: AppColors.textTertiary.withOpacity(0.5),
+              const SizedBox(height: 32),
+              _buildSectionTitle('My Feed'),
+              const SizedBox(height: 16),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1,
+                ),
+                itemCount: _galleryImages.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == _galleryImages.length) {
+                    return GestureDetector(
+                      onTap: _pickGalleryImage,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: const Icon(
+                          Iconsax.add,
+                          color: AppColors.primary,
                           size: 32,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'No photos added yet',
-                          style: AppTextStyles.caption,
-                        ),
-                      ],
-                    ),
-                  )
-                  : SizedBox(
-                    height: 100,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _galleryImages.length,
-                      itemBuilder: (context, index) {
-                        return Container(
-                          width: 100,
-                          margin: const EdgeInsets.only(right: 12),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.primary.withOpacity(0.3),
-                            ),
-                          ),
-                          child: Stack(
-                            children: [
-                              const Center(
-                                child: Icon(
-                                  Iconsax.image,
-                                  color: AppColors.primary,
-                                ),
+                      ),
+                    );
+                  }
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => FullScreenImageViewer(
+                                imagePath: _galleryImages[index],
+                                tag: 'signup_gallery_$index',
                               ),
-                              Positioned(
-                                top: 4,
-                                right: 4,
-                                child: GestureDetector(
-                                  onTap:
-                                      () => setState(
-                                        () => _galleryImages.removeAt(index),
-                                      ),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(2),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.error,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.close,
-                                      size: 12,
-                                      color: AppColors.white,
-                                    ),
+                        ),
+                      );
+                    },
+                    child: Hero(
+                      tag: 'signup_gallery_$index',
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                            image: FileImage(File(_galleryImages[index])),
+                            fit: BoxFit.cover,
+                          ),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: GestureDetector(
+                                onTap: () => _removeGalleryImage(index),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.error,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    size: 12,
+                                    color: AppColors.white,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      },
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  );
+                },
+              ),
 
               const SizedBox(height: 40),
               GradientButton(

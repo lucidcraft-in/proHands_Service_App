@@ -35,26 +35,14 @@ class _CartScreenState extends State<CartScreen> {
     ),
   ];
 
-  double get _subtotal {
-    return _cartItems.fold(0, (sum, item) => sum + item.price);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
-          'My cart (${_cartItems.length})',
-          style: AppTextStyles.h4,
-        ),
+        title: Text('My cart (${_cartItems.length})', style: AppTextStyles.h4),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {},
-          ),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.add), onPressed: () {})],
       ),
       body: Column(
         children: [
@@ -75,7 +63,7 @@ class _CartScreenState extends State<CartScreen> {
               },
             ),
           ),
-          
+
           // Bottom section
           Container(
             padding: const EdgeInsets.all(20),
@@ -92,20 +80,15 @@ class _CartScreenState extends State<CartScreen> {
             child: SafeArea(
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Sub total',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        '\$${_subtotal.toStringAsFixed(2)}',
-                        style: AppTextStyles.priceLarge,
-                      ),
-                    ],
+                  Text(
+                    'Total items',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  Text(
+                    '${_cartItems.length} Services',
+                    style: AppTextStyles.priceLarge.copyWith(fontSize: 18),
                   ),
                   const SizedBox(height: 16),
                   GradientButton(
@@ -211,9 +194,9 @@ class _CartItemCard extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Container(
@@ -239,55 +222,41 @@ class _CartItemCard extends StatelessWidget {
                       style: AppTextStyles.labelLarge.copyWith(fontSize: 16),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          '\$${item.price.toStringAsFixed(2)}',
-                          style: AppTextStyles.priceMedium.copyWith(
-                            fontSize: 16,
-                          ),
-                        ),
-                        if (item.discount > 0) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            '(${item.discount}.00%)',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.error,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
                   ],
                 ),
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
           const Divider(height: 1),
           const SizedBox(height: 12),
-          
+
           Row(
             children: [
-              const Icon(Iconsax.calendar, size: 14, color: AppColors.textSecondary),
+              const Icon(
+                Iconsax.calendar,
+                size: 14,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(width: 4),
               Text('${item.date}   ', style: AppTextStyles.bodySmall),
-              const Icon(Iconsax.clock, size: 14, color: AppColors.textSecondary),
+              const Icon(
+                Iconsax.clock,
+                size: 14,
+                color: AppColors.textSecondary,
+              ),
               const SizedBox(width: 4),
               Text(item.time, style: AppTextStyles.bodySmall),
             ],
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Selected servicemen :',
-                style: AppTextStyles.caption,
-              ),
+              Text('Selected servicemen :', style: AppTextStyles.caption),
               Text(
                 '${item.servicemenCount} servicemen',
                 style: AppTextStyles.bodySmall.copyWith(
@@ -297,9 +266,9 @@ class _CartItemCard extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -308,7 +277,11 @@ class _CartItemCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                const Icon(Iconsax.info_circle, size: 14, color: AppColors.textSecondary),
+                const Icon(
+                  Iconsax.info_circle,
+                  size: 14,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:service_app/features/onboardingscreen/WelcomeIllustration.dart';
+import 'package:service_app/core/theme/app_colors.dart';
+import 'package:service_app/core/theme/app_text_styles.dart';
 
 enum OnboardingPageType { welcome, services, booking, payment }
 
@@ -22,75 +23,83 @@ class OnboardingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Illustration Circle
-          Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.grey.shade100, Colors.grey.shade200],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
+    final size = MediaQuery.of(context).size;
+
+    return Column(
+      children: [
+        const Spacer(flex: 3),
+        // Illustration Container
+        Container(
+          width: size.width * 0.82,
+          height: size.width * 0.82,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.primary.withOpacity(0.04),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: size.width * 0.68,
+                height: size.width * 0.68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withOpacity(0.06),
                 ),
-              ],
-            ),
-            child: Center(child: _buildIllustration()),
+              ),
+              Image.asset(
+                _getIllustrationPath(),
+                width: size.width * 0.62,
+                height: size.width * 0.62,
+                fit: BoxFit.contain,
+              ),
+            ],
           ),
-
-          const SizedBox(height: 48),
-
-          // Title
-          Text(
-            data.title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1A1A1A),
-            ),
+        ),
+        const Spacer(flex: 2),
+        // Content Area
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          child: Column(
+            children: [
+              Text(
+                data.title,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.h1.copyWith(
+                  color: AppColors.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                data.description,
+                textAlign: TextAlign.center,
+                style: AppTextStyles.bodyLarge.copyWith(
+                  color: AppColors.textSecondary,
+                  height: 1.6,
+                  fontSize: 15,
+                ),
+              ),
+            ],
           ),
-
-          const SizedBox(height: 16),
-
-          // Description
-          Text(
-            data.description,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
-              height: 1.5,
-            ),
-          ),
-
-          const SizedBox(height: 48),
-        ],
-      ),
+        ),
+        const Spacer(flex: 5),
+      ],
     );
   }
 
-  Widget _buildIllustration() {
+  String _getIllustrationPath() {
     switch (data.pageType) {
       case OnboardingPageType.welcome:
-        return const WelcomeIllustration();
+        return 'assets/images/onboarding/welcome.png';
       case OnboardingPageType.services:
-        return const ServicesIllustration();
+        return 'assets/images/onboarding/services.png';
       case OnboardingPageType.booking:
-        return const BookingIllustration();
+        return 'assets/images/onboarding/booking.png';
       case OnboardingPageType.payment:
-        return const PaymentIllustration();
+        return 'assets/images/onboarding/payment.png';
     }
   }
 }

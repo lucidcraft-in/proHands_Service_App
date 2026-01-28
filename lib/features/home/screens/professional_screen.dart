@@ -22,46 +22,18 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
   late AnimationController _controller;
 
   final List<Map<String, dynamic>> _categories = [
-    {
-      'icon': Iconsax.brush,
-      'label': 'Cleaning',
-      'image': 'assets/images/cleaning_service.png',
-    },
+    {'icon': Iconsax.brush, 'label': 'Cleaning', 'color': Colors.blue},
     {
       'icon': Iconsax.flash_1,
       'label': 'Electrician',
-      'image': 'assets/images/electrician.png',
+      'color': Colors.yellow.shade700,
     },
-    {
-      'icon': Icons.ac_unit_outlined,
-      'label': 'Ac Repair',
-      'image': 'assets/images/ac_repair_service.png',
-    },
-    {
-      'icon': Icons.person_outline,
-      'label': 'Carpenter',
-      'image': 'assets/images/smart_home_install.png',
-    },
-    {
-      'icon': Icons.restaurant_outlined,
-      'label': 'Cooking',
-      'image': 'assets/images/cooking.png',
-    },
-    {
-      'icon': Icons.format_paint_outlined,
-      'label': 'Painter',
-      'image': 'assets/images/painting_service.png',
-    },
-    {
-      'icon': Icons.plumbing_outlined,
-      'label': 'Plumber',
-      'image': 'assets/images/plumber.png',
-    },
-    {
-      'icon': Icons.face_retouching_natural_outlined,
-      'label': 'Saloon',
-      'image': 'assets/images/saloon.png',
-    },
+    {'icon': Iconsax.airdrop, 'label': 'Ac Repair', 'color': Colors.cyan},
+    {'icon': Iconsax.user_square, 'label': 'Carpenter', 'color': Colors.brown},
+    {'icon': Iconsax.coffee, 'label': 'Cooking', 'color': Colors.red},
+    {'icon': Iconsax.colorfilter, 'label': 'Painter', 'color': Colors.green},
+    {'icon': Iconsax.drop, 'label': 'Plumber', 'color': Colors.blueAccent},
+    {'icon': Iconsax.magicpen, 'label': 'Saloon', 'color': Colors.pink},
   ];
 
   @override
@@ -194,7 +166,8 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                         },
                         child: _GridCategoryItem(
                           label: category['label'],
-                          image: category['image'],
+                          icon: category['icon'],
+                          color: category['color'],
                           onTap:
                               () => _navigateToServiceSelection(
                                 context,
@@ -399,12 +372,14 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
 
 class _GridCategoryItem extends StatelessWidget {
   final String label;
-  final String image;
+  final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
   const _GridCategoryItem({
     required this.label,
-    required this.image,
+    required this.icon,
+    required this.color,
     required this.onTap,
   });
 
@@ -416,41 +391,13 @@ class _GridCategoryItem extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
+              width: double.infinity,
               decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                border: Border.all(color: color.withOpacity(0.2)),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  children: [
-                    Image.asset(
-                      image,
-                      width: double.infinity,
-                      height: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.4),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: Center(child: Icon(icon, color: color, size: 32)),
             ),
           ),
           const SizedBox(height: 8),

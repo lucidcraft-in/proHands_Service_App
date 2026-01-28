@@ -216,51 +216,35 @@ class ServiceProviderDetailScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Total Price', style: AppTextStyles.caption),
-                      Text(
-                        '\$45.0/hr', // Using a fixed price as hourlyRate is not in UserModel
-                        style: AppTextStyles.h3.copyWith(
-                          color: AppColors.primary,
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => BookingCheckoutScreen(
+                                  serviceName:
+                                      '${provider.profession} - ${provider.name}',
+                                  price: 45.0,
+                                ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                    ],
-                  ),
-                  const Spacer(),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => BookingCheckoutScreen(
-                                serviceName:
-                                    '${provider.profession} - ${provider.name}',
-                                price:
-                                    45.0, // Using a fixed price as hourlyRate is not in UserModel
-                              ),
+                      child: const Text(
+                        'Book Now',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
-                      ),
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Book Now',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
                       ),
                     ),
                   ),
@@ -425,14 +409,6 @@ class ServiceProviderDetailScreen extends StatelessWidget {
                 ],
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            comment,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
-              height: 1.4,
-            ),
           ),
         ],
       ),

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/balance_card.dart';
 import 'edit_profile_screen.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_type.dart';
 import '../../../core/services/dummy_data_service.dart';
+import '../../../core/services/storage_service.dart';
 
 class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
@@ -130,7 +130,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  BalanceCard(balance: 152.23, onTap: () {}),
                 ],
               ),
             ),
@@ -304,13 +303,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                    (route) => false,
-                  );
+                onPressed: () async {
+                  await StorageService.clearAll();
+                  if (context.mounted) {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.error,
@@ -406,9 +408,9 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
   Widget _buildFavoritesList() {
     final favorites = [
-      {'name': 'AC Cleaning', 'price': '\$25', 'rating': '4.8'},
-      {'name': 'House Painting', 'price': '\$150', 'rating': '4.9'},
-      {'name': 'Car Wash', 'price': '\$30', 'rating': '4.7'},
+      {'name': 'AC Cleaning', 'rating': '4.8'},
+      {'name': 'House Painting', 'rating': '4.9'},
+      {'name': 'Car Wash', 'rating': '4.7'},
     ];
 
     return Container(
@@ -449,13 +451,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  item['price']!,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+
                 const SizedBox(height: 10),
                 Row(
                   children: [
