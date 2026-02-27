@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import 'edit_profile_screen.dart';
+import '../../service_boy/screens/service_boy_services_screen.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_type.dart';
-import '../../../core/services/dummy_data_service.dart';
 import '../../../core/services/storage_service.dart';
+import '../../home/providers/consumer_provider.dart';
+import '../../home/widgets/location_selector_bottom_sheet.dart';
+import '../../../core/widgets/custom_button.dart';
 
 class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
@@ -28,8 +32,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   bool _isAppDetailsExpanded = false;
   bool _isSettingsExpanded = false;
 
-  UserModel? _user;
-
   @override
   void initState() {
     super.initState();
@@ -37,12 +39,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   void _loadUserData() {
-    // For demo purposes, we fetch 'Amjad' if we are in customer context,
-    // or 'Amal' if we want to show service boy data.
-    // In a real app, this would come from an AuthService/Session.
-    _user = DummyDataService.instance.findUserAnyType(
-      '+91 9072989925',
-    ); // Amjad (Customer)
+    Future.microtask(() async {
+      final userType = await StorageService.getUserType();
+      if (mounted) {
+        final provider = Provider.of<ConsumerProvider>(context, listen: false);
+        provider.fetchUserProfile();
+        provider.fetchReviews(userType == UserType.serviceBoy);
+      }
+    });
   }
 
   @override
@@ -60,229 +64,289 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Profile Header
-            Container(
-              color: AppColors.white,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Stack(
+      body: Consumer<ConsumerProvider>(
+        builder: (context, provider, child) {
+          final user =
+              provider.currentUser ??
+              UserModel(
+                id: 'guest',
+                name: 'Guest User',
+                phone: '',
+                userType: UserType.customer,
+              );
+
+          if (provider.isLoadingProfile) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Profile Header
+                Container(
+                  color: AppColors.white,
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
                     children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        backgroundColor: AppColors.background,
-                        child: Icon(
-                          Icons.person,
-                          size: 50,
-                          color: AppColors.primary,
-                        ),
+                      Stack(
+                        children: [
+                          const CircleAvatar(
+                            radius: 50,
+                            backgroundColor: AppColors.background,
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const EditProfileScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: AppColors.white,
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.edit,
+                                  size: 16,
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
+                      const SizedBox(height: 16),
+                      Text(user.name ?? 'Guest User', style: AppTextStyles.h3),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.email_outlined,
+                            size: 16,
+                            color: AppColors.textSecondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            user.email ?? 'No email linked',
+                            style: AppTextStyles.bodySmall,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // GENERAL Section
+                Container(
+                  color: AppColors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionHeader('GENERAL'),
+
+                      if (user.userType == UserType.customer) ...[
+                        _MenuItem(
+                          icon: Iconsax.heart,
+                          title: 'Favourite list',
+                          isExpanded: _isFavoritesExpanded,
+                          onTap:
+                              () => setState(
+                                () =>
+                                    _isFavoritesExpanded =
+                                        !_isFavoritesExpanded,
+                              ),
+                        ),
+                        if (_isFavoritesExpanded) _buildFavoritesList(),
+                        const Divider(
+                          height: 1,
+                          indent: 70,
+                          color: AppColors.background,
+                        ),
+                      ],
+
+                      if (user.userType == UserType.serviceBoy) ...[
+                        _MenuItem(
+                          icon: Iconsax.briefcase,
+                          title: 'My Services',
                           onTap: () {
-                            Navigator.of(context).push(
+                            Navigator.push(
+                              context,
                               MaterialPageRoute(
-                                builder: (context) => const EditProfileScreen(),
+                                builder:
+                                    (context) =>
+                                        const ServiceBoyServicesScreen(),
                               ),
                             );
                           },
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.white,
-                                width: 2,
-                              ),
+                        ),
+                        const Divider(
+                          height: 1,
+                          indent: 70,
+                          color: AppColors.background,
+                        ),
+                      ],
+                      _MenuItem(
+                        icon: Iconsax.location,
+                        title: 'Manage locations',
+                        isExpanded: _isLocationsExpanded,
+                        onTap:
+                            () => setState(
+                              () =>
+                                  _isLocationsExpanded = !_isLocationsExpanded,
                             ),
-                            child: const Icon(
-                              Icons.edit,
-                              size: 16,
-                              color: AppColors.white,
-                            ),
-                          ),
+                      ),
+                      if (_isLocationsExpanded) _buildLocationsList(),
+                      const Divider(
+                        height: 1,
+                        indent: 70,
+                        color: AppColors.background,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
+                        child: CustomButton(
+                          text: 'Add New Location',
+                          onPressed: () => _showAddLocationBottomSheet(),
+                          icon: Iconsax.add_circle,
+                          isOutlined: true,
+                          width: double.infinity,
                         ),
                       ),
+
+                      _MenuItem(
+                        icon: Iconsax.message,
+                        title: 'My reviews',
+                        isExpanded: _isReviewsExpanded,
+                        onTap:
+                            () => setState(
+                              () => _isReviewsExpanded = !_isReviewsExpanded,
+                            ),
+                      ),
+                      if (_isReviewsExpanded) _buildReviewsList(),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(_user?.name ?? 'Guest User', style: AppTextStyles.h3),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                ),
+
+                const SizedBox(height: 24),
+
+                // ABOUT APP Section
+                Container(
+                  color: AppColors.white,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.email_outlined,
-                        size: 16,
-                        color: AppColors.textSecondary,
+                      _buildSectionHeader('ABOUT APP'),
+
+                      _MenuItem(
+                        icon: Iconsax.info_circle,
+                        title: 'App details',
+                        subtitle: 'About us, policy & support',
+                        isExpanded: _isAppDetailsExpanded,
+                        onTap:
+                            () => setState(
+                              () =>
+                                  _isAppDetailsExpanded =
+                                      !_isAppDetailsExpanded,
+                            ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        _user?.email ?? 'No email linked',
-                        style: AppTextStyles.bodySmall,
+
+                      // Flattened App Details Content
+                      if (_isAppDetailsExpanded)
+                        Padding(
+                          padding: const EdgeInsets.only(left: 70, bottom: 8),
+                          child: Column(
+                            children: [
+                              _SubMenuItem(title: 'About Us', onTap: () {}),
+                              _SubMenuItem(
+                                title: 'Privacy Policy',
+                                onTap: () {},
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      const Divider(
+                        height: 1,
+                        indent: 70,
+                        color: AppColors.background,
                       ),
+
+                      _MenuItem(
+                        icon: Iconsax.setting_2,
+                        title: 'Settings',
+                        isExpanded: _isSettingsExpanded,
+                        onTap:
+                            () => setState(
+                              () => _isSettingsExpanded = !_isSettingsExpanded,
+                            ),
+                      ),
+
+                      // Settings Content (Merged)
+                      if (_isSettingsExpanded)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            bottom: 12,
+                          ),
+                          child: Column(
+                            children: [
+                              SwitchListTile(
+                                contentPadding: EdgeInsets.zero,
+                                value: _notificationsEnabled,
+                                onChanged: (value) {
+                                  setState(() => _notificationsEnabled = value);
+                                },
+                                title: Text(
+                                  'Push Notifications',
+                                  style: AppTextStyles.bodyMedium,
+                                ),
+                                activeColor: AppColors.primary,
+                              ),
+                              _SettingsMenuRow(
+                                title: 'Language',
+                                value: _selectedLanguage,
+                                onTap: () => _showLanguageDialog(),
+                              ),
+                              _SettingsMenuRow(
+                                title: 'Theme',
+                                value: _selectedTheme,
+                                onTap: () => _showThemeDialog(),
+                              ),
+                            ],
+                          ),
+                        ),
                     ],
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                ),
+
+                const SizedBox(height: 80), // Space for FAB
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            // GENERAL Section
-            Container(
-              color: AppColors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader('GENERAL'),
-
-                  if (_user?.userType == UserType.customer) ...[
-                    _MenuItem(
-                      icon: Iconsax.heart,
-                      title: 'Favourite list',
-                      isExpanded: _isFavoritesExpanded,
-                      onTap:
-                          () => setState(
-                            () => _isFavoritesExpanded = !_isFavoritesExpanded,
-                          ),
-                    ),
-                    if (_isFavoritesExpanded) _buildFavoritesList(),
-                    const Divider(
-                      height: 1,
-                      indent: 70,
-                      color: AppColors.background,
-                    ),
-                  ],
-
-                  _MenuItem(
-                    icon: Iconsax.location,
-                    title: 'Manage locations',
-                    isExpanded: _isLocationsExpanded,
-                    onTap:
-                        () => setState(
-                          () => _isLocationsExpanded = !_isLocationsExpanded,
-                        ),
-                  ),
-                  if (_isLocationsExpanded) _buildLocationsList(),
-                  const Divider(
-                    height: 1,
-                    indent: 70,
-                    color: AppColors.background,
-                  ),
-
-                  _MenuItem(
-                    icon: Iconsax.message,
-                    title: 'My reviews',
-                    isExpanded: _isReviewsExpanded,
-                    onTap:
-                        () => setState(
-                          () => _isReviewsExpanded = !_isReviewsExpanded,
-                        ),
-                  ),
-                  if (_isReviewsExpanded) _buildReviewsList(),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // ABOUT APP Section
-            Container(
-              color: AppColors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionHeader('ABOUT APP'),
-
-                  _MenuItem(
-                    icon: Iconsax.info_circle,
-                    title: 'App details',
-                    subtitle: 'About us, policy & support',
-                    isExpanded: _isAppDetailsExpanded,
-                    onTap:
-                        () => setState(
-                          () => _isAppDetailsExpanded = !_isAppDetailsExpanded,
-                        ),
-                  ),
-
-                  // Flattened App Details Content
-                  if (_isAppDetailsExpanded)
-                    Padding(
-                      padding: const EdgeInsets.only(left: 70, bottom: 8),
-                      child: Column(
-                        children: [
-                          _SubMenuItem(title: 'About Us', onTap: () {}),
-                          _SubMenuItem(title: 'Privacy Policy', onTap: () {}),
-                        ],
-                      ),
-                    ),
-
-                  const Divider(
-                    height: 1,
-                    indent: 70,
-                    color: AppColors.background,
-                  ),
-
-                  _MenuItem(
-                    icon: Iconsax.setting_2,
-                    title: 'Settings',
-                    isExpanded: _isSettingsExpanded,
-                    onTap:
-                        () => setState(
-                          () => _isSettingsExpanded = !_isSettingsExpanded,
-                        ),
-                  ),
-
-                  // Settings Content (Merged)
-                  if (_isSettingsExpanded)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        left: 20,
-                        right: 20,
-                        bottom: 12,
-                      ),
-                      child: Column(
-                        children: [
-                          SwitchListTile(
-                            contentPadding: EdgeInsets.zero,
-                            value: _notificationsEnabled,
-                            onChanged: (value) {
-                              setState(() => _notificationsEnabled = value);
-                            },
-                            title: Text(
-                              'Push Notifications',
-                              style: AppTextStyles.bodyMedium,
-                            ),
-                            activeColor: AppColors.primary,
-                          ),
-                          _SettingsMenuRow(
-                            title: 'Language',
-                            value: _selectedLanguage,
-                            onTap: () => _showLanguageDialog(),
-                          ),
-                          _SettingsMenuRow(
-                            title: 'Theme',
-                            value: _selectedTheme,
-                            onTap: () => _showThemeDialog(),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 80), // Space for FAB
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -474,186 +538,304 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildLocationsList() {
-    final locations = [
-      {'title': 'Home', 'address': '123 Street Name, California, USA'},
-      {'title': 'Office', 'address': '456 Business Way, Tech Park, USA'},
-    ];
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: StorageService.getSavedLocations(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Container(
+            color: AppColors.white,
+            padding: const EdgeInsets.all(20),
+            child: Center(
+              child: Text(
+                'No saved locations found.',
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          );
+        }
 
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children:
-            locations
-                .map(
-                  (loc) => Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.shadowLight,
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Iconsax.location,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                      ),
-                      title: Text(
-                        loc['title']!,
-                        style: AppTextStyles.labelSmall,
-                      ),
-                      subtitle: Text(
-                        loc['address']!,
-                        style: AppTextStyles.caption,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      trailing: const Icon(
-                        Icons.edit_location_alt_outlined,
-                        size: 18,
-                        color: AppColors.textTertiary,
-                      ),
-                      onTap: () {},
-                    ),
+        final locations = snapshot.data!;
+
+        return Container(
+          color: AppColors.white,
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            children: [
+              ...locations.map((loc) {
+                final address = loc['address'] ?? 'Unknown Address';
+                final coordinates = loc['coordinates'] as List<dynamic>?;
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 6,
                   ),
-                )
-                .toList(),
-      ),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadowLight,
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Iconsax.location,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                    title: Text(
+                      loc['label'] ?? 'Saved Location',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: Text(
+                      address,
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: const Icon(
+                      Icons.check_circle_outline,
+                      size: 20,
+                      color: AppColors.textTertiary,
+                    ),
+                    onTap: () => _handleLocationUpdate(address, coordinates),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildReviewsList() {
-    final reviews = [
-      {
-        'user': 'Alex',
-        'comment': 'Excellent service, very professional!',
-        'rating': '5.0',
-      },
-      {
-        'user': 'Sarah',
-        'comment': 'Good experience, arrived on time.',
-        'rating': '4.5',
-      },
-    ];
+  void _showAddLocationBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => LocationSelectorBottomSheet(
+            onLocationSelected: (locationData) async {
+              final address = locationData['address'] as String;
+              final coordinates = locationData['coordinates'] as List<double>;
 
-    return Container(
-      color: AppColors.white,
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children:
-            reviews
-                .map(
-                  (rev) => Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 8,
+              // Save to Storage
+              await StorageService.saveUserLocation(
+                address: address,
+                coordinates: coordinates,
+                label: locationData['label'],
+              );
+
+              // Update Profile
+              await _handleLocationUpdate(address, coordinates);
+
+              if (mounted) setState(() {});
+            },
+          ),
+    );
+  }
+
+  Future<void> _handleLocationUpdate(
+    String address,
+    List<dynamic>? coordinates,
+  ) async {
+    if (coordinates != null && coordinates.length >= 2) {
+      final lat = coordinates[0] as double;
+      final lng = coordinates[1] as double;
+
+      final success = await context.read<ConsumerProvider>().updateUserLocation(
+        latitude: lat,
+        longitude: lng,
+        address: address,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Location updated successfully!'
+                  : 'Failed to update location',
+            ),
+            backgroundColor: success ? AppColors.success : AppColors.error,
+          ),
+        );
+      }
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Invalid coordinates for this location'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildReviewsList() {
+    return Consumer<ConsumerProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoadingReviews) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        final reviews = provider.reviews;
+
+        if (reviews.isEmpty) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(40),
+              child: Column(
+                children: [
+                  Icon(
+                    Iconsax.message_notif,
+                    size: 40,
+                    color: AppColors.textTertiary.withOpacity(0.5),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No reviews yet',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textTertiary,
                     ),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.shadowLight,
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          color: AppColors.white,
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            children:
+                reviews
+                    .map(
+                      (rev) => Container(
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
                         ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 12,
-                                  backgroundColor: AppColors.primary
-                                      .withOpacity(0.1),
-                                  child: Text(
-                                    rev['user']![0],
-                                    style: AppTextStyles.caption.copyWith(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 10,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  rev['user']!,
-                                  style: AppTextStyles.labelSmall,
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFFA928).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.star,
-                                    size: 12,
-                                    color: Color(0xFFFFA928),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    rev['rating']!,
-                                    style: AppTextStyles.caption.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFFFFA928),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.shadowLight,
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          rev['comment']!,
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
-                            height: 1.4,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 12,
+                                      backgroundColor: AppColors.primary
+                                          .withOpacity(0.1),
+                                      child: Text(
+                                        rev.reviewerPhone.isNotEmpty
+                                            ? rev.reviewerPhone[0]
+                                            : 'U',
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      rev.reviewerPhone,
+                                      style: AppTextStyles.labelSmall,
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: const Color(
+                                      0xFFFFA928,
+                                    ).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.star,
+                                        size: 12,
+                                        color: Color(0xFFFFA928),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        rev.rating.toStringAsFixed(1),
+                                        style: AppTextStyles.caption.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: const Color(0xFFFFA928),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              rev.comment,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                                height: 1.4,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                )
-                .toList(),
-      ),
+                      ),
+                    )
+                    .toList(),
+          ),
+        );
+      },
     );
   }
 }

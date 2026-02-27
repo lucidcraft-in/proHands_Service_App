@@ -10,27 +10,45 @@ class DummyDataService {
   // Dummy Bookings
   static final List<BookingModel> _dummyBookings = [
     BookingModel(
-      id: '#BK-120100',
-      serviceName: 'House Cleaning',
+      id: '1',
+      bookingId: '#58961',
+      serviceId: 'dummy_service_1',
+      serviceName: 'Curtain cleaning',
       date: '24 Feb, 2024',
       time: '10:00 AM',
       location: '123 Street Name, California, USA',
+      customerName: 'Vaishnavi',
+      customerPhone: '7510538712',
+      price: 1200,
+      description: 'Deep cleaning of 2BHK',
       status: BookingStatus.pending,
     ),
     BookingModel(
-      id: '#BK-120101',
-      serviceName: 'House Cleaning',
+      id: '2',
+      bookingId: '#25636',
+      serviceId: 'dummy_service_2',
+      serviceName: 'House hold cook',
       date: '25 Feb, 2024',
       time: '11:00 AM',
       location: '456 Oak Avenue, California, USA',
+      customerName: 'Rahul',
+      customerPhone: '9876543210',
+      price: 800,
+      description: 'AC not cooling',
       status: BookingStatus.pending,
     ),
     BookingModel(
-      id: '#BK-120102',
-      serviceName: 'House Cleaning',
+      id: '3',
+      bookingId: '#12548',
+      serviceId: 'dummy_service_3',
+      serviceName: 'Garden cleaning',
       date: '26 Feb, 2024',
       time: '09:00 AM',
       location: '789 Pine Street, California, USA',
+      customerName: 'Anjali',
+      customerPhone: '9988776655',
+      price: 500,
+      description: 'Tap leakage',
       status: BookingStatus.ongoing,
     ),
   ];
@@ -293,7 +311,7 @@ class DummyDataService {
         (user) =>
             user.userType == userType &&
             (_compareIdentifiers(user.phone, identifier) ||
-                _compareIdentifiers(user.email, identifier)),
+                _compareIdentifiers(user.email!, identifier)),
       );
     } catch (e) {
       return null;
@@ -304,7 +322,7 @@ class DummyDataService {
   bool verifyOTP(String identifier, UserType userType, String otp) {
     final user = findUser(identifier, userType);
     if (user == null) return false;
-    return user.otp.trim() == otp.trim();
+    return user.otp!.trim() == otp.trim();
   }
 
   // Alias for legacy support if needed, but redirects to proper logic

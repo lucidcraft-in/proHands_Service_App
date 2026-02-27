@@ -7,10 +7,7 @@ import 'booking_checkout_screen.dart';
 class ServiceSelectionScreen extends StatelessWidget {
   final String categoryName;
 
-  const ServiceSelectionScreen({
-    super.key,
-    required this.categoryName,
-  });
+  const ServiceSelectionScreen({super.key, required this.categoryName});
 
   @override
   Widget build(BuildContext context) {
@@ -49,17 +46,27 @@ class ServiceSelectionScreen extends StatelessWidget {
                     color: AppColors.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.settings_outlined, color: AppColors.primary),
+                  child: const Icon(
+                    Icons.settings_outlined,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(service['name'] as String, style: AppTextStyles.labelLarge),
+                      Text(
+                        service['name'] as String,
+                        style: AppTextStyles.labelLarge,
+                      ),
                       const SizedBox(height: 4),
-                      Text('\$${(service['price'] as double).toStringAsFixed(2)}', 
-                        style: AppTextStyles.priceMedium.copyWith(color: AppColors.primary)),
+                      Text(
+                        '\$${(service['price'] as double).toStringAsFixed(2)}',
+                        style: AppTextStyles.priceMedium.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -68,10 +75,12 @@ class ServiceSelectionScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => BookingCheckoutScreen(
-                          serviceName: service['name'] as String,
-                          price: service['price'] as double,
-                        ),
+                        builder:
+                            (context) => BookingCheckoutScreen(
+                              serviceName: service['name'] as String,
+                              serviceId: 'dummy_service_id_${index + 1}',
+                              price: service['price'] as double,
+                            ),
                       ),
                     );
                   },

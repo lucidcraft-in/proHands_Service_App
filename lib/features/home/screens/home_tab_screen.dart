@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
+import '../providers/consumer_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/models/user_model.dart';
-import '../../../core/models/user_type.dart';
-import '../../../core/services/dummy_data_service.dart';
+
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../widgets/category_item.dart';
 import 'full_image_screen.dart';
 import 'main_screen.dart';
-import 'service_provider_list_screen.dart';
+import 'service_product_list_screen.dart';
+import 'customer_bookings_screen.dart';
 
 import '../../cart/screens/cart_screen.dart';
 
@@ -21,47 +22,24 @@ class HomeTabScreen extends StatefulWidget {
 }
 
 class _HomeTabScreenState extends State<HomeTabScreen> {
-  final List<Map<String, dynamic>> _categories = [
-    {'name': 'Cleaning', 'icon': Icons.cleaning_services, 'color': Colors.blue},
-    {'name': 'Repair', 'icon': Icons.build, 'color': Colors.orange},
-    {
-      'name': 'Electrician',
-      'icon': Icons.electric_bolt,
-      'color': Colors.yellow.shade700,
-    },
-    {'name': 'Plumber', 'icon': Icons.water_drop, 'color': Colors.cyan},
-    {'name': 'Salon', 'icon': Icons.face, 'color': Colors.pink},
-    {'name': 'Painting', 'icon': Icons.format_paint, 'color': Colors.green},
-    {'name': 'Carpenter', 'icon': Icons.handyman, 'color': Colors.brown},
-    {'name': 'Cooking', 'icon': Icons.restaurant, 'color': Colors.red},
-  ];
-
-  List<Map<String, dynamic>> _posts = [];
-
   @override
   void initState() {
     super.initState();
-    _posts = _getServiceBoyPosts();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Check if categories are already loaded to avoid redundant calls if maintained in provider
+      // But allow refresh if needed. Provider usually keeps state.
+      if (context.read<ConsumerProvider>().categories.isEmpty) {
+        context.read<ConsumerProvider>().fetchCategories();
+      }
+    });
+    if (context.read<ConsumerProvider>().feeds.isEmpty) {
+      context.read<ConsumerProvider>().fetchFeeds();
+    }
   }
 
   @override
   void dispose() {
     super.dispose();
-  }
-
-  List<Map<String, dynamic>> _getServiceBoyPosts() {
-    final serviceBoys = DummyDataService.instance.getUsersByType(
-      UserType.serviceBoy,
-    );
-    List<Map<String, dynamic>> posts = [];
-    for (UserModel boy in serviceBoys) {
-      for (String img in boy.portfolioImages) {
-        posts.add({'image': img, 'boy': boy});
-      }
-    }
-    // Shuffle to make it look like a feed
-    posts.shuffle();
-    return posts;
   }
 
   @override
@@ -117,41 +95,50 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                             //   ),
                             // ),
                             // const SizedBox(width: 12),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Iconsax.notification,
-                                  size: 20,
-                                ),
-                                color: AppColors.textPrimary,
-                                onPressed: () {},
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.background,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: const Icon(
-                                  Iconsax.shopping_cart,
-                                  size: 20,
-                                ),
-                                color: AppColors.textPrimary,
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const CartScreen(),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
+                            // Container(
+                            //   decoration: BoxDecoration(
+                            //     color: AppColors.background,
+                            //     borderRadius: BorderRadius.circular(12),
+                            //   ),
+                            //   child: IconButton(
+                            //     icon: const Icon(
+                            //       Iconsax.notification,
+                            //       size: 20,
+                            //     ),
+                            //     color: AppColors.textPrimary,
+                            //     onPressed: () {
+                            //       Navigator.push(
+                            //         context,
+                            //         MaterialPageRoute(
+                            //           builder:
+                            //               (context) =>
+                            //                   const CustomerBookingsScreen(),
+                            //         ),
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
+                            // const SizedBox(width: 12),
+                            // Container(
+                            //   decoration: BoxDecoration(
+                            //     color: AppColors.background,
+                            //     borderRadius: BorderRadius.circular(12),
+                            //   ),
+                            //   child: IconButton(
+                            //     icon: const Icon(
+                            //       Iconsax.shopping_cart,
+                            //       size: 20,
+                            //     ),
+                            //     color: AppColors.textPrimary,
+                            //     onPressed: () {
+                            //       Navigator.of(context).push(
+                            //         MaterialPageRoute(
+                            //           builder: (context) => const CartScreen(),
+                            //         ),
+                            //       );
+                            //     },
+                            //   ),
+                            // ),
                           ],
                         ),
                       ],
@@ -189,33 +176,93 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             SliverToBoxAdapter(
               child: SizedBox(
                 height: 100,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _categories.length,
-                  itemBuilder: (context, index) {
-                    final category = _categories[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 20),
-                      child: SizedBox(
-                        width: 70,
-                        child: CategoryItem(
-                          name: category['name'],
-                          icon: category['icon'],
-                          color: category['color'],
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ServiceProviderListScreen(
-                                      category: category['name'],
-                                    ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                child: Consumer<ConsumerProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isLoadingCategories) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (provider.categories.isEmpty) {
+                      return const Center(child: Text('No categories'));
+                    }
+
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: provider.categories.length,
+                      itemBuilder: (context, index) {
+                        final category = provider.categories[index];
+
+                        // Map icons and colors (same logic as ProfessionalScreen)
+                        // IconData iconData = Iconsax.category;
+                        IconData iconData = Iconsax.category;
+                        Color color = Colors.blue;
+
+                        if (category.name.toLowerCase().contains('clean')) {
+                          iconData =
+                              Icons.cleaning_services; // Or Iconsax.brush
+                          color = Colors.blue;
+                        } else if (category.name.toLowerCase().contains(
+                          'paint',
+                        )) {
+                          iconData = Icons.format_paint;
+                          color = Colors.green;
+                        } else if (category.name.toLowerCase().contains(
+                          'plumb',
+                        )) {
+                          iconData = Icons.water_drop;
+                          color = Colors.cyan; // or blueAccent
+                        } else if (category.name.toLowerCase().contains(
+                          'electric',
+                        )) {
+                          iconData = Icons.electric_bolt;
+                          color = Colors.yellow.shade700;
+                        } else if (category.name.toLowerCase().contains(
+                          'repair',
+                        )) {
+                          iconData = Icons.build;
+                          color = Colors.orange;
+                        } else if (category.name.toLowerCase().contains(
+                          'salon',
+                        )) {
+                          iconData = Icons.face;
+                          color = Colors.pink;
+                        } else if (category.name.toLowerCase().contains(
+                          'carpenter',
+                        )) {
+                          iconData = Icons.handyman;
+                          color = Colors.brown;
+                        } else if (category.name.toLowerCase().contains(
+                          'cook',
+                        )) {
+                          iconData = Icons.restaurant;
+                          color = Colors.red;
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: SizedBox(
+                            width: 70,
+                            child: CategoryItem(
+                              name: category.name,
+                              icon: iconData,
+                              color: color,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => ServiceProductListScreen(
+                                          categoryId: category.id,
+                                          categoryName: category.name,
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
@@ -237,62 +284,96 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: StaggeredGrid.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  children: List.generate(_posts.length, (index) {
-                    final post = _posts[index];
-                    // Create a repeating pattern of tall and square tiles to match the image
-                    // Pattern: Tall, Square, Tall (right), Square, Square...
-                    int mainAxisCellCount = 1;
-                    if (index % 4 == 0) {
-                      mainAxisCellCount = 2; // Tall on left
-                    } else if (index % 4 == 3) {
-                      mainAxisCellCount = 2; // Tall on right
+                child: Consumer<ConsumerProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isLoadingFeeds) {
+                      return const Center(child: CircularProgressIndicator());
                     }
 
-                    return StaggeredGridTile.count(
-                      crossAxisCellCount: 1,
-                      mainAxisCellCount: mainAxisCellCount,
-                      child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder:
-                                  (context) => FullImageScreen(
-                                    imagePath: post['image'],
-                                    uploader: post['boy'],
-                                  ),
-                            ),
-                          );
-                        },
-                        child: Hero(
-                          tag: post['image'],
-                          child: Container(
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
+                    if (provider.feedsError != null) {
+                      return Center(
+                        child: Text('Error: ${provider.feedsError}'),
+                      );
+                    }
+
+                    if (provider.feeds.isEmpty) {
+                      return const Center(
+                        child: Text('No service highlights yet'),
+                      );
+                    }
+
+                    return StaggeredGrid.count(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      children: List.generate(provider.feeds.length, (index) {
+                        final feed = provider.feeds[index];
+                        final String imageUrl =
+                            feed.images.isNotEmpty
+                                ? feed.images.first
+                                : 'https://via.placeholder.com/300';
+
+                        // Create a repeating pattern
+                        int mainAxisCellCount = 1;
+                        if (index % 4 == 0) {
+                          mainAxisCellCount = 2; // Tall on left
+                        } else if (index % 4 == 3) {
+                          mainAxisCellCount = 2; // Tall on right
+                        }
+
+                        return StaggeredGridTile.count(
+                          crossAxisCellCount: 1,
+                          mainAxisCellCount: mainAxisCellCount,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => FullImageScreen(
+                                        imagePath: imageUrl,
+                                        isNetworkImage: true,
+                                        uploader: feed.provider.toUserModel(),
+                                      ),
                                 ),
-                              ],
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.asset(
-                                post['image'],
-                                fit: BoxFit.cover,
+                              );
+                            },
+                            child: Hero(
+                              tag: imageUrl,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.network(
+                                    imageUrl,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          color: Colors.grey,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     );
-                  }),
+                  },
                 ),
               ),
             ),

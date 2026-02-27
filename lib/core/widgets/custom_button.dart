@@ -38,7 +38,7 @@ class CustomButton extends StatelessWidget {
           onPressed: isLoading ? null : onPressed,
           style: OutlinedButton.styleFrom(
             side: BorderSide(
-              color: backgroundColor ?? AppColors.primary,
+              color: textColor ?? backgroundColor ?? AppColors.primary,
               width: 1.5,
             ),
             shape: RoundedRectangleBorder(
@@ -86,9 +86,11 @@ class CustomButton extends StatelessWidget {
     final textWidget = Text(
       text,
       style: AppTextStyles.button.copyWith(
-        color: isOutlined
-            ? (backgroundColor ?? AppColors.primary)
-            : (textColor ?? AppColors.white),
+        color:
+            textColor ??
+            (isOutlined
+                ? (backgroundColor ?? AppColors.primary)
+                : AppColors.white),
       ),
     );
 
@@ -99,9 +101,11 @@ class CustomButton extends StatelessWidget {
           Icon(
             icon,
             size: 20,
-            color: isOutlined
-                ? (backgroundColor ?? AppColors.primary)
-                : (textColor ?? AppColors.white),
+            color:
+                textColor ??
+                (isOutlined
+                    ? (backgroundColor ?? AppColors.primary)
+                    : AppColors.white),
           ),
           const SizedBox(width: 8),
           textWidget,
@@ -151,16 +155,19 @@ class GradientButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(borderRadius),
             ),
             child: Center(
-              child: isLoading
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
-                      ),
-                    )
-                  : _buildChild(),
+              child:
+                  isLoading
+                      ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.white,
+                          ),
+                        ),
+                      )
+                      : _buildChild(),
             ),
           ),
         ),
@@ -169,10 +176,7 @@ class GradientButton extends StatelessWidget {
   }
 
   Widget _buildChild() {
-    final textWidget = Text(
-      text,
-      style: AppTextStyles.button,
-    );
+    final textWidget = Text(text, style: AppTextStyles.button);
 
     if (icon != null) {
       return Row(

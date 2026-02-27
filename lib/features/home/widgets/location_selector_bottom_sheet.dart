@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
+import '../../../core/services/location_service.dart';
 
-class LocationSelectorBottomSheet extends StatelessWidget {
-  final Function(String) onLocationSelected;
+class LocationSelectorBottomSheet extends StatefulWidget {
+  final Function(Map<String, dynamic>) onLocationSelected;
 
   const LocationSelectorBottomSheet({
     super.key,
@@ -13,186 +15,187 @@ class LocationSelectorBottomSheet extends StatelessWidget {
   });
 
   @override
+  State<LocationSelectorBottomSheet> createState() =>
+      _LocationSelectorBottomSheetState();
+}
+
+class _LocationSelectorBottomSheetState
+    extends State<LocationSelectorBottomSheet> {
+  final _addressController = TextEditingController();
+  final _zipcodeController = TextEditingController();
+  final _localityController = TextEditingController(); // City
+  final _administrativeAreaController = TextEditingController(); // State
+  final _labelController = TextEditingController(text: 'My Location');
+  bool _isLoading = false;
+  List<double> _coordinates = [0.0, 0.0];
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _zipcodeController.dispose();
+    _localityController.dispose();
+    _administrativeAreaController.dispose();
+    _labelController.dispose();
+    super.dispose();
+  }
+
+  void _submitLocation() {
+    if (_addressController.text.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please enter an address')));
+      return;
+    }
+
+    final locationData = {
+      'address': _addressController.text,
+      'label': _labelController.text,
+      'zipcode': _zipcodeController.text,
+      'locality': _localityController.text,
+      'administrativeArea': _administrativeAreaController.text,
+      'coordinates': _coordinates,
+    };
+
+    widget.onLocationSelected(locationData);
+    Navigator.pop(context);
+  }
+
+  Future<void> _useCurrentLocation() async {
+    debugPrint('Use Current Location tapped');
+    setState(() => _isLoading = true);
+
+    try {
+      final position = await LocationService.getCurrentPosition();
+      debugPrint('Position result: $position');
+
+      if (position != null) {
+        _coordinates = [position.latitude, position.longitude];
+        final addressData = await LocationService.getAddressFromLatLng(
+          position.latitude,
+          position.longitude,
+        );
+        debugPrint('Address result: $addressData');
+
+        if (addressData != null && mounted) {
+          setState(() {
+            _addressController.text = addressData['address'] ?? '';
+            _zipcodeController.text = addressData['zipcode'] ?? '';
+            _localityController.text = addressData['locality'] ?? '';
+            _administrativeAreaController.text =
+                addressData['administrativeArea'] ?? '';
+            _labelController.text = 'Current Location';
+          });
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Failed to get location. Please ensure GPS is on and permissions are granted.',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Exception in _useCurrentLocation: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+      debugPrint('Loading state set to false');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final recentLocations = [
-      'Mesa, New Jersey - 45463',
-      '8502 Preston Rd. Inglewood, Maine 98380',
-      '4140 Parker Rd. Allentown, New Mexico 31134',
-    ];
-
-    final savedLocations = [
-      {
-        'label': 'Home',
-        'address': '2464 Royal Ln. Mesa, New Jersey',
-        'icon': Iconsax.home,
-      },
-      {
-        'label': 'Work',
-        'address': '3891 Ranchview Dr. Richardson, California',
-        'icon': Iconsax.briefcase,
-      },
-    ];
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
       decoration: const BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
+        color: AppColors.background,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.border,
-                borderRadius: BorderRadius.circular(2),
+          Row(
+            children: [
+              Text('Select Location', style: AppTextStyles.h4),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 24),
-
-          Text('Select Location', style: AppTextStyles.h4),
           const SizedBox(height: 20),
-
-          // Search
-          SearchTextField(hint: 'Search location...', onFilterTap: () {}),
-          const SizedBox(height: 24),
-
-          // Use Current Location
-          InkWell(
-            onTap: () {
-              onLocationSelected('Current Location (Detected)');
-              Navigator.pop(context);
-            },
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Iconsax.gps,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Text(
-                  'Use current location',
-                  style: AppTextStyles.labelMedium.copyWith(
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
+          CustomButton(
+            text: _isLoading ? 'Fetching Location...' : 'Use Current Location',
+            onPressed: _isLoading ? null : _useCurrentLocation,
+            icon: _isLoading ? null : Iconsax.location,
+            isLoading: _isLoading,
+            isOutlined: true,
+            width: double.infinity,
           ),
-
-          const SizedBox(height: 32),
-
-          // Saved Locations
-          Text('Saved Locations', style: AppTextStyles.labelMedium),
-          const SizedBox(height: 16),
-          ...savedLocations.map(
-            (loc) => _buildLocationItem(
-              context,
-              loc['label'] as String,
-              loc['address'] as String,
-              loc['icon'] as IconData,
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          // Recent Locations
-          Text('Recent Locations', style: AppTextStyles.labelMedium),
-          const SizedBox(height: 16),
-          ...recentLocations.map(
-            (address) => _buildRecentItem(context, address),
-          ),
-
           const SizedBox(height: 20),
+          const Divider(),
+          const SizedBox(height: 20),
+          Text('Or Enter Manual Address', style: AppTextStyles.labelLarge),
+          const SizedBox(height: 16),
+          CustomTextField(
+            hint: 'Location Label (e.g. Home, Office)',
+            controller: _labelController,
+            prefixIcon: const Icon(Iconsax.tag),
+          ),
+          const SizedBox(height: 12),
+          CustomTextField(
+            hint: 'Full Address',
+            controller: _addressController,
+            prefixIcon: const Icon(Iconsax.location),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: CustomTextField(
+                  hint: 'City',
+                  controller: _localityController,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: CustomTextField(
+                  hint: 'State',
+                  controller: _administrativeAreaController,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          CustomTextField(
+            hint: 'Zipcode',
+            controller: _zipcodeController,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 24),
+          GradientButton(
+            text: 'Confirm Location',
+            onPressed: _submitLocation,
+            width: double.infinity,
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLocationItem(
-    BuildContext context,
-    String label,
-    String address,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: InkWell(
-        onTap: () {
-          onLocationSelected(address);
-          Navigator.pop(context);
-        },
-        child: Row(
-          children: [
-            Icon(icon, color: AppColors.textSecondary, size: 22),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    address,
-                    style: AppTextStyles.caption,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRecentItem(BuildContext context, String address) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: InkWell(
-        onTap: () {
-          onLocationSelected(address);
-          Navigator.pop(context);
-        },
-        child: Row(
-          children: [
-            const Icon(Iconsax.clock, color: AppColors.textTertiary, size: 22),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Text(
-                address,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

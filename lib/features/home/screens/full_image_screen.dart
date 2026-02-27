@@ -2,16 +2,19 @@ import 'package:flutter/material.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../services/consumer_service.dart';
 import 'service_provider_detail_screen.dart';
 
 class FullImageScreen extends StatelessWidget {
   final String imagePath;
   final UserModel uploader;
+  final bool isNetworkImage;
 
   const FullImageScreen({
     super.key,
     required this.imagePath,
     required this.uploader,
+    this.isNetworkImage = false,
   });
 
   @override
@@ -28,18 +31,16 @@ class FullImageScreen extends StatelessWidget {
         actions: [
           GestureDetector(
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder:
-                      (context) =>
-                          ServiceProviderDetailScreen(provider: uploader),
-                ),
-              );
+              _fetchAndNavigateToProfile(context, uploader.id);
             },
             child: CircleAvatar(
               radius: 18,
               backgroundColor: AppColors.white,
-              backgroundImage: AssetImage(uploader.serviceImage),
+              backgroundImage:
+                  (isNetworkImage
+                          ? NetworkImage(uploader.serviceImage)
+                          : AssetImage(uploader.serviceImage))
+                      as ImageProvider,
             ),
           ),
           const SizedBox(width: 16),
@@ -49,12 +50,25 @@ class FullImageScreen extends StatelessWidget {
         children: [
           Center(
             child: InteractiveViewer(
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-                width: double.infinity,
-                height: double.infinity,
-              ),
+              child:
+                  isNetworkImage
+                      ? Image.network(
+                        imagePath,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder:
+                            (context, error, stackTrace) => const Icon(
+                              Icons.broken_image,
+                              color: Colors.white,
+                            ),
+                      )
+                      : Image.asset(
+                        imagePath,
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
             ),
           ),
           Positioned(
@@ -71,7 +85,11 @@ class FullImageScreen extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundImage: AssetImage(uploader.serviceImage),
+                    backgroundImage:
+                        (isNetworkImage
+                                ? NetworkImage(uploader.serviceImage)
+                                : AssetImage(uploader.serviceImage))
+                            as ImageProvider,
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -80,7 +98,7 @@ class FullImageScreen extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          uploader.name,
+                          uploader.name!,
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -97,14 +115,7 @@ class FullImageScreen extends StatelessWidget {
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder:
-                              (context) => ServiceProviderDetailScreen(
-                                provider: uploader,
-                              ),
-                        ),
-                      );
+                      _fetchAndNavigateToProfile(context, uploader.id);
                     },
                     child: const Text(
                       'View Profile',
@@ -118,5 +129,45 @@ class FullImageScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _fetchAndNavigateToProfile(
+    BuildContext context,
+    String providerId,
+  ) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final consumerService = ConsumerService();
+      final provider = await consumerService.getProviderById(providerId);
+
+      // Hide loading details
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Pop loading dialog
+      }
+
+      // Navigate to detail screen
+      if (context.mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => ServiceProviderDetailScreen(provider: provider),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hide loading details
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Pop loading dialog
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+      }
+    }
   }
 }

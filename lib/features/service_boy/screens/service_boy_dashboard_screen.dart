@@ -5,10 +5,16 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
-import '../../../core/services/dummy_data_service.dart';
+
 import '../../../core/widgets/full_screen_image_viewer.dart';
-import 'service_boy_signup_screen.dart';
 import 'service_boy_task_details_screen.dart';
+import '../../profile/screens/edit_profile_screen.dart';
+
+import 'package:provider/provider.dart';
+import '../../service_boy/providers/service_boy_provider.dart';
+import '../../home/providers/consumer_provider.dart';
+import '../../../core/models/user_model.dart';
+import '../../../core/models/user_type.dart';
 
 class ServiceBoyDashboardScreen extends StatefulWidget {
   const ServiceBoyDashboardScreen({super.key});
@@ -20,72 +26,219 @@ class ServiceBoyDashboardScreen extends StatefulWidget {
 
 class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
   String? _profileImage; // null means default person icon
-  final List<String> _galleryImages = [];
   final ImagePicker _picker = ImagePicker();
 
-  Future<void> _pickGalleryImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _galleryImages.add(image.path);
-      });
-    }
-  }
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final sbProvider = context.read<ServiceBoyProvider>();
+      final consProvider = context.read<ConsumerProvider>();
 
-  Future<void> _updateGalleryImage(int index) async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _galleryImages[index] = image.path;
-      });
-    }
-  }
+      sbProvider.fetchBookings();
+      sbProvider.fetchDashboardStats();
+      sbProvider.fetchMyServices(); // Fetch my services instead of categories
 
-  void _removeGalleryImage(int index) {
-    setState(() {
-      _galleryImages.removeAt(index);
+      await consProvider.fetchUserProfile();
+      final userId = consProvider.currentUser?.id;
+
+      if (userId != null) {
+        sbProvider.fetchGalleryImages(userId);
+      }
     });
   }
 
-  void _showGalleryActions(int index) {
-    showModalBottomSheet(
+  Future<void> _showAddGalleryImageDialog() async {
+    final sbProvider = context.read<ServiceBoyProvider>();
+    String? selectedServiceId;
+    final TextEditingController descriptionController = TextEditingController();
+    File? selectedFile;
+
+    await showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder:
-          (context) => Container(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Gallery Image', style: AppTextStyles.h4),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildOptionItem(
-                      Iconsax.refresh,
-                      'Update',
-                      AppColors.success,
-                      () {
-                        Navigator.pop(context);
-                        _updateGalleryImage(index);
-                      },
-                    ),
-                    _buildOptionItem(
-                      Iconsax.trash,
-                      'Remove',
-                      AppColors.error,
-                      () {
-                        Navigator.pop(context);
-                        _removeGalleryImage(index);
-                      },
-                    ),
-                  ],
+          (context) => StatefulBuilder(
+            builder: (context, setDialogState) {
+              return AlertDialog(
+                title: Text('Add Portfolio Image', style: AppTextStyles.h4),
+                content: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Service Dropdown
+                      Consumer<ServiceBoyProvider>(
+                        builder: (context, provider, _) {
+                          if (provider.isLoadingServices) {
+                            return const CircularProgressIndicator();
+                          }
+                          return DropdownButtonFormField<String>(
+                            decoration: const InputDecoration(
+                              labelText: 'Select Service',
+                              border: OutlineInputBorder(),
+                            ),
+                            value: selectedServiceId,
+                            items:
+                                provider.myServices.map((service) {
+                                  return DropdownMenuItem(
+                                    value: service.id,
+                                    child: Text(service.name),
+                                  );
+                                }).toList(),
+                            onChanged: (value) {
+                              setDialogState(() => selectedServiceId = value);
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      // Description Field
+                      TextField(
+                        controller: descriptionController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description',
+                          hintText: 'e.g., painting works done',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 16),
+                      // Image Picker
+                      GestureDetector(
+                        onTap: () async {
+                          final XFile? image = await _picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (image != null) {
+                            setDialogState(
+                              () => selectedFile = File(image.path),
+                            );
+                          }
+                        },
+                        child: Container(
+                          height: 150,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.background,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.divider),
+                          ),
+                          child:
+                              selectedFile != null
+                                  ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.file(
+                                      selectedFile!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                  : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      const Icon(
+                                        Iconsax.image,
+                                        size: 40,
+                                        color: AppColors.textTertiary,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Tap to pick image',
+                                        style: AppTextStyles.bodySmall,
+                                      ),
+                                    ],
+                                  ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (selectedServiceId == null ||
+                          selectedFile == null ||
+                          descriptionController.text.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please fill all fields'),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                        return;
+                      }
+
+                      // Capture the root context to show/hide loader and snackbars correctly
+                      final dashboardContext = this.context;
+
+                      Navigator.pop(context); // Close the input dialog
+
+                      // Show loader on the dashboard context
+                      showDialog(
+                        context: dashboardContext,
+                        barrierDismissible: false,
+                        builder:
+                            (context) => const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                      );
+
+                      try {
+                        final success = await sbProvider.uploadGalleryImage(
+                          selectedFile!,
+                          descriptionController.text,
+                          selectedServiceId!,
+                        );
+
+                        if (!dashboardContext.mounted) return;
+                        Navigator.pop(dashboardContext); // Hide loader
+
+                        if (success) {
+                          ScaffoldMessenger.of(dashboardContext).showSnackBar(
+                            const SnackBar(
+                              content: Text('Image uploaded successfully'),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                          // Refresh Gallery
+                          final userId =
+                              dashboardContext
+                                  .read<ConsumerProvider>()
+                                  .currentUser
+                                  ?.id;
+                          if (userId != null) {
+                            sbProvider.fetchGalleryImages(userId);
+                          }
+                        } else {
+                          ScaffoldMessenger.of(dashboardContext).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                sbProvider.uploadGalleryError ??
+                                    'Failed to upload',
+                              ),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (dashboardContext.mounted) {
+                          Navigator.pop(dashboardContext); // Hide loader
+                          ScaffoldMessenger.of(dashboardContext).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: $e'),
+                              backgroundColor: AppColors.error,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+            },
           ),
     );
   }
@@ -181,297 +334,404 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ... Header and other widgets ...
+              // I'll assume header and other static parts are fine, focusing on task list update
+              // Re-injecting the header code for completeness or using a smaller chunk if possible
+              // To avoid errors, I will replace the whole file structure or large chunks.
+              // Since I need to wrap the task list in Consumer, it's better to update _buildTasksList.
+
               // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              Consumer<ConsumerProvider>(
+                builder: (context, consumerProvider, child) {
+                  final user =
+                      consumerProvider.currentUser ??
+                      UserModel(
+                        id: 'guest',
+                        name: 'Guest User',
+                        phone: '',
+                        userType: UserType.serviceBoy,
+                      );
+
+                  final hasName = user.name != null && user.name!.isNotEmpty;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Welcome back,', style: AppTextStyles.bodySmall),
-                      Text('Amal Provider', style: AppTextStyles.h4),
-                      const SizedBox(height: 4),
-                      Row(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(
-                            Icons.star,
-                            color: Color(0xFFFFA928),
-                            size: 14,
-                          ),
-                          const SizedBox(width: 4),
                           Text(
-                            '4.8',
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: const Color(0xFFFFA928),
-                              fontWeight: FontWeight.bold,
-                            ),
+                            hasName ? 'Welcome back,' : 'Welcome',
+                            style: AppTextStyles.bodySmall,
                           ),
-                          const SizedBox(width: 8),
                           Text(
-                            '(120 Reviews)',
-                            style: AppTextStyles.caption.copyWith(
-                              fontSize: 10,
-                              color: AppColors.textTertiary,
+                            user.name ?? 'Guest User',
+                            style: AppTextStyles.h3,
+                          ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              // const Icon(
+                              //   Icons.star,
+                              //   color: Color(0xFFFFA928),
+                              //   size: 14,
+                              // ),
+                              // const SizedBox(width: 4),
+                              Text(
+                                user.isActive ? 'Active' : 'Inactive',
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color:
+                                      !user.isActive
+                                          ? Colors.red
+                                          : Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              // const SizedBox(width: 8),
+                              // Text(
+                              //   '(120 Reviews)',
+                              //   style: AppTextStyles.caption.copyWith(
+                              //     fontSize: 10,
+                              //     color: AppColors.textTertiary,
+                              //   ),
+                              // ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      Stack(
+                        children: [
+                          CircleAvatar(
+                            radius: 28,
+                            backgroundColor: AppColors.primary,
+                            backgroundImage:
+                                _profileImage != null
+                                    ? AssetImage(_profileImage!)
+                                    : null,
+                            child:
+                                _profileImage == null
+                                    ? const Icon(
+                                      Icons.person,
+                                      color: AppColors.white,
+                                      size: 28,
+                                    )
+                                    : null,
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: GestureDetector(
+                              onTap: _showImageOptions,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: AppColors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.shadowLight,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Iconsax.camera,
+                                  size: 14,
+                                  color: AppColors.primary,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ],
-                  ),
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 28,
-                        backgroundColor: AppColors.primary,
-                        backgroundImage:
-                            _profileImage != null
-                                ? AssetImage(_profileImage!)
-                                : null,
-                        child:
-                            _profileImage == null
-                                ? const Icon(
-                                  Icons.person,
-                                  color: AppColors.white,
-                                  size: 28,
-                                )
-                                : null,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: _showImageOptions,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: AppColors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.shadowLight,
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Iconsax.camera,
-                              size: 14,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                  );
+                },
               ),
 
               const SizedBox(height: 24),
 
-              // Signup Promo Card
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: AppColors.orangeGradient,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.orange.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              // Complete Profile Card (Conditional)
+              Consumer<ConsumerProvider>(
+                builder: (context, consumerProvider, _) {
+                  final user = consumerProvider.currentUser;
+                  if (user == null) return const SizedBox.shrink();
+                  final hasName = user.name != null && user.name!.isNotEmpty;
+                  final isGuest = user.name == 'Guest';
+                  final isIncomplete = !user.isProfileComplete;
+
+                  if (!hasName || isGuest || isIncomplete) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.orangeGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.orange.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Row(
                         children: [
-                          Text(
-                            'Complete Your Profile',
-                            style: AppTextStyles.h4.copyWith(
-                              color: AppColors.white,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Complete Your Profile',
+                                  style: AppTextStyles.h4.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Add your services and experience to get more tasks.',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Add your services and experience to get more tasks.',
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.white.withOpacity(0.9),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => const EditProfileScreen(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.white,
+                              foregroundColor: AppColors.orange,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Complete',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.orange,
+                              ),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => const ServiceBoySignUpScreen(),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.white,
-                        foregroundColor: AppColors.orange,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        'Start Now',
-                        style: AppTextStyles.labelMedium.copyWith(
-                          color: AppColors.orange,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
               ),
 
               const SizedBox(height: 24),
 
               // Stats Cards
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      'Total Tasks',
-                      '24',
-                      Iconsax.task,
-                      AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildStatCard(
-                      'Earnings',
-                      '\$1,240',
-                      Iconsax.wallet,
-                      AppColors.success,
-                    ),
-                  ),
-                ],
+              // Stats Cards
+              Consumer<ServiceBoyProvider>(
+                builder: (context, provider, child) {
+                  final stats = provider.dashboardStats;
+                  final bookingsByStatus =
+                      stats?['bookingsByStatus'] as Map<String, dynamic>?;
+
+                  final pending =
+                      (bookingsByStatus?['PENDING'] ?? 0) +
+                      (bookingsByStatus?['ASSIGNED'] ?? 0);
+                  final ongoing =
+                      (bookingsByStatus?['ACCEPTED'] ?? 0) +
+                      (bookingsByStatus?['ONGOING'] ?? 0);
+                  final completed = bookingsByStatus?['COMPLETED'] ?? 0;
+                  final cancelled = bookingsByStatus?['CANCELLED'] ?? 0;
+
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              'Pending Tasks',
+                              '$pending',
+                              Iconsax.timer,
+                              AppColors.warning,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildStatCard(
+                              'Ongoing Tasks',
+                              '$ongoing',
+                              Iconsax.activity,
+                              AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              'Completed',
+                              '$completed',
+                              Iconsax.tick_circle,
+                              AppColors.success,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _buildStatCard(
+                              'Cancelled',
+                              '$cancelled',
+                              Iconsax.close_circle,
+                              AppColors.error,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 24),
 
               // Work Gallery Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('My Work Portfolio', style: AppTextStyles.labelLarge),
-                  IconButton(
-                    onPressed: _pickGalleryImage,
-                    icon: const Icon(
-                      Iconsax.add_circle,
-                      color: AppColors.primary,
-                      size: 28,
-                    ),
-                    tooltip: 'Add Photo',
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1,
-                ),
-                itemCount: _galleryImages.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _galleryImages.length) {
-                    return GestureDetector(
-                      onTap: _pickGalleryImage,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
-                            width: 1.5,
+              Consumer<ServiceBoyProvider>(
+                builder: (context, provider, _) {
+                  final galleryImages = provider.galleryImages;
+
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'My Work Portfolio',
+                            style: AppTextStyles.labelLarge,
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.shadowLight,
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                          IconButton(
+                            onPressed: _showAddGalleryImageDialog,
+                            icon: const Icon(
+                              Iconsax.add_circle,
+                              color: AppColors.primary,
+                              size: 28,
                             ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Iconsax.add,
-                          color: AppColors.primary,
-                          size: 32,
-                        ),
+                            tooltip: 'Add Photo',
+                          ),
+                        ],
                       ),
-                    );
-                  }
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => FullScreenImageViewer(
-                                imagePath: _galleryImages[index],
-                                tag: 'dashboard_gallery_$index',
-                              ),
-                        ),
-                      );
-                    },
-                    child: Hero(
-                      tag: 'dashboard_gallery_$index',
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          image: DecorationImage(
-                            image: FileImage(File(_galleryImages[index])),
-                            fit: BoxFit.cover,
+                      const SizedBox(height: 12),
+                      if (provider.isLoadingGallery)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: CircularProgressIndicator(),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.shadowLight,
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Align(
-                          alignment: Alignment.topRight,
-                          child: GestureDetector(
-                            onTap: () => _showGalleryActions(index),
-                            child: Container(
-                              margin: const EdgeInsets.all(8),
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: AppColors.white.withOpacity(0.8),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Iconsax.edit_2,
-                                size: 14,
-                                color: AppColors.primary,
+                        )
+                      else if (galleryImages.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Text(
+                              "No images in portfolio yet.",
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textTertiary,
                               ),
                             ),
                           ),
+                        )
+                      else
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 1,
+                              ),
+                          itemCount: galleryImages.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == galleryImages.length) {
+                              return GestureDetector(
+                                onTap: _showAddGalleryImageDialog,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: AppColors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: AppColors.primary.withOpacity(0.3),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.shadowLight,
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: const Icon(
+                                    Iconsax.add,
+                                    color: AppColors.primary,
+                                    size: 32,
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final image = galleryImages[index];
+
+                            return GestureDetector(
+                              onTap: () {
+                                print(image.imageUrl);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => FullScreenImageViewer(
+                                          imagePath: image.imageUrl,
+                                          tag: 'dashboard_gallery_${image.id}',
+                                          isFile: true,
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: Hero(
+                                tag: 'dashboard_gallery_${image.id}',
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    image: DecorationImage(
+                                      image: NetworkImage(image.imageUrl),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.shadowLight,
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      ),
-                    ),
+                    ],
                   );
                 },
               ),
@@ -486,50 +746,137 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                     'Active & Recent Tasks',
                     style: AppTextStyles.labelLarge,
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to Tasks tab if possible or just refresh
-                    },
-                    child: Text(
-                      'See All',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
+                  // TextButton(
+                  //   onPressed: () {
+                  //     // Navigate to Tasks tab if possible or just refresh
+                  //   },
+                  //   child: Text(
+                  //     'See All',
+                  //     style: AppTextStyles.bodySmall.copyWith(
+                  //       color: AppColors.primary,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 8),
-              ..._buildTasksList(context),
+
+              // Recent Tasks List from Provider
+              Consumer<ServiceBoyProvider>(
+                builder: (context, provider, child) {
+                  if (provider.isLoadingBookings) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (provider.bookingsError != null) {
+                    return Text(
+                      'Error loading tasks: ${provider.bookingsError}',
+                      style: AppTextStyles.caption.copyWith(
+                        color: AppColors.error,
+                      ),
+                    );
+                  }
+
+                  final allTasks = provider.bookings;
+
+                  if (allTasks.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Text(
+                          'No tasks found',
+                          style: AppTextStyles.bodySmall,
+                        ),
+                      ),
+                    );
+                  }
+
+                  // Show only first 3 recent tasks
+                  final recentTasks = allTasks.take(3).toList();
+
+                  return Column(
+                    children:
+                        recentTasks.map((booking) {
+                          Color statusColor;
+                          String statusText;
+                          print(booking.status);
+                          switch (booking.status) {
+                            case BookingStatus.pending:
+                              statusColor = AppColors.warning;
+                              statusText = 'Pending';
+                              break;
+                            case BookingStatus.ongoing:
+                              statusColor = AppColors.primary;
+                              statusText = 'Ongoing';
+                              break;
+                            case BookingStatus.completed:
+                              statusColor = AppColors.success;
+                              statusText = 'Completed';
+                              break;
+                            case BookingStatus.cancelled:
+                              statusColor = AppColors.error;
+                              statusText = 'Cancelled';
+                              break;
+                            default:
+                              statusColor = AppColors.textSecondary;
+                              statusText = 'Unknown';
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            ServiceBoyTaskDetailsScreen(
+                                              booking: booking,
+                                            ),
+                                  ),
+                                );
+                              },
+                              child: _buildTaskCard(
+                                booking,
+                                statusText,
+                                statusColor,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                  );
+                },
+              ),
 
               const SizedBox(height: 32),
 
               // Recent Reviews
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Recent Reviews', style: AppTextStyles.labelLarge),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'View all',
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              _buildReviewItem(
-                'Siyed',
-                5.0,
-                'Great service, very professional!',
-              ),
-              _buildReviewItem(
-                'Abi',
-                4.5,
-                'Quick response and fixed the issue.',
-              ),
+              // Row(
+              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              //   children: [
+              //     Text('Recent Reviews', style: AppTextStyles.labelLarge),
+              //     TextButton(
+              //       onPressed: () {},
+              //       child: Text(
+              //         'View all',
+              //         style: AppTextStyles.bodySmall.copyWith(
+              //           color: AppColors.primary,
+              //         ),
+              //       ),
+              //     ),
+              //   ],
+              // ),
+              // _buildReviewItem(
+              //   'Siyed',
+              //   5.0,
+              //   'Great service, very professional!',
+              // ),
+              // _buildReviewItem(
+              //   'Abi',
+              //   4.5,
+              //   'Quick response and fixed the issue.',
+              // ),
             ],
           ),
         ),
@@ -584,72 +931,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
     );
   }
 
-  List<Widget> _buildTasksList(BuildContext context) {
-    final dummyService = DummyDataService.instance;
-    final pendingTasks = dummyService.getBookingsByStatus(
-      BookingStatus.pending,
-    );
-    final ongoingTasks = dummyService.getBookingsByStatus(
-      BookingStatus.ongoing,
-    );
-    final completedTasks = dummyService.getBookingsByStatus(
-      BookingStatus.completed,
-    );
-
-    // Combine all tasks for a "Single View"
-    final allTasks = [...pendingTasks, ...ongoingTasks, ...completedTasks];
-
-    if (allTasks.isEmpty) {
-      return [
-        Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Text('No tasks found', style: AppTextStyles.bodySmall),
-          ),
-        ),
-      ];
-    }
-
-    return allTasks.map((booking) {
-      Color statusColor;
-      String statusText;
-
-      switch (booking.status) {
-        case BookingStatus.pending:
-          statusColor = AppColors.warning;
-          statusText = 'Pending';
-          break;
-        case BookingStatus.ongoing:
-          statusColor = AppColors.primary;
-          statusText = 'Ongoing';
-          break;
-        case BookingStatus.completed:
-          statusColor = AppColors.success;
-          statusText = 'Completed';
-          break;
-        default:
-          statusColor = AppColors.textSecondary;
-          statusText = 'Unknown';
-      }
-
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 12),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) => ServiceBoyTaskDetailsScreen(booking: booking),
-              ),
-            );
-          },
-          child: _buildTaskCard(booking, statusText, statusColor),
-        ),
-      );
-    }).toList();
-  }
-
   Widget _buildTaskCard(BookingModel booking, String status, Color color) {
     return Container(
       decoration: BoxDecoration(
@@ -671,7 +952,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  booking.id,
+                  booking.bookingId,
                   style: AppTextStyles.labelSmall.copyWith(
                     color: AppColors.primary,
                     fontWeight: FontWeight.w600,

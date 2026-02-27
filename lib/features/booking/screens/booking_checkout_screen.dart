@@ -3,15 +3,22 @@ import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
+
 import '../../home/widgets/location_selector_bottom_sheet.dart';
+import 'package:provider/provider.dart';
+import '../../home/providers/consumer_provider.dart';
+import 'package:intl/intl.dart';
+import '../../../core/services/storage_service.dart';
 
 class BookingCheckoutScreen extends StatefulWidget {
   final String serviceName;
+  final String serviceId;
   final double price;
 
   const BookingCheckoutScreen({
     super.key,
     required this.serviceName,
+    required this.serviceId,
     required this.price,
   });
 
@@ -20,9 +27,85 @@ class BookingCheckoutScreen extends StatefulWidget {
 }
 
 class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
-  String _selectedLocation = 'Mesa, New Jersey - 45463';
+  String _selectedLocationAddress = 'Loading location...';
+  String _selectedLocationLabel = 'Current Location';
+  String? _selectedZipcode;
+  String? _selectedLocality;
+  String? _selectedAdministrativeArea;
+  List<double> _selectedCoordinates = [0.0, 0.0];
   String _selectedPaymentMethod = 'Credit Card';
+  DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
   bool _isProcessing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedLocation();
+  }
+
+  Future<void> _loadSavedLocation() async {
+    try {
+      final locationData = await StorageService.getUserLocation();
+      if (locationData != null && locationData['address'] != null) {
+        if (mounted) {
+          setState(() {
+            _selectedLocationAddress = locationData['address'];
+            _selectedLocationLabel = locationData['label'] ?? 'Saved Location';
+            _selectedZipcode = locationData['zipcode'];
+            _selectedLocality = locationData['locality'];
+            _selectedAdministrativeArea = locationData['administrativeArea'];
+            if (locationData['coordinates'] != null) {
+              _selectedCoordinates = List<double>.from(
+                locationData['coordinates'],
+              );
+            }
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _selectedLocationAddress = 'Select a location to proceed';
+            _selectedLocationLabel = 'No Location Selected';
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading location: $e');
+      if (mounted) {
+        setState(() {
+          _selectedLocationAddress = 'Select a location';
+          _selectedLocationLabel = 'Error Loading';
+        });
+      }
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 30)),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
+    if (picked != null && picked != _selectedTime) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
+  }
 
   void _showLocationSelector() {
     showModalBottomSheet(
@@ -31,9 +114,20 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
       backgroundColor: Colors.transparent,
       builder:
           (context) => LocationSelectorBottomSheet(
-            onLocationSelected: (location) {
+            onLocationSelected: (locationData) {
               setState(() {
-                _selectedLocation = location;
+                _selectedLocationAddress = locationData['address'] ?? '';
+                _selectedLocationLabel =
+                    locationData['label'] ?? 'Selected Location';
+                _selectedZipcode = locationData['zipcode'];
+                _selectedLocality = locationData['locality'];
+                _selectedAdministrativeArea =
+                    locationData['administrativeArea'];
+                if (locationData['coordinates'] != null) {
+                  _selectedCoordinates = List<double>.from(
+                    locationData['coordinates'],
+                  );
+                }
               });
             },
           ),
@@ -109,10 +203,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.primary.withOpacity(0.5)),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.5),
+                  ), // Fixed withOpacity
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.05),
+                      color: AppColors.primary.withOpacity(
+                        0.05,
+                      ), // Fixed withOpacity
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -123,7 +221,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withOpacity(
+                          0.1,
+                        ), // Fixed withOpacity
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -138,16 +238,17 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Address',
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.textTertiary,
+                            _selectedLocationLabel, // Display Label (Place Name)
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold, // Bold Label
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _selectedLocation,
-                            style: AppTextStyles.bodyMedium.copyWith(
-                              fontWeight: FontWeight.w600,
+                            _selectedLocationAddress, // Display Address
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -233,50 +334,98 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   Future<void> _handleBooking() async {
     setState(() => _isProcessing = true);
 
-    // Simulate booking process
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final consumerProvider = Provider.of<ConsumerProvider>(
+        context,
+        listen: false,
+      );
+      final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
+      final formattedTime = _selectedTime.format(context);
 
-    if (mounted) {
+      // Construct address string preference by user: "Locality, AdministrativeArea - Zipcode"
+      // Example: "Mesa, New Jersey - 45463"
+      String finalAddress = _selectedLocationAddress;
+      if (_selectedLocality != null &&
+          _selectedAdministrativeArea != null &&
+          _selectedZipcode != null &&
+          _selectedLocality!.isNotEmpty &&
+          _selectedAdministrativeArea!.isNotEmpty &&
+          _selectedZipcode!.isNotEmpty) {
+        finalAddress =
+            '$_selectedLocality, $_selectedAdministrativeArea - $_selectedZipcode';
+      } else if (_selectedZipcode != null && _selectedZipcode!.isNotEmpty) {
+        // Fallback to "Label, Zipcode" if not all details present
+        finalAddress = '$_selectedLocationLabel, $_selectedZipcode';
+      }
+
+      final success = await consumerProvider.createBooking(
+        serviceId: widget.serviceId,
+        date: formattedDate,
+        time: formattedTime,
+        address: finalAddress,
+        coordinates: _selectedCoordinates, // Use selected coordinates
+      );
+
+      if (!mounted) return;
+
       setState(() => _isProcessing = false);
 
-      // Show success dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder:
-            (context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+      if (success) {
+        // Show success dialog
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => AlertDialog(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: AppColors.success,
+                      size: 60,
+                    ),
+                    const SizedBox(height: 16),
+                    Text('Booking Successful!', style: AppTextStyles.h4),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Your service has been scheduled.\nLocation: $_selectedLocationAddress',
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.bodySmall,
+                    ),
+                    const SizedBox(height: 24),
+                    GradientButton(
+                      text: 'View Booking',
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Pop dialog
+                        Navigator.of(context).pop(); // Pop checkout
+                        // Ideally navigate to bookings tab
+                      },
+                      width: double.infinity,
+                    ),
+                  ],
+                ),
               ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.check_circle,
-                    color: AppColors.success,
-                    size: 60,
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Booking Successful!', style: AppTextStyles.h4),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Your service has been scheduled.\nLocation: $_selectedLocation',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall,
-                  ),
-                  const SizedBox(height: 24),
-                  GradientButton(
-                    text: 'View Booking',
-                    onPressed: () {
-                      Navigator.of(context).pop(); // Pop dialog
-                      Navigator.of(context).pop(); // Pop checkout
-                    },
-                    width: double.infinity,
-                  ),
-                ],
-              ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              consumerProvider.createBookingError ?? 'Booking failed',
             ),
-      );
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
+      }
     }
   }
 }

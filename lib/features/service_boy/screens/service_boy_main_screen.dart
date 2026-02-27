@@ -16,11 +16,11 @@ class ServiceBoyMainScreen extends StatefulWidget {
 class _ServiceBoyMainScreenState extends State<ServiceBoyMainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    ServiceBoyDashboardScreen(),
-    ServiceBoyTasksScreen(),
-    ServiceBoyEarningsScreen(),
-    ProfileTabScreen(),
+  final List<Widget> _screens = [
+    const ServiceBoyDashboardScreen(),
+    const ServiceBoyTasksScreen(),
+    const ServiceBoyEarningsScreen(),
+    const ProfileTabScreen(),
   ];
 
   @override

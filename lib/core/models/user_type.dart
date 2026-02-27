@@ -5,9 +5,9 @@ enum UserType {
   String get displayName {
     switch (this) {
       case UserType.customer:
-        return 'User';
+        return 'CUSTOMER';
       case UserType.serviceBoy:
-        return 'Service Boy';
+        return 'SERVICE_BOY';
     }
   }
 
@@ -17,6 +17,15 @@ enum UserType {
         return 'Book services as a customer';
       case UserType.serviceBoy:
         return 'Provide services to customers';
+    }
+  }
+
+  String get apiValue {
+    switch (this) {
+      case UserType.customer:
+        return 'CUSTOMER';
+      case UserType.serviceBoy:
+        return 'SERVICE_BOY';
     }
   }
 }

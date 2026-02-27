@@ -269,7 +269,7 @@ class ServiceProviderListScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        provider.name,
+                        provider.name ?? 'Unknown',
                         style: AppTextStyles.bodyLarge.copyWith(
                           fontWeight: FontWeight.bold,
                         ),

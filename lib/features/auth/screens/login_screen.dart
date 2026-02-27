@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../core/models/user_type.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
-
-import '../../../core/services/dummy_data_service.dart';
+import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
-
 import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -19,13 +19,11 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _isLoading = false;
+  UserType _selectedUserType = UserType.customer;
 
   @override
   void dispose() {
     _phoneController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -41,35 +39,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (_formKey.currentState!.validate()) {
-      setState(() => _isLoading = true);
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (mounted) {
-        setState(() => _isLoading = false);
-
-        // Automatically detect user type from backend data
-        // Detect user type from phone number
-        final identifier = _phoneController.text.trim();
-        final user = DummyDataService.instance.findUserAnyType(identifier);
-
-        if (user != null) {
-          // Navigate to OTP screen
+      try {
+        await context.read<AuthProvider>().login(
+          _phoneController.text.trim(),
+          _selectedUserType,
+        );
+        print(_selectedUserType);
+        if (mounted) {
           Navigator.of(context).push(
             MaterialPageRoute(
               builder:
                   (context) => OTPVerificationScreen(
                     phone: _phoneController.text.trim(),
-                    identifier: identifier,
-                    userType: user.userType,
+                    identifier:
+                        _phoneController.text
+                            .trim(), // Using phone as identifier
+                    userType: _selectedUserType,
                   ),
             ),
           );
-        } else {
+        }
+      } catch (e) {
+        if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No account found with this phone number'),
+            SnackBar(
+              content: Text(e.toString()),
               backgroundColor: AppColors.error,
             ),
           );
@@ -80,6 +74,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -98,9 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 20),
 
-                // Logo or app name
+                // Logo
                 Center(
                   child: Container(
                     padding: const EdgeInsets.all(4),
@@ -143,6 +139,51 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 32),
 
+                // User Type Selection
+                Text(
+                  'I am a:',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: RadioListTile<UserType>(
+                        title: const Text('Customer'),
+                        value: UserType.customer,
+                        groupValue: _selectedUserType,
+                        onChanged: (UserType? value) {
+                          setState(() {
+                            _selectedUserType = value!;
+                          });
+                          print(_selectedUserType);
+                        },
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: AppColors.primary,
+                      ),
+                    ),
+                    Expanded(
+                      child: RadioListTile<UserType>(
+                        title: const Text('Service Boy'),
+                        value: UserType.serviceBoy,
+                        groupValue: _selectedUserType,
+                        onChanged: (UserType? value) {
+                          setState(() {
+                            _selectedUserType = value!;
+                          });
+                          print(_selectedUserType);
+                        },
+                        contentPadding: EdgeInsets.zero,
+                        activeColor: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
                 // Phone Number field
                 CustomTextField(
                   label: 'Phone Number',
@@ -161,57 +202,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // Login button
                 GradientButton(
-                  text: 'Sign In',
-                  onPressed: _handleLogin,
-                  isLoading: _isLoading,
+                  text: 'Send OTP',
+                  onPressed: isLoading ? () {} : _handleLogin,
+                  isLoading: isLoading,
                   width: double.infinity,
                 ),
 
                 const SizedBox(height: 24),
-
-                // Or divider
-                Row(
-                  children: [
-                    const Expanded(child: Divider()),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textTertiary,
-                        ),
-                      ),
-                    ),
-                    const Expanded(child: Divider()),
-                  ],
-                ),
-
-                const SizedBox(height: 24),
-
-                // Social login buttons (optional)
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Google',
-                        onPressed: () {},
-                        isOutlined: true,
-                        icon: Icons.g_mobiledata,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Facebook',
-                        onPressed: () {},
-                        isOutlined: true,
-                        icon: Icons.facebook,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
 
                 // Sign up link
                 Center(

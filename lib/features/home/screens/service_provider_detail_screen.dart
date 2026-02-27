@@ -29,18 +29,44 @@ class ServiceProviderDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: AppColors.primaryGradient,
                     ),
-                    child: Center(
-                      child: CircleAvatar(
-                        radius: 60,
-                        backgroundColor: AppColors.white.withOpacity(0.2),
-                        child: Text(
-                          provider.name[0],
-                          style: AppTextStyles.h1.copyWith(
-                            color: AppColors.white,
-                            fontSize: 60,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: AppColors.white.withOpacity(0.2),
+                          child: Text(
+                            (provider.name?.isNotEmpty == true
+                                ? provider.name![0]
+                                : 'P'),
+                            style: AppTextStyles.h1.copyWith(
+                              color: AppColors.white,
+                              fontSize: 50,
+                            ),
                           ),
                         ),
-                      ),
+                        if (provider.location.isNotEmpty &&
+                            provider.location != 'Unknown') ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Iconsax.location,
+                                size: 16,
+                                color: AppColors.white,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                provider.location,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                   // Overlay for better back button visibility
@@ -85,7 +111,10 @@ class ServiceProviderDetailScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(provider.name, style: AppTextStyles.h3),
+                          Text(
+                            provider.name ?? 'Provider',
+                            style: AppTextStyles.h3,
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             provider.profession,
@@ -157,25 +186,72 @@ class ServiceProviderDetailScreen extends StatelessWidget {
 
                   const SizedBox(height: 32),
 
+                  // Services Offered
+                  if (provider.servicesOffered.isNotEmpty) ...[
+                    Text('Services Offered', style: AppTextStyles.labelLarge),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          provider.servicesOffered
+                              .map((s) => _buildChip(s, AppColors.primary))
+                              .toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Work Preference
+                  if (provider.workPreference.isNotEmpty) ...[
+                    Text('Work Preference', style: AppTextStyles.labelLarge),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          provider.workPreference
+                              .map((s) => _buildChip(s, Colors.orange))
+                              .toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Preferred Work Location
+                  if (provider.workLocationPreferred.isNotEmpty) ...[
+                    Text(
+                      'Preferred Work Locations',
+                      style: AppTextStyles.labelLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          provider.workLocationPreferred
+                              .map((s) => _buildChip(s, Colors.green))
+                              .toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
                   // Portfolio / Previous Work Section
                   // Portfolio Section
-                  Text('Previous Work', style: AppTextStyles.h4),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 120,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      children: [
-                        _portfolioItem('assets/images/cleaning_service.png'),
-                        _portfolioItem('assets/images/ac_repair_service.png'),
-                        _portfolioItem('assets/images/painting_service.png'),
-                        _portfolioItem('assets/images/smart_home_install.png'),
-                        _portfolioItem('assets/images/garden_maintenance.png'),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
+                  // Text('Previous Work', style: AppTextStyles.h4),
+                  // const SizedBox(height: 16),
+                  // SizedBox(
+                  //   height: 120,
+                  //   child: ListView(
+                  //     scrollDirection: Axis.horizontal,
+                  //     children: [
+                  //       _portfolioItem('assets/images/cleaning_service.png'),
+                  //       _portfolioItem('assets/images/ac_repair_service.png'),
+                  //       _portfolioItem('assets/images/painting_service.png'),
+                  //       _portfolioItem('assets/images/smart_home_install.png'),
+                  //       _portfolioItem('assets/images/garden_maintenance.png'),
+                  //     ],
+                  //   ),
+                  // ),
+                  // const SizedBox(height: 32),
 
                   // Specialties
                   Text('Specialties', style: AppTextStyles.labelLarge),
@@ -192,8 +268,7 @@ class ServiceProviderDetailScreen extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Customer Reviews Section
-                  _buildReviewsSection(),
-
+                  // _buildReviewsSection(),
                   const SizedBox(height: 100), // Space for bottom button
                 ],
               ),
@@ -225,7 +300,8 @@ class ServiceProviderDetailScreen extends StatelessWidget {
                             builder:
                                 (context) => BookingCheckoutScreen(
                                   serviceName:
-                                      '${provider.profession} - ${provider.name}',
+                                      '${provider.profession} - ${provider.name ?? 'Provider'}',
+                                  serviceId: provider.id,
                                   price: 45.0,
                                 ),
                           ),
@@ -304,6 +380,24 @@ class ServiceProviderDetailScreen extends StatelessWidget {
         text,
         style: AppTextStyles.bodySmall.copyWith(
           color: AppColors.primary,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChip(String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        text,
+        style: AppTextStyles.bodySmall.copyWith(
+          color: color,
           fontWeight: FontWeight.w600,
         ),
       ),

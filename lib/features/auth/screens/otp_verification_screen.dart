@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/models/user_type.dart';
-import '../../../core/services/dummy_data_service.dart';
 import '../../home/screens/main_screen.dart';
 import '../../service_boy/screens/service_boy_main_screen.dart';
+import '../providers/auth_provider.dart';
+import '../../home/services/consumer_service.dart';
 import '../../../core/services/storage_service.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
@@ -27,7 +29,6 @@ class OTPVerificationScreen extends StatefulWidget {
 
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final _otpController = TextEditingController();
-  bool _isLoading = false;
   int _secondsRemaining = 60;
   bool _canResend = false;
 
@@ -39,7 +40,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   @override
   void dispose() {
-    _otpController.dispose();
+    try {
+      _otpController.dispose();
+    } catch (e) {
+      debugPrint('Error disposing OTP controller: $e');
+    }
     super.dispose();
   }
 
@@ -62,21 +67,32 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   }
 
   Future<void> _handleResend() async {
-    // Simulate resend OTP
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      await context.read<AuthProvider>().login(widget.phone!, widget.userType);
 
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('OTP resent successfully'),
-          backgroundColor: AppColors.success,
-        ),
-      );
-      _startTimer();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('OTP resent successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        _startTimer();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString()),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _handleVerify([String? manualOtp]) async {
+    debugPrint('========= step: _handleVerify started ==========');
     final otp = manualOtp ?? _otpController.text;
     if (otp.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -88,61 +104,97 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       return;
     }
 
-    setState(() => _isLoading = true);
+    try {
+      debugPrint('========= step: calling verifyOtp ==========');
+      await context.read<AuthProvider>().verifyOtp(widget.phone!, otp);
+      debugPrint('========= step: verifyOtp completed ==========');
 
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
-      // Verify OTP using dummy data service
-      final isValid = DummyDataService.instance.vrifyotpuser(
-        widget.identifier,
-        widget.userType,
-        otp,
-      );
-
-      setState(() => _isLoading = false);
-
-      if (isValid) {
-        // Get user data
-        final user = DummyDataService.instance.getUserData(
-          widget.identifier,
-          widget.userType,
+      if (mounted) {
+        final user = context.read<AuthProvider>().currentUser;
+        debugPrint(
+          '========= step: user retrieved: ${user?.userType} ==========',
         );
-        print('User ${user?.userType} logged in successfully.');
+        print(user);
+        // Check for profile completion or specific logic if needed
+        // For now, assume if we have a user (which should be true after verifyOtp), we proceed
 
-        // Save user type to shared preferences
-        await StorageService.saveUserType(widget.userType);
+        if (user != null) {
+          print('User ${user.userType} logged in successfully.');
 
-        if (widget.userType == UserType.customer) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const MainScreen()),
-            (route) => false,
-          );
-        } else {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (context) => const ServiceBoyMainScreen(),
-            ),
-            (route) => false,
-          );
-        }
+          // Navigate based on user type
+          print(user.userType);
 
-        // Show success message after navigation
-        Future.delayed(const Duration(milliseconds: 500), () {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Welcome ${user?.name ?? "User"}!'),
-                backgroundColor: AppColors.success,
+          if (user.userType == UserType.customer) {
+            // Fetch full profile to get location
+            try {
+              final consumerService = ConsumerService();
+              final fullProfile = await consumerService.getMe();
+
+              // Save location if available
+              // Parse location from the response structure which might be a String or Map
+              // UserModel.fromJson handles this, so detailed location info is in fullProfile.location (String address)
+              // But we might need coordinates if available in the raw response or if UserModel is updated to store them.
+              // For now, based on User Request, the location in response is a Map.
+              // UserModel stores address in `location` field.
+              // Let's rely on what we have. If we need coordinates, we might need to update UserModel to store them or parse them here.
+              // The user request showed: "location": { "type": "Point", "coordinates": [0,0], "address": "Kochi" }
+              // UserModel.fromJson extracts address to `location`.
+
+              // Ideally we should update UserModel to hold coordinates too, but for this task: share preference replacement.
+              // I will save the address to shared prefs.
+
+              await StorageService.saveUserLocation(
+                address: fullProfile.location,
+                coordinates: [
+                  0.0,
+                  0.0,
+                ], // Default/Placeholder for now as UserModel doesn't expose it yet
+              );
+            } catch (e) {
+              debugPrint('Error fetching/saving profile during login: $e');
+              // Continue login even if profile fetch fails
+            }
+
+            debugPrint('========= step: navigating to MainScreen ==========');
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+              (route) => false,
+            );
+          } else {
+            debugPrint(
+              '========= step: navigating to ServiceBoyMainScreen ==========',
+            );
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                builder: (context) => const ServiceBoyMainScreen(),
               ),
+              (route) => false,
             );
           }
-        });
+
+          // Show success message after navigation
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Welcome ${user.name ?? "User"}!'),
+                  backgroundColor: AppColors.success,
+                ),
+              );
+            }
+          });
+        }
       } else {
+        debugPrint(
+          '========= step: widget not mounted after verifyOtp ==========',
+        );
+      }
+    } catch (e) {
+      debugPrint('========= step: error in _handleVerify: $e ==========');
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid OTP. Please try again.'),
+          SnackBar(
+            content: Text(e.toString()),
             backgroundColor: AppColors.error,
           ),
         );
@@ -152,6 +204,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -306,8 +360,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               // Verify button
               GradientButton(
                 text: 'Verify',
-                onPressed: _handleVerify,
-                isLoading: _isLoading,
+                onPressed: isLoading ? () {} : () => _handleVerify(),
+                isLoading: isLoading,
                 width: double.infinity,
               ),
             ],
