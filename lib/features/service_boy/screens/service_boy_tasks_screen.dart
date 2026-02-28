@@ -35,20 +35,20 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: Text('My Tasks', style: AppTextStyles.h4),
+          title: Text('My Work', style: AppTextStyles.h4),
           centerTitle: true,
           bottom: TabBar(
             isScrollable: false,
             tabAlignment: TabAlignment.fill,
             tabs: const [
-              // Tab(text: 'Pending'),
+              Tab(text: 'Assigned'),
               Tab(text: 'Ongoing'),
               Tab(text: 'Completed'),
-              Tab(text: 'Cancelled'), // Added
+              Tab(text: 'Canceled'),
             ],
             labelStyle: AppTextStyles.labelSmall.copyWith(
               fontWeight: FontWeight.bold,
@@ -71,7 +71,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Error loading tasks',
+                      'Error loading work',
                       style: AppTextStyles.bodyMedium.copyWith(
                         color: AppColors.error,
                       ),
@@ -88,13 +88,13 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
 
             return TabBarView(
               children: [
-                // _buildRefreshableList(
-                //   provider.pendingBookings,
-                //   BookingStatus.pending,
-                // ),
+                _buildRefreshableList(
+                  provider.assignedBookings,
+                  BookingStatus.assigned,
+                ),
                 _buildRefreshableList(
                   provider.ongoingBookings,
-                  BookingStatus.ongoing,
+                  BookingStatus.reached,
                 ),
                 _buildRefreshableList(
                   provider.completedBookings,
@@ -138,7 +138,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'No ${status.name} tasks found',
+                'No ${status.name} work found',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textTertiary,
                 ),

@@ -10,6 +10,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/full_screen_image.dart';
+import '../../../core/models/review_model.dart';
 
 class ServiceBoyTaskDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -31,6 +32,10 @@ class _ServiceBoyTaskDetailsScreenState
   String _paymentMode = 'CASH';
   bool _isCompleting = false;
 
+  final _reviewCommentController = TextEditingController();
+  double _ratingByProvider = 0;
+  bool _reviewSubmitted = false;
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +49,7 @@ class _ServiceBoyTaskDetailsScreenState
     _noteController.dispose();
     _amountController.dispose();
     _otpController.dispose();
+    _reviewCommentController.dispose();
     super.dispose();
   }
 
@@ -52,7 +58,7 @@ class _ServiceBoyTaskDetailsScreenState
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text('Task Details', style: AppTextStyles.h4),
+        title: Text('Work Details', style: AppTextStyles.h4),
         centerTitle: true,
       ),
       body: Consumer<ServiceBoyProvider>(
@@ -88,10 +94,10 @@ class _ServiceBoyTaskDetailsScreenState
           print(booking);
           Color statusColor = AppColors.primary; // Default
           switch (booking.status) {
-            case BookingStatus.pending:
+            case BookingStatus.assigned:
               statusColor = AppColors.warning;
               break;
-            case BookingStatus.ongoing:
+            case BookingStatus.reached:
               statusColor = AppColors.primary;
               break;
             case BookingStatus.completed:
@@ -100,6 +106,8 @@ class _ServiceBoyTaskDetailsScreenState
             case BookingStatus.cancelled:
               statusColor = AppColors.error;
               break;
+            default:
+              statusColor = AppColors.textTertiary;
           }
 
           return SingleChildScrollView(
@@ -148,7 +156,12 @@ class _ServiceBoyTaskDetailsScreenState
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Text(
-                          booking.status.name.toUpperCase(),
+                          (booking.status == BookingStatus.reached
+                                  ? 'Ongoing'
+                                  : booking.status == BookingStatus.completed
+                                  ? 'Completed'
+                                  : booking.status.name)
+                              .toUpperCase(),
                           style: AppTextStyles.labelSmall.copyWith(
                             color: statusColor,
                             fontWeight: FontWeight.w700,
@@ -243,7 +256,7 @@ class _ServiceBoyTaskDetailsScreenState
                     Text(
                       booking.status == BookingStatus.completed
                           ? 'Job Proof Photos'
-                          : 'Task Photos',
+                          : 'Work Photos',
                       style: AppTextStyles.labelLarge,
                     ),
                     if (booking.status != BookingStatus.completed)
@@ -292,26 +305,74 @@ class _ServiceBoyTaskDetailsScreenState
                   ),
                 ],
 
+                // // Customer Review Section
+                // if (booking.status == BookingStatus.closedByCustomer &&
+                //     booking.review != null) ...[
+                //   const SizedBox(height: 24),
+                //   Text('Customer Review', style: AppTextStyles.labelLarge),
+                //   const SizedBox(height: 16),
+                //   _buildCustomerReviewDisplay(booking.review!),
+                // ],
+
+                // // Rate Customer Section
+                // if (booking.status == BookingStatus.closedByCustomer &&
+                //     !_reviewSubmitted) ...[
+                //   const SizedBox(height: 24),
+                //   _buildRateCustomerSection(booking.id),
+                // ],
                 const SizedBox(height: 40),
 
                 // Action Buttons
-                if (booking.status == BookingStatus.pending)
+                if (booking.status == BookingStatus.assigned)
                   Row(
                     children: [
                       Expanded(
                         child: CustomButton(
                           text: 'Decline',
-                          onPressed: () {},
+                          onPressed:
+                              () => _showDeclineDialog(context, booking.id),
                           isOutlined: true,
+                          backgroundColor: AppColors.error,
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
-                        child: CustomButton(text: 'Accept', onPressed: () {}),
+                        child: CustomButton(
+                          text: 'Accept',
+                          onPressed: () async {
+                            final provider = context.read<ServiceBoyProvider>();
+                            final scaffoldMessenger = ScaffoldMessenger.of(
+                              context,
+                            );
+                            final success = await provider.acceptBooking(
+                              booking.id,
+                            );
+
+                            if (success && mounted) {
+                              scaffoldMessenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Work accepted successfully!'),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                              Navigator.pop(context);
+                            } else if (mounted) {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.bookingsError ??
+                                        'Failed to accept work',
+                                  ),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                            }
+                          },
+                        ),
                       ),
                     ],
                   )
-                else if (booking.status == BookingStatus.ongoing)
+                else if (booking.status == BookingStatus.reached)
                   Column(
                     children: [
                       _buildDetailRow(
@@ -356,7 +417,7 @@ class _ServiceBoyTaskDetailsScreenState
                       ),
                       const SizedBox(height: 24),
                       CustomButton(
-                        text: _isCompleting ? 'Completing...' : 'Complete Task',
+                        text: _isCompleting ? 'Completing...' : 'Complete Work',
                         onPressed: _isCompleting ? null : _completeTask,
                         backgroundColor: AppColors.success,
                       ),
@@ -410,6 +471,103 @@ class _ServiceBoyTaskDetailsScreenState
           ),
         ),
       ),
+    );
+  }
+
+  void _showDeclineDialog(BuildContext context, String bookingId) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        String selectedReason = 'Schedule Conflict';
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Decline Work'),
+              backgroundColor: AppColors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Select a reason for declining this work:'),
+                  const SizedBox(height: 16),
+                  ...[
+                    'Schedule Conflict',
+                    'Location too far',
+                    'Technical Issues',
+                    'Other',
+                  ].map(
+                    (reason) => RadioListTile<String>(
+                      title: Text(reason, style: AppTextStyles.bodyMedium),
+                      value: reason,
+                      groupValue: selectedReason,
+                      activeColor: AppColors.primary,
+                      onChanged: (value) {
+                        if (value != null) {
+                          setDialogState(() => selectedReason = value);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Cancel',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.textTertiary,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final provider = this.context.read<ServiceBoyProvider>();
+                    final scaffoldMessenger = ScaffoldMessenger.of(
+                      this.context,
+                    );
+                    final success = await provider.cancelBookingRequest(
+                      bookingId,
+                      selectedReason,
+                    );
+
+                    if (mounted) {
+                      Navigator.pop(context); // Close dialog
+                      if (success) {
+                        scaffoldMessenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Cancellation request submitted.'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                        Navigator.pop(this.context); // Go back to list
+                      } else {
+                        scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              provider.bookingsError ??
+                                  'Failed to submit request',
+                            ),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Text(
+                    'Submit',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.error,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -701,4 +859,134 @@ class _ServiceBoyTaskDetailsScreenState
       ),
     );
   }
+
+  // Widget _buildCustomerReviewDisplay(ReviewModel review) {
+  //   return _buildDetailSection(
+  //     children: [
+  //       Row(
+  //         children: [
+  //           _buildRatingStars(review.rating.toDouble(), size: 20),
+  //           const SizedBox(width: 8),
+  //           Text(
+  //             '${review.rating}.0',
+  //             style: AppTextStyles.labelSmall.copyWith(
+  //               fontWeight: FontWeight.bold,
+  //             ),
+  //           ),
+  //           const Spacer(),
+  //           Text(
+  //             _formatDate(review.createdAt),
+  //             style: AppTextStyles.caption.copyWith(
+  //               color: AppColors.textTertiary,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //       if (review.comment.isNotEmpty) ...[
+  //         const SizedBox(height: 12),
+  //         Text(review.comment, style: AppTextStyles.bodyMedium),
+  //       ],
+  //       if (review.images.isNotEmpty) ...[
+  //         const SizedBox(height: 16),
+  //         _buildNetworkImageGallery(review.images),
+  //       ],
+  //     ],
+  //   );
+  // }
+
+  // Widget _buildRateCustomerSection(String bookingId) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(20),
+  //     decoration: BoxDecoration(
+  //       color: AppColors.white,
+  //       borderRadius: BorderRadius.circular(20),
+  //       border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: AppColors.shadowLight,
+  //           blurRadius: 10,
+  //           offset: const Offset(0, 4),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         Text('Rate Customer', style: AppTextStyles.labelLarge),
+  //         const SizedBox(height: 16),
+  //         Row(
+  //           mainAxisAlignment: MainAxisAlignment.center,
+  //           children: List.generate(5, (index) {
+  //             return IconButton(
+  //               onPressed:
+  //                   () => setState(() => _ratingByProvider = index + 1.0),
+  //               icon: Icon(
+  //                 index < _ratingByProvider ? Icons.star : Icons.star_border,
+  //                 color: Colors.amber,
+  //                 size: 32,
+  //               ),
+  //             );
+  //           }),
+  //         ),
+  //         const SizedBox(height: 16),
+  //         CustomTextField(
+  //           hint: 'Share your feedback about the customer...',
+  //           controller: _reviewCommentController,
+  //           maxLines: 3,
+  //         ),
+  //         const SizedBox(height: 24),
+  //         CustomButton(
+  //           text: 'Submit Rating',
+  //           onPressed: _ratingByProvider == 0 ? null : _submitProviderReview,
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  // Future<void> _submitProviderReview() async {
+  //   final provider = context.read<ServiceBoyProvider>();
+  //   final success = await provider.submitReview(
+  //     bookingId: widget.booking.id,
+  //     rating: _ratingByProvider,
+  //     comment: _reviewCommentController.text.trim(),
+  //   );
+
+  //   if (mounted) {
+  //     if (success) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         const SnackBar(
+  //           content: Text('Review submitted successfully!'),
+  //           backgroundColor: AppColors.success,
+  //         ),
+  //       );
+  //       setState(() {
+  //         _reviewSubmitted = true;
+  //       });
+  //     } else {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text(provider.reviewError ?? 'Failed to submit review'),
+  //           backgroundColor: AppColors.error,
+  //         ),
+  //       );
+  //     }
+  //   }
+  // }
+
+  // Widget _buildRatingStars(double rating, {double size = 16}) {
+  //   return Row(
+  //     children: List.generate(5, (index) {
+  //       return Icon(
+  //         index < rating ? Icons.star : Icons.star_border,
+  //         color: Colors.amber,
+  //         size: size,
+  //       );
+  //     }),
+  //   );
+  // }
+
+  // String _formatDate(DateTime date) {
+  //   return '${date.day}/${date.month}/${date.year}';
+  // }
 }

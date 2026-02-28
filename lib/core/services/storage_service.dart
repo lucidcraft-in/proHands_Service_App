@@ -71,12 +71,18 @@ class StorageService {
       // Move to top if exists
       locations.removeAt(existingIndex);
     }
-
+    print("=======");
+    print(label);
     // Add new location to top
     locations.insert(0, {
       'address': address,
       'coordinates': coordinates,
-      'label': label ?? 'Saved Location', // Use provided label or default
+      'label':
+          (label != null && label.isNotEmpty)
+              ? label
+              : (locality != null && locality.isNotEmpty)
+              ? locality
+              : 'Saved Location',
       'zipcode': zipcode,
       'locality': locality,
       'administrativeArea': administrativeArea,

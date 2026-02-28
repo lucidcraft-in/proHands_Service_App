@@ -7,7 +7,7 @@ enum UserType {
       case UserType.customer:
         return 'CUSTOMER';
       case UserType.serviceBoy:
-        return 'SERVICE_BOY';
+        return 'Technician';
     }
   }
 

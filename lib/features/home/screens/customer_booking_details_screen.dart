@@ -218,7 +218,7 @@ class _CustomerBookingDetailsScreenState
                       ],
                     ),
                     if (widget.booking.providerPhone != null &&
-                        widget.booking.status == BookingStatus.ongoing)
+                        widget.booking.status == BookingStatus.reached)
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
                         child: ElevatedButton.icon(
@@ -636,8 +636,8 @@ class _CustomerBookingDetailsScreenState
 
   Widget _buildTimeline(BookingStatus currentStatus) {
     final steps = [
-      {'status': BookingStatus.pending, 'label': 'Pending'},
-      {'status': BookingStatus.ongoing, 'label': 'Accepted'},
+      {'status': BookingStatus.assigned, 'label': 'Assigned'},
+      {'status': BookingStatus.reached, 'label': 'Accepted'},
       {'status': BookingStatus.completed, 'label': 'Completed'},
     ];
 
@@ -659,7 +659,7 @@ class _CustomerBookingDetailsScreenState
     }
 
     int currentStepIndex = 0;
-    if (currentStatus == BookingStatus.ongoing) currentStepIndex = 1;
+    if (currentStatus == BookingStatus.reached) currentStepIndex = 1;
     if (currentStatus == BookingStatus.completed) currentStepIndex = 2;
 
     return Stack(

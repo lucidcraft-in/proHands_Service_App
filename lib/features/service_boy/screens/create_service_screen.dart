@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,12 +24,9 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   // Form Controllers
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _priceController = TextEditingController();
-  final _durationController = TextEditingController();
-  final _commissionController = TextEditingController();
 
   String? _selectedCategoryId;
-  double _finalEarnings = 0.0;
+  bool _isTrending = false;
   File? _serviceImage;
   final _picker = ImagePicker();
 
@@ -38,25 +34,15 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   void initState() {
     super.initState();
     _checkUserType();
-
-    // Fetch categories on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceBoyProvider>().fetchCategories();
     });
-
-    // Listeners for calculation
-    _priceController.addListener(_calculateEarnings);
-    _commissionController.addListener(_calculateEarnings);
   }
 
   Future<void> _checkUserType() async {
-    final token = await StorageService.getAuthToken();
-    print("====================================================");
-    print(token);
     final userType = await StorageService.getUserType();
     if (userType != UserType.serviceBoy) {
       if (mounted) {
-        // Redirect to login if not service boy (Handling requirement)
         Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
@@ -69,26 +55,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
-    _priceController.dispose();
-    _durationController.dispose();
-    _commissionController.dispose();
     super.dispose();
-  }
-
-  void _calculateEarnings() {
-    final price = double.tryParse(_priceController.text) ?? 0.0;
-    final commission = double.tryParse(_commissionController.text) ?? 0.0;
-
-    if (price > 0) {
-      final commissionAmount = price * (commission / 100);
-      setState(() {
-        _finalEarnings = price - commissionAmount;
-      });
-    } else {
-      setState(() {
-        _finalEarnings = 0.0;
-      });
-    }
   }
 
   Future<void> _submitFormat() async {
@@ -103,14 +70,11 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
       return;
     }
 
-    // Hide keyboard
     FocusScope.of(context).unfocus();
 
     final provider = context.read<ServiceBoyProvider>();
     String? imageUrl;
-    print("====================================================");
-    print(_serviceImage);
-    // Upload image first if exists
+
     if (_serviceImage != null) {
       imageUrl = await provider.uploadServiceImage(_serviceImage!);
       if (imageUrl == null) {
@@ -127,17 +91,16 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         return;
       }
     }
-    print("====================================================");
-    print(imageUrl);
+
     final serviceData = {
       'categoryId': _selectedCategoryId,
       'name': _nameController.text.trim(),
       'description': _descriptionController.text.trim(),
-      'price': double.parse(_priceController.text),
-      'duration': int.parse(_durationController.text),
-      'commission': double.parse(_commissionController.text),
-      'image': imageUrl, // can be null or the URL
-      'isTrending': false,
+      'price': 0,
+      'duration': 0,
+      'commission': 0,
+      'isTrending': _isTrending,
+      if (imageUrl != null) 'image': imageUrl,
     };
 
     final success = await provider.createService(serviceData);
@@ -150,20 +113,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
             backgroundColor: AppColors.success,
           ),
         );
-
-        // Clear form
-        _formKey.currentState!.reset();
-        _nameController.clear();
-        _descriptionController.clear();
-        _priceController.clear();
-        _durationController.clear();
-        _commissionController.clear();
-        setState(() {
-          _selectedCategoryId = null;
-          _finalEarnings = 0.0;
-        });
-
-        // Navigate back
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -224,7 +173,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Image Picker
-                  Text('Service Image', style: AppTextStyles.labelMedium),
+                  Text('Service Title Image', style: AppTextStyles.labelMedium),
                   const SizedBox(height: 8),
                   GestureDetector(
                     onTap: _pickImage,
@@ -282,7 +231,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                   ),
                                   const SizedBox(height: 8),
                                   Text(
-                                    'Add Service Image',
+                                    'Add Service title Image ',
                                     style: AppTextStyles.bodySmall.copyWith(
                                       color: AppColors.textTertiary,
                                     ),
@@ -326,7 +275,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                 value: category.id,
                                 child: Row(
                                   children: [
-                                    // Ideally load icon/image here, using text for now or placeholder
                                     Container(
                                       padding: const EdgeInsets.all(6),
                                       decoration: BoxDecoration(
@@ -338,7 +286,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                       child: Text(
                                         category.icon,
                                         style: const TextStyle(fontSize: 16),
-                                      ), // Emoji icon
+                                      ),
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
@@ -350,10 +298,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                               );
                             }).toList(),
                         onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedCategoryId = newValue;
-                          });
-                          print(_selectedCategoryId);
+                          setState(() => _selectedCategoryId = newValue);
                         },
                       ),
                     ),
@@ -364,7 +309,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                   // Service Name
                   _buildTextField(
                     controller: _nameController,
-                    label: 'Service Name',
+                    label: 'Service Title',
                     hint: 'e.g. Expert AC Repair',
                     icon: Iconsax.briefcase,
                     validator:
@@ -379,94 +324,66 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                     label: 'Description',
                     hint: 'Describe your service...',
                     icon: Iconsax.document_text,
-                    maxLines: 3,
+                    maxLines: 4,
                     validator:
                         (v) => v == null || v.isEmpty ? 'Required' : null,
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildTextField(
-                          controller: _priceController,
-                          label: 'Price',
-                          hint: '0.00',
-                          icon: Iconsax.money,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d+\.?\d{0,2}'),
-                            ),
-                          ],
-                          validator:
-                              (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildTextField(
-                          controller: _durationController,
-                          label: 'Duration (min)',
-                          hint: 'e.g. 60',
-                          icon: Iconsax.clock,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                          ],
-                          validator:
-                              (v) => v == null || v.isEmpty ? 'Required' : null,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Commission
-                  _buildTextField(
-                    controller: _commissionController,
-                    label: 'Commission (%)',
-                    hint: 'e.g. 15',
-                    icon: Iconsax.percentage_circle,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    validator:
-                        (v) => v == null || v.isEmpty ? 'Required' : null,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Preview Card (Earnings)
-                  if (_finalEarnings > 0)
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.primary.withOpacity(0.2),
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Estimated Earnings:',
-                            style: AppTextStyles.bodyMedium,
-                          ),
-                          Text(
-                            '\$${_finalEarnings.toStringAsFixed(2)}',
-                            style: AppTextStyles.h4.copyWith(
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
+                  // isTrending Toggle
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color:
+                            _isTrending
+                                ? AppColors.primary.withOpacity(0.3)
+                                : AppColors.border,
                       ),
                     ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Iconsax.trend_up,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Mark as Trending',
+                                style: AppTextStyles.labelMedium,
+                              ),
+                              Text(
+                                'Boost visibility of this service',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Switch(
+                          value: _isTrending,
+                          onChanged: (v) => setState(() => _isTrending = v),
+                          activeColor: AppColors.primary,
+                        ),
+                      ],
+                    ),
+                  ),
 
                   const SizedBox(height: 32),
 
@@ -497,6 +414,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                               ),
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -513,9 +431,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         imageQuality: 70,
       );
       if (image != null) {
-        setState(() {
-          _serviceImage = File(image.path);
-        });
+        setState(() => _serviceImage = File(image.path));
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -530,8 +446,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     required String hint,
     required IconData icon,
     int maxLines = 1,
-    TextInputType? keyboardType,
-    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return Column(
@@ -542,8 +456,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         TextFormField(
           controller: controller,
           maxLines: maxLines,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
           validator: validator,
           style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
@@ -581,8 +493,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     switch (colorName.toLowerCase()) {
       case 'yellow':
         return Colors.yellow;
-      case 'white':
-        return Colors.grey; // White doesn't show well on white bg
       case 'blue':
         return Colors.blue;
       case 'red':

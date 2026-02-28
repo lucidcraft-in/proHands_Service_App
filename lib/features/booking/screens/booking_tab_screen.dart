@@ -157,10 +157,11 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
 
                       final booking = filteredBookings[index];
                       // Map status to color
+                      print(booking.status);
                       Color statusColor = AppColors.primary;
-                      if (booking.status == BookingStatus.pending) {
+                      if (booking.status == BookingStatus.assigned) {
                         statusColor = AppColors.warning;
-                      } else if (booking.status == BookingStatus.ongoing) {
+                      } else if (booking.status == BookingStatus.reached) {
                         statusColor = AppColors.primary;
                       } else if (booking.status == BookingStatus.completed) {
                         statusColor = AppColors.success;
@@ -331,8 +332,8 @@ class _BookingCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Status', style: AppTextStyles.caption),
-                      const SizedBox(height: 4),
+                      // Text('Status', style: AppTextStyles.caption),
+                      // const SizedBox(height: 4),
                       Text(
                         status,
                         style: AppTextStyles.bodySmall.copyWith(
@@ -403,20 +404,19 @@ class _BookingCard extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            Row(
-              children: [
-                Text('Status', style: AppTextStyles.caption),
-                const SizedBox(width: 8),
-                Text(
-                  bookingStatus,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-
+            // Row(
+            //   children: [
+            //     Text('Status', style: AppTextStyles.caption),
+            //     const SizedBox(width: 8),
+            //     Text(
+            //       bookingStatus,
+            //       style: AppTextStyles.bodySmall.copyWith(
+            //         color: AppColors.success,
+            //         fontWeight: FontWeight.w600,
+            //       ),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 16),
             const Divider(height: 1),
             const SizedBox(height: 12),

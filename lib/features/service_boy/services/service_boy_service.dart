@@ -231,6 +231,36 @@ class ServiceBoyService {
     }
   }
 
+  // Update Service
+  Future<ServiceModel> updateService(
+    String serviceId,
+    Map<String, dynamic> updatedFields,
+  ) async {
+    final url = Uri.parse('$baseUrl/services/$serviceId');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.patch(
+        url,
+        headers: headers,
+        body: jsonEncode(updatedFields),
+      );
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        if (data['success'] == true) {
+          return ServiceModel.fromJson(data['service']);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to update service');
+        }
+      } else {
+        throw Exception(
+          data['message'] ?? 'Failed to update service: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error updating service: $e');
+    }
+  }
+
   // Get Dashboard Stats
   Future<Map<String, dynamic>> getDashboardStats() async {
     final url = Uri.parse('$baseUrl/bookings/stats');
@@ -250,6 +280,32 @@ class ServiceBoyService {
       }
     } catch (e) {
       throw Exception('Error fetching stats: $e');
+    }
+  }
+
+  // Get Overall Analytics
+  Future<Map<String, dynamic>> getOverallAnalytics() async {
+    final url = Uri.parse('$baseUrl/bookings/overall-analytics');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return data['data'];
+        } else {
+          throw Exception(
+            data['message'] ?? 'Failed to load overall analytics',
+          );
+        }
+      } else {
+        throw Exception(
+          'Failed to load overall analytics: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error fetching overall analytics: $e');
     }
   }
 
@@ -376,6 +432,69 @@ class ServiceBoyService {
       }
     } catch (e) {
       throw Exception('Error fetching gallery images: $e');
+    }
+  }
+
+  // Cancel Booking Request (Service Boy)
+  Future<bool> cancelBookingRequest(String bookingId, String reason) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/cancel-request');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({'reason': reason}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ??
+              'Failed to submit cancel request: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error submitting cancel request: $e');
+    }
+  }
+
+  Future<bool> addReview({
+    required String bookingId,
+    required double rating,
+    required String comment,
+    List<String>? imagePaths,
+  }) async {
+    final url = Uri.parse('$baseUrl/reviews');
+    try {
+      final token = await StorageService.getAuthToken();
+      final request = http.MultipartRequest('POST', url);
+
+      request.headers['Authorization'] = 'Bearer $token';
+      request.fields['bookingId'] = bookingId;
+      request.fields['rating'] = rating.toString();
+      request.fields['comment'] = comment;
+
+      if (imagePaths != null && imagePaths.isNotEmpty) {
+        for (var path in imagePaths) {
+          request.files.add(await http.MultipartFile.fromPath('images', path));
+        }
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Failed to submit review');
+      }
+    } catch (e) {
+      throw Exception('Error submitting review: $e');
     }
   }
 }

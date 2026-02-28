@@ -26,11 +26,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _emailController;
   late TextEditingController _addressController;
 
-  // Service Boy Fields
+  // Technician Fields
   late TextEditingController _professionController;
   late TextEditingController _experienceController;
   late TextEditingController
   _servicesOfferedController; // Comma separated for now
+  late TextEditingController _specialtiesController; // Comma separated
   late TextEditingController
   _workLocationPreferredController; // Comma separated for now
 
@@ -56,6 +57,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _professionController = TextEditingController();
     _experienceController = TextEditingController();
     _servicesOfferedController = TextEditingController();
+    _specialtiesController = TextEditingController();
     _workLocationPreferredController = TextEditingController();
 
     // Fetch latest profile
@@ -75,10 +77,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _emailController.text = user.email ?? '';
     _addressController.text = user.location;
 
-    // Service Boy Specifics
+    // Technician Specifics
     _professionController.text = user.profession;
     _experienceController.text = user.experience;
     _servicesOfferedController.text = user.servicesOffered.join(', ');
+    _specialtiesController.text = user.specialties.join(', ');
     _workLocationPreferredController.text = user.workLocationPreferred.join(
       ', ',
     );
@@ -100,6 +103,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _professionController.dispose();
     _experienceController.dispose();
     _servicesOfferedController.dispose();
+    _specialtiesController.dispose();
     _workLocationPreferredController.dispose();
     super.dispose();
   }
@@ -138,58 +142,84 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
+  Future<void> _updateProfilePhoto() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
+      final provider = context.read<ConsumerProvider>();
+      final success = await provider.updateProfilePhoto(File(image.path));
+
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Profile picture updated successfully'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                provider.updatePhotoError ?? 'Failed to update profile picture',
+              ),
+              backgroundColor: AppColors.error,
+            ),
+          );
+        }
+      }
+    }
+  }
+
   Future<void> _handleSave() async {
     if (_formKey.currentState!.validate()) {
       final provider = context.read<ConsumerProvider>();
       final user = provider.currentUser;
+      final isServiceBoy = user?.userType == UserType.serviceBoy;
       bool success = false;
 
-      if (user?.userType == UserType.serviceBoy) {
-        // Validate required files for first time? Or allow updates without files if already present?
-        // For update, files are optional usually.
-
-        success = await provider.completeProviderProfile(
-          name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          address: _addressController.text.trim(),
-          profession: _professionController.text.trim(),
-          experience: _experienceController.text.trim(),
-          servicesOffered:
-              _servicesOfferedController.text
-                  .split(',')
-                  .map((e) => e.trim())
-                  .where((e) => e.isNotEmpty)
-                  .toList(),
-          workPreference:
-              _selectedWorkPreference != null ? [_selectedWorkPreference!] : [],
-          workLocationPreferred:
-              _workLocationPreferredController.text
-                  .split(',')
-                  .map((e) => e.trim())
-                  .where((e) => e.isNotEmpty)
-                  .toList(),
-          latitude:
-              0.0, // Should use real location, but for edit profile maybe keep existing or fetch?
-          // The API requires lat/long.
-          // If we don't change them, we should pass existing.
-          // But UserModel uses 'location' string. Coordinates are not explicitly in UserModel top level?
-          // backend 'location' object has coordinates.
-          // For now passing 0.0 or we might need to geocode the address if changed.
-          // Let's pass 0.0 or a placeholder as typical Edit Profile might not force location update unless address changes.
-          // Actually API requires them.
-          longitude: 0.0,
-          adharCardPath: _adharCard?.path,
-          licensePath: _license?.path,
-          serviceImagePath: _serviceImage?.path,
-          portfolioImagePaths: _portfolioImages.map((e) => e.path).toList(),
-        );
-      } else {
-        success = await provider.updateProfile(
-          name: _nameController.text.trim(),
-          email: _emailController.text.trim(),
-          address: _addressController.text.trim(),
-        );
-      }
+      success = await provider.updateFullProfile(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        address: _addressController.text.trim(),
+        profession: isServiceBoy ? _professionController.text.trim() : null,
+        experience: isServiceBoy ? _experienceController.text.trim() : null,
+        servicesOffered:
+            isServiceBoy
+                ? _servicesOfferedController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList()
+                : null,
+        specialties:
+            isServiceBoy
+                ? _specialtiesController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList()
+                : null,
+        workPreference:
+            isServiceBoy
+                ? (_selectedWorkPreference != null
+                    ? [_selectedWorkPreference!]
+                    : [])
+                : null,
+        workLocationPreferred:
+            isServiceBoy
+                ? _workLocationPreferredController.text
+                    .split(',')
+                    .map((e) => e.trim())
+                    .where((e) => e.isNotEmpty)
+                    .toList()
+                : null,
+        latitude: user?.latitude ?? 0.0,
+        longitude: user?.longitude ?? 0.0,
+        adharCardPath: _adharCard?.path,
+        licensePath: _license?.path,
+        serviceImagePath: _serviceImage?.path,
+        portfolioImagePaths: _portfolioImages.map((e) => e.path).toList(),
+      );
 
       if (mounted) {
         if (success) {
@@ -204,11 +234,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
-                user?.userType == UserType.serviceBoy
-                    ? (provider.completeProfileError ??
-                        'Failed to update profile')
-                    : (provider.updateProfileError ??
-                        'Failed to update profile'),
+                provider.updateProfileError ?? 'Failed to update profile',
               ),
               backgroundColor: AppColors.error,
             ),
@@ -300,46 +326,55 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             child: Column(
               children: [
                 // Avatar (Static for now as image upload is complex)
-                Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: AppColors.surface,
-                      backgroundImage:
-                          (user?.serviceImage != null &&
-                                  user!.serviceImage.isNotEmpty &&
-                                  !user.serviceImage.contains('default'))
-                              ? NetworkImage(user.serviceImage)
-                              : null,
-                      child:
-                          (user?.serviceImage == null ||
-                                  user!.serviceImage.isEmpty ||
-                                  user.serviceImage.contains('default'))
-                              ? const Icon(
-                                Icons.person,
-                                size: 60,
-                                color: AppColors.primary,
-                              )
-                              : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.white, width: 3),
-                        ),
-                        child: const Icon(
-                          Iconsax.camera,
-                          size: 20,
-                          color: AppColors.white,
+                InkWell(
+                  onTap: provider.isUpdatingPhoto ? null : _updateProfilePhoto,
+                  borderRadius: BorderRadius.circular(60),
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 60,
+                        backgroundColor: AppColors.surface,
+                        backgroundImage:
+                            (user?.profilePhoto != null &&
+                                    user!.profilePhoto.isNotEmpty &&
+                                    !user.profilePhoto.contains('default'))
+                                ? NetworkImage(user.profilePhoto)
+                                : null,
+                        child:
+                            (user?.profilePhoto == null ||
+                                    user!.profilePhoto.isEmpty ||
+                                    user.profilePhoto.contains('default'))
+                                ? const Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color: AppColors.primary,
+                                )
+                                : provider.isUpdatingPhoto
+                                ? const CircularProgressIndicator()
+                                : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.primaryGradient,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.white,
+                              width: 3,
+                            ),
+                          ),
+                          child: const Icon(
+                            Iconsax.camera,
+                            size: 20,
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
 
                 const SizedBox(height: 32),
@@ -396,7 +431,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Service Boy Specific Fields
+                // Technician Specific Fields
                 if (isServiceBoy) ...[
                   CustomTextField(
                     label: 'Profession',
@@ -487,6 +522,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             (value == null || value.isEmpty)
                                 ? 'Services are required'
                                 : null,
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextField(
+                    label: 'Specialties',
+                    hint: 'e.g. Electrical Wiring, AC Repair (comma separated)',
+                    controller: _specialtiesController,
+                    prefixIcon: const Icon(
+                      Iconsax.star,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
+                    maxLines: 2,
                   ),
                   const SizedBox(height: 20),
                   CustomTextField(

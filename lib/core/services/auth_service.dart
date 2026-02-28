@@ -11,26 +11,24 @@ class AuthService {
     String userType,
   ) async {
     final url = Uri.parse('$baseUrl/auth/request-otp');
-    try {
-      print(userType);
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'phone': phone,
-          'userType':
-              userType.toUpperCase(), // Ensure uppercase as per API requirment
-        }),
-      );
-      print(response.body);
-      print(response.statusCode);
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Failed to send OTP: ${response.body}');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'phone': phone, 'userType': userType.toUpperCase()}),
+    );
+    print(response.body);
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      // Parse JSON and extract clean message
+      try {
+        final errorBody = jsonDecode(response.body);
+        throw Exception(errorBody['message'] ?? 'Failed to send OTP');
+      } catch (e) {
+        if (e is Exception) rethrow;
+        throw Exception('Failed to send OTP');
       }
-    } catch (e) {
-      throw Exception('Error requesting OTP: $e');
     }
   }
 

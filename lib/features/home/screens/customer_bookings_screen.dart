@@ -111,14 +111,16 @@ class _BookingCard extends StatelessWidget {
 
   Color _getStatusColor(BookingStatus status) {
     switch (status) {
-      case BookingStatus.pending:
+      case BookingStatus.assigned:
         return Colors.orange;
-      case BookingStatus.ongoing:
+      case BookingStatus.reached:
         return Colors.blue;
       case BookingStatus.completed:
         return Colors.green;
       case BookingStatus.cancelled:
         return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 

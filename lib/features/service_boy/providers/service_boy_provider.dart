@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/service_category_model.dart';
 import '../models/service_model.dart';
 import '../models/gallery_image_model.dart';
+import '../models/overall_analytics_model.dart';
 import '../services/service_boy_service.dart';
 import '../../../core/models/booking_model.dart';
 
@@ -20,6 +21,9 @@ class ServiceBoyProvider extends ChangeNotifier {
   bool _isCreatingService = false;
   String? _createServiceError;
 
+  bool _isSubmittingReview = false;
+  String? _reviewError;
+
   // Getters
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
@@ -31,6 +35,9 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   bool get isCreatingService => _isCreatingService;
   String? get createServiceError => _createServiceError;
+
+  bool get isSubmittingReview => _isSubmittingReview;
+  String? get reviewError => _reviewError;
 
   // Fetch Categories
   Future<void> fetchCategories() async {
@@ -114,11 +121,11 @@ class ServiceBoyProvider extends ChangeNotifier {
   String? get bookingsError => _bookingsError;
 
   // Filtered Bookings
-  List<BookingModel> get pendingBookings =>
-      _bookings.where((b) => b.status == BookingStatus.pending).toList();
+  List<BookingModel> get assignedBookings =>
+      _bookings.where((b) => b.status == BookingStatus.assigned).toList();
 
   List<BookingModel> get ongoingBookings =>
-      _bookings.where((b) => b.status == BookingStatus.ongoing).toList();
+      _bookings.where((b) => b.status == BookingStatus.reached).toList();
 
   List<BookingModel> get completedBookings =>
       _bookings.where((b) => b.status == BookingStatus.completed).toList();
@@ -144,7 +151,7 @@ class ServiceBoyProvider extends ChangeNotifier {
   // Accept Booking
   Future<bool> acceptBooking(String bookingId) async {
     try {
-      final success = await _service.updateBookingStatus(bookingId, 'ACCEPTED');
+      final success = await _service.updateBookingStatus(bookingId, 'REACHED');
       if (success) {
         // Refresh bookings to update the UI
         await fetchBookings();
@@ -173,6 +180,24 @@ class ServiceBoyProvider extends ChangeNotifier {
         await fetchBookings();
         // Refresh dashboard stats as well
         await fetchDashboardStats();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      _bookingsError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Cancel Booking Request (Service Boy)
+  Future<bool> cancelBookingRequest(String bookingId, String reason) async {
+    try {
+      final success = await _service.cancelBookingRequest(bookingId, reason);
+      if (success) {
+        // Refresh bookings to update the UI
+        await fetchBookings();
         return true;
       } else {
         return false;
@@ -234,6 +259,39 @@ class ServiceBoyProvider extends ChangeNotifier {
     }
   }
 
+  // Update Service State
+  bool _isUpdatingService = false;
+  String? _updateServiceError;
+
+  bool get isUpdatingService => _isUpdatingService;
+  String? get updateServiceError => _updateServiceError;
+
+  Future<bool> updateService(
+    String serviceId,
+    Map<String, dynamic> updatedFields,
+  ) async {
+    _isUpdatingService = true;
+    _updateServiceError = null;
+    notifyListeners();
+
+    try {
+      final updated = await _service.updateService(serviceId, updatedFields);
+      // Update in the list
+      final idx = _myServices.indexWhere((s) => s.id == serviceId);
+      if (idx != -1) _myServices[idx] = updated;
+      // Update selectedService if it matches
+      if (_selectedService?.id == serviceId) _selectedService = updated;
+      _isUpdatingService = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _updateServiceError = e.toString().replaceAll('Exception: ', '');
+      _isUpdatingService = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Dashboard Stats State
   Map<String, dynamic>? _dashboardStats;
   bool _isLoadingStats = false;
@@ -254,6 +312,31 @@ class ServiceBoyProvider extends ChangeNotifier {
       _statsError = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoadingStats = false;
+      notifyListeners();
+    }
+  }
+
+  // Overall Analytics State
+  OverallAnalyticsModel? _overallAnalytics;
+  bool _isLoadingAnalytics = false;
+  String? _analyticsError;
+
+  OverallAnalyticsModel? get overallAnalytics => _overallAnalytics;
+  bool get isLoadingAnalytics => _isLoadingAnalytics;
+  String? get analyticsError => _analyticsError;
+
+  Future<void> fetchOverallAnalytics() async {
+    _isLoadingAnalytics = true;
+    _analyticsError = null;
+    notifyListeners();
+
+    try {
+      final data = await _service.getOverallAnalytics();
+      _overallAnalytics = OverallAnalyticsModel.fromJson(data);
+    } catch (e) {
+      _analyticsError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingAnalytics = false;
       notifyListeners();
     }
   }
@@ -312,6 +395,34 @@ class ServiceBoyProvider extends ChangeNotifier {
     } finally {
       _isLoadingGallery = false;
       notifyListeners();
+    }
+  }
+
+  Future<bool> submitReview({
+    required String bookingId,
+    required double rating,
+    required String comment,
+    List<String>? imagePaths,
+  }) async {
+    _isSubmittingReview = true;
+    _reviewError = null;
+    notifyListeners();
+
+    try {
+      final success = await _service.addReview(
+        bookingId: bookingId,
+        rating: rating,
+        comment: comment,
+        imagePaths: imagePaths,
+      );
+      _isSubmittingReview = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isSubmittingReview = false;
+      _reviewError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
     }
   }
 }

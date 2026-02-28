@@ -6,7 +6,6 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../providers/auth_provider.dart';
-import 'signup_screen.dart';
 import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -61,11 +60,14 @@ class _LoginScreenState extends State<LoginScreen> {
         }
       } catch (e) {
         if (mounted) {
+          // Strip "Exception:" prefix and show only the first sentence
+          String msg = e.toString().replaceAll('Exception: ', '');
+          final dotIndex = msg.indexOf('.');
+          if (dotIndex > 0 && dotIndex < msg.length - 1) {
+            msg = msg.substring(0, dotIndex + 1);
+          }
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(e.toString()),
-              backgroundColor: AppColors.error,
-            ),
+            SnackBar(content: Text(msg), backgroundColor: AppColors.error),
           );
         }
       }
@@ -166,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Expanded(
                       child: RadioListTile<UserType>(
-                        title: const Text('Service Boy'),
+                        title: const Text('Technician'),
                         value: UserType.serviceBoy,
                         groupValue: _selectedUserType,
                         onChanged: (UserType? value) {
@@ -209,37 +211,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
 
                 const SizedBox(height: 24),
-
-                // Sign up link
-                Center(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Don't have an account? ",
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          'Sign Up',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),

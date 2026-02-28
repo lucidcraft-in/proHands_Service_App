@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../../../core/services/auth_service.dart';
@@ -15,6 +16,7 @@ class ConsumerService {
   // Get headers with token
   Future<Map<String, String>> _getHeaders() async {
     final token = await StorageService.getAuthToken();
+    print("-------");
     print(token);
     return {
       'Content-Type': 'application/json',
@@ -105,6 +107,34 @@ class ConsumerService {
     }
   }
 
+  // Get All Services
+  Future<List<ServiceProductModel>> getAllServices({
+    int page = 1,
+    int limit = 100, // Large limit to fetch most services for filtering
+  }) async {
+    final url = Uri.parse('$baseUrl/services?page=$page&limit=$limit');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> servicesJson = data['services'];
+          return servicesJson
+              .map((json) => ServiceProductModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load services');
+        }
+      } else {
+        throw Exception('Failed to load services: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching services: $e');
+    }
+  }
+
   // Get My Bookings
   Future<List<BookingModel>> getMyBookings() async {
     final url = Uri.parse('$baseUrl/bookings/my-bookings');
@@ -177,7 +207,7 @@ class ConsumerService {
     }
   }
 
-  // Update Profile
+  // Update Profile (Legacy? keeping for now but will use updateFullProfile)
   Future<UserModel> updateProfile({
     required String name,
     required String email,
@@ -209,6 +239,137 @@ class ConsumerService {
     }
   }
 
+  // Update Profile Photo Only
+  Future<UserModel> updateProfilePhoto(File photo) async {
+    final url = Uri.parse('$baseUrl/users/me/photo');
+    try {
+      final token = await StorageService.getAuthToken();
+      final request = http.MultipartRequest('PATCH', url);
+
+      request.headers['Authorization'] = 'Bearer $token';
+
+      request.files.add(
+        await http.MultipartFile.fromPath('profilePhoto', photo.path),
+      );
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return UserModel.fromJson(data['user']);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to update profile photo');
+        }
+      } else {
+        throw Exception(
+          'Failed to update profile photo: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error updating profile photo: $e');
+    }
+  }
+
+  // Update Full Profile (Details + Documents)
+  Future<UserModel> updateFullProfile({
+    String? name,
+    String? email,
+    String? address,
+    String? profession,
+    String? experience,
+    List<String>? servicesOffered,
+    List<String>? specialties,
+    List<String>? workPreference,
+    List<String>? workLocationPreferred,
+    double? latitude,
+    double? longitude,
+    String? profilePhotoPath,
+    String? serviceImagePath,
+    String? adharCardPath,
+    String? licensePath,
+    List<String>? portfolioImagePaths,
+  }) async {
+    final url = Uri.parse('$baseUrl/users/me');
+    try {
+      final token = await StorageService.getAuthToken();
+      final request = http.MultipartRequest('PATCH', url);
+
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Text Fields
+      if (name != null) request.fields['name'] = name;
+      if (email != null) request.fields['email'] = email;
+      if (address != null) request.fields['address'] = address;
+      if (profession != null) request.fields['profession'] = profession;
+      if (experience != null) request.fields['experience'] = experience;
+
+      if (servicesOffered != null) {
+        request.fields['servicesOffered'] = jsonEncode(servicesOffered);
+      }
+      if (specialties != null) {
+        request.fields['specialties'] = jsonEncode(specialties);
+      }
+      if (workPreference != null) {
+        request.fields['workPreference'] = jsonEncode(workPreference);
+      }
+      if (workLocationPreferred != null) {
+        request.fields['workLocationPreferred'] = jsonEncode(
+          workLocationPreferred,
+        );
+      }
+
+      if (latitude != null) request.fields['latitude'] = latitude.toString();
+      if (longitude != null) request.fields['longitude'] = longitude.toString();
+
+      // Files
+      if (profilePhotoPath != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('profilePhoto', profilePhotoPath),
+        );
+      }
+      if (serviceImagePath != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('serviceImage', serviceImagePath),
+        );
+      }
+      if (adharCardPath != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('adharCard', adharCardPath),
+        );
+      }
+      if (licensePath != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('license', licensePath),
+        );
+      }
+      if (portfolioImagePaths != null && portfolioImagePaths.isNotEmpty) {
+        for (var path in portfolioImagePaths) {
+          request.files.add(
+            await http.MultipartFile.fromPath('portfolioImages', path),
+          );
+        }
+      }
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return UserModel.fromJson(data['user']);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to update profile');
+        }
+      } else {
+        throw Exception('Failed to update profile: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error updating profile: $e');
+    }
+  }
+
   // Complete Provider Profile
   Future<UserModel> completeProviderProfile({
     required String name,
@@ -217,6 +378,7 @@ class ConsumerService {
     required String profession,
     required String experience,
     required List<String> servicesOffered,
+    required List<String> specialties,
     required List<String> workPreference,
     required List<String> workLocationPreferred,
     required double latitude,
@@ -248,6 +410,7 @@ class ConsumerService {
       // Based on typical multipart handling, we often send array items as 'key[]': value or similar.
       // However, if backend expects JSON string:
       request.fields['servicesOffered'] = jsonEncode(servicesOffered);
+      request.fields['specialties'] = jsonEncode(specialties);
       request.fields['workPreference'] = jsonEncode(workPreference);
       request.fields['workLocationPreferred'] = jsonEncode(
         workLocationPreferred,
@@ -340,7 +503,9 @@ class ConsumerService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-
+      print("-- ----- ---- -- - ");
+      print(response.statusCode);
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {

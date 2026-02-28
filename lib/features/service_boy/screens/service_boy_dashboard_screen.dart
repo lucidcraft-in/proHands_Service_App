@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:service_app/features/service_boy/screens/edit_service_screen.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
@@ -9,6 +10,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/widgets/full_screen_image_viewer.dart';
 import 'service_boy_task_details_screen.dart';
 import '../../profile/screens/edit_profile_screen.dart';
+import 'service_boy_overall_analytics_screen.dart';
 
 import 'package:provider/provider.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
@@ -37,6 +39,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
       sbProvider.fetchBookings();
       sbProvider.fetchDashboardStats();
+      sbProvider.fetchOverallAnalytics();
       sbProvider.fetchMyServices(); // Fetch my services instead of categories
 
       await consProvider.fetchUserProfile();
@@ -376,16 +379,16 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                               //   size: 14,
                               // ),
                               // const SizedBox(width: 4),
-                              Text(
-                                user.isActive ? 'Active' : 'Inactive',
-                                style: AppTextStyles.labelSmall.copyWith(
-                                  color:
-                                      !user.isActive
-                                          ? Colors.red
-                                          : Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              // Text(
+                              //   user.isActive ? 'Active' : 'Inactive',
+                              //   style: AppTextStyles.labelSmall.copyWith(
+                              //     color:
+                              //         !user.isActive
+                              //             ? Colors.red
+                              //             : Colors.green,
+                              //     fontWeight: FontWeight.bold,
+                              //   ),
+                              // ),
                               // const SizedBox(width: 8),
                               // Text(
                               //   '(120 Reviews)',
@@ -420,7 +423,15 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                             bottom: 0,
                             right: 0,
                             child: GestureDetector(
-                              onTap: _showImageOptions,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => const EditProfileScreen(),
+                                  ),
+                                );
+                              },
+                              // _showImageOptions,
                               child: Container(
                                 padding: const EdgeInsets.all(4),
                                 decoration: const BoxDecoration(
@@ -537,7 +548,74 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
               const SizedBox(height: 24),
 
-              // Stats Cards
+              // Overall Analytics Card
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => const ServiceBoyOverallAnalyticsScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadowLight,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Iconsax.status_up,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Overall Analytics',
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            Text(
+                              'Tap to view your full performance report',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: AppColors.textTertiary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
               // Stats Cards
               Consumer<ServiceBoyProvider>(
                 builder: (context, provider, child) {
@@ -560,7 +638,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         children: [
                           Expanded(
                             child: _buildStatCard(
-                              'Pending Tasks',
+                              'Pending Work',
                               '$pending',
                               Iconsax.timer,
                               AppColors.warning,
@@ -569,7 +647,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: _buildStatCard(
-                              'Ongoing Tasks',
+                              'Ongoing Work',
                               '$ongoing',
                               Iconsax.activity,
                               AppColors.primary,
@@ -742,10 +820,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Active & Recent Tasks',
-                    style: AppTextStyles.labelLarge,
-                  ),
+                  Text('Active & Recent Work', style: AppTextStyles.labelLarge),
                   // TextButton(
                   //   onPressed: () {
                   //     // Navigate to Tasks tab if possible or just refresh
@@ -777,7 +852,10 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                     );
                   }
 
-                  final allTasks = provider.bookings;
+                  final allTasks =
+                      provider.bookings
+                          .where((b) => b.status != BookingStatus.open)
+                          .toList();
 
                   if (allTasks.isEmpty) {
                     return Center(
@@ -801,11 +879,11 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           String statusText;
                           print(booking.status);
                           switch (booking.status) {
-                            case BookingStatus.pending:
+                            case BookingStatus.assigned:
                               statusColor = AppColors.warning;
-                              statusText = 'Pending';
+                              statusText = 'Assigned';
                               break;
-                            case BookingStatus.ongoing:
+                            case BookingStatus.reached:
                               statusColor = AppColors.primary;
                               statusText = 'Ongoing';
                               break;

@@ -63,7 +63,7 @@ class _ServiceBoyMainScreenState extends State<ServiceBoyMainScreen> {
             BottomNavigationBarItem(
               icon: Icon(Iconsax.task),
               activeIcon: Icon(Iconsax.task_square),
-              label: 'Tasks',
+              label: 'Work',
             ),
             BottomNavigationBarItem(
               icon: Icon(Iconsax.wallet),

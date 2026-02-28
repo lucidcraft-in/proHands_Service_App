@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../service_boy/models/service_category_model.dart';
 import '../models/service_product_model.dart';
@@ -18,12 +19,20 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isSubmittingReview = false;
   String? _reviewError;
 
+  List<ServiceProductModel> _allServices = [];
+  bool _isLoadingAllServices = false;
+  String? _allServicesError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
 
   bool get isSubmittingReview => _isSubmittingReview;
   String? get reviewError => _reviewError;
+
+  List<ServiceProductModel> get allServices => _allServices;
+  bool get isLoadingAllServices => _isLoadingAllServices;
+  String? get allServicesError => _allServicesError;
 
   Future<void> fetchCategories() async {
     _isLoadingCategories = true;
@@ -36,6 +45,21 @@ class ConsumerProvider extends ChangeNotifier {
       _categoriesError = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoadingCategories = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchAllServices() async {
+    _isLoadingAllServices = true;
+    _allServicesError = null;
+    notifyListeners();
+
+    try {
+      _allServices = await _service.getAllServices();
+    } catch (e) {
+      _allServicesError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingAllServices = false;
       notifyListeners();
     }
   }
@@ -162,6 +186,8 @@ class ConsumerProvider extends ChangeNotifier {
 
     try {
       _currentUser = await _service.getMe();
+      print("==== =     = = = = = = = = = = = =  ====");
+      print(_currentUser!);
     } catch (e) {
       _profileError = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -201,6 +227,12 @@ class ConsumerProvider extends ChangeNotifier {
   bool get isUpdatingProfile => _isUpdatingProfile;
   String? get updateProfileError => _updateProfileError;
 
+  bool _isUpdatingPhoto = false;
+  String? _updatePhotoError;
+
+  bool get isUpdatingPhoto => _isUpdatingPhoto;
+  String? get updatePhotoError => _updatePhotoError;
+
   Future<bool> updateProfile({
     required String name,
     required String email,
@@ -215,6 +247,78 @@ class ConsumerProvider extends ChangeNotifier {
         name: name,
         email: email,
         address: address,
+      );
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _updateProfileError = e.toString().replaceAll('Exception: ', '');
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateProfilePhoto(File photo) async {
+    _isUpdatingPhoto = true;
+    _updatePhotoError = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _service.updateProfilePhoto(photo);
+      // Explicitly fetch fresh profile to ensure all screens are synced
+      await fetchUserProfile();
+      _isUpdatingPhoto = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _updatePhotoError = e.toString().replaceAll('Exception: ', '');
+      _isUpdatingPhoto = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateFullProfile({
+    String? name,
+    String? email,
+    String? address,
+    String? profession,
+    String? experience,
+    List<String>? servicesOffered,
+    List<String>? specialties,
+    List<String>? workPreference,
+    List<String>? workLocationPreferred,
+    double? latitude,
+    double? longitude,
+    String? profilePhotoPath,
+    String? serviceImagePath,
+    String? adharCardPath,
+    String? licensePath,
+    List<String>? portfolioImagePaths,
+  }) async {
+    _isUpdatingProfile = true;
+    _updateProfileError = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _service.updateFullProfile(
+        name: name,
+        email: email,
+        address: address,
+        profession: profession,
+        experience: experience,
+        servicesOffered: servicesOffered,
+        specialties: specialties,
+        workPreference: workPreference,
+        workLocationPreferred: workLocationPreferred,
+        latitude: latitude,
+        longitude: longitude,
+        profilePhotoPath: profilePhotoPath,
+        serviceImagePath: serviceImagePath,
+        adharCardPath: adharCardPath,
+        licensePath: licensePath,
+        portfolioImagePaths: portfolioImagePaths,
       );
       _isUpdatingProfile = false;
       notifyListeners();
@@ -283,6 +387,7 @@ class ConsumerProvider extends ChangeNotifier {
     required String profession,
     required String experience,
     required List<String> servicesOffered,
+    required List<String> specialties,
     required List<String> workPreference,
     required List<String> workLocationPreferred,
     required double latitude,
@@ -304,6 +409,7 @@ class ConsumerProvider extends ChangeNotifier {
         profession: profession,
         experience: experience,
         servicesOffered: servicesOffered,
+        specialties: specialties,
         workPreference: workPreference,
         workLocationPreferred: workLocationPreferred,
         latitude: latitude,

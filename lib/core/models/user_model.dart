@@ -17,6 +17,7 @@ class UserModel {
   final String bio;
   final List<String> specialties;
   final String serviceImage;
+  final String profilePhoto;
   final String location;
   final List<String> portfolioImages;
   final int postsCount;
@@ -27,6 +28,8 @@ class UserModel {
   final String experience;
   final String? adharCard;
   final String? license;
+  final double? latitude;
+  final double? longitude;
 
   const UserModel({
     required this.id,
@@ -43,6 +46,7 @@ class UserModel {
     this.bio = 'Professional service provider with years of experience.',
     this.specialties = const ['Service'],
     this.serviceImage = 'assets/images/default_avatar.png',
+    this.profilePhoto = 'assets/images/default_avatar.png',
     this.location = 'Unknown',
     this.portfolioImages = const [],
     this.postsCount = 0,
@@ -53,13 +57,31 @@ class UserModel {
     this.experience = '0',
     this.adharCard,
     this.license,
+    this.latitude,
+    this.longitude,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     // Parse location
     String parsedLocation = 'Unknown';
+    double? lat;
+    double? lng;
+
     if (json['location'] is Map) {
-      parsedLocation = json['location']['address'] ?? 'Unknown';
+      final locMap = json['location'] as Map<String, dynamic>;
+      parsedLocation = locMap['address'] ?? 'Unknown';
+
+      if (locMap['type'] == 'Point' && locMap['coordinates'] is List) {
+        final coords = locMap['coordinates'] as List;
+        if (coords.length >= 2) {
+          // GeoJSON is [longitude, latitude]
+          lng = (coords[0] as num).toDouble();
+          lat = (coords[1] as num).toDouble();
+        }
+      } else if (locMap['latitude'] != null && locMap['longitude'] != null) {
+        lat = (locMap['latitude'] as num).toDouble();
+        lng = (locMap['longitude'] as num).toDouble();
+      }
     } else if (json['location'] is String) {
       parsedLocation = json['location'];
     }
@@ -84,6 +106,7 @@ class UserModel {
           'Professional service provider with years of experience.',
       specialties: List<String>.from(json['specialties'] ?? ['Service']),
       serviceImage: json['serviceImage'] ?? 'assets/images/default_avatar.png',
+      profilePhoto: json['profilePhoto'] ?? 'assets/images/default_avatar.png',
       location: parsedLocation,
       portfolioImages: List<String>.from(json['portfolioImages'] ?? []),
       postsCount: json['postsCount'] ?? 0,
@@ -96,6 +119,8 @@ class UserModel {
       experience: json['experience']?.toString() ?? '0',
       adharCard: json['adharCard'],
       license: json['license'],
+      latitude: lat,
+      longitude: lng,
     );
   }
 
@@ -115,6 +140,7 @@ class UserModel {
       'bio': bio,
       'specialties': specialties,
       'serviceImage': serviceImage,
+      'profilePhoto': profilePhoto,
       'location': location,
       'portfolioImages': portfolioImages,
       'postsCount': postsCount,
@@ -125,6 +151,8 @@ class UserModel {
       'experience': experience,
       'adharCard': adharCard,
       'license': license,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 

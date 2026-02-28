@@ -218,7 +218,7 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Trending Workers', style: AppTextStyles.h4),
+                      Text('Trending Technicians', style: AppTextStyles.h4),
                     ],
                   ),
 
@@ -241,9 +241,9 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                       if (provider.trendingServices.isEmpty) {
                         return const EmptyStateWidget(
                           icon: Iconsax.user_tag,
-                          title: 'No Trending Workers',
+                          title: 'No Trending Technicians',
                           subtitle:
-                              'We couldn\'t find any trending workers at the moment. Check back soon!',
+                              'We couldn\'t find any trending technicians at the moment. Check back soon!',
                           iconSize: 48,
                         );
                       }

@@ -21,7 +21,7 @@ class DummyDataService {
       customerPhone: '7510538712',
       price: 1200,
       description: 'Deep cleaning of 2BHK',
-      status: BookingStatus.pending,
+      status: BookingStatus.assigned,
     ),
     BookingModel(
       id: '2',
@@ -35,7 +35,7 @@ class DummyDataService {
       customerPhone: '9876543210',
       price: 800,
       description: 'AC not cooling',
-      status: BookingStatus.pending,
+      status: BookingStatus.assigned,
     ),
     BookingModel(
       id: '3',
@@ -49,7 +49,7 @@ class DummyDataService {
       customerPhone: '9988776655',
       price: 500,
       description: 'Tap leakage',
-      status: BookingStatus.ongoing,
+      status: BookingStatus.reached,
     ),
   ];
 

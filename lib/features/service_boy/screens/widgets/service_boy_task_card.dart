@@ -29,10 +29,10 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
   Widget build(BuildContext context) {
     Color statusColor;
     switch (widget.booking.status) {
-      case BookingStatus.pending:
+      case BookingStatus.assigned:
         statusColor = AppColors.warning;
         break;
-      case BookingStatus.ongoing:
+      case BookingStatus.reached:
         statusColor = AppColors.primary;
         break;
       case BookingStatus.completed:
@@ -41,6 +41,8 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
       case BookingStatus.cancelled:
         statusColor = AppColors.error;
         break;
+      default:
+        statusColor = AppColors.textTertiary;
     }
 
     return GestureDetector(
@@ -93,7 +95,12 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                       borderRadius: BorderRadius.circular(30),
                     ),
                     child: Text(
-                      widget.booking.status.name.toUpperCase(),
+                      (widget.booking.status == BookingStatus.reached
+                              ? 'Ongoing'
+                              : widget.booking.status == BookingStatus.completed
+                              ? 'Completed'
+                              : widget.booking.status.name)
+                          .toUpperCase(),
                       style: AppTextStyles.labelSmall.copyWith(
                         color: statusColor,
                         fontSize: 11,
@@ -195,7 +202,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
             const SizedBox(height: 20),
 
             // Action Buttons
-            if (widget.booking.status == BookingStatus.pending)
+            if (widget.booking.status == BookingStatus.assigned)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: Row(
@@ -237,7 +244,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                           if (success) {
                             scaffoldMessenger.showSnackBar(
                               const SnackBar(
-                                content: Text('Task accepted successfully!'),
+                                content: Text('Work accepted successfully!'),
                                 backgroundColor: AppColors.success,
                               ),
                             );
@@ -246,7 +253,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                               SnackBar(
                                 content: Text(
                                   provider.bookingsError ??
-                                      'Failed to accept task',
+                                      'Failed to accept work',
                                 ),
                                 backgroundColor: AppColors.error,
                               ),
@@ -261,11 +268,11 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
               ),
 
             // Completion Navigation for Ongoing Tasks
-            if (widget.booking.status == BookingStatus.ongoing)
+            if (widget.booking.status == BookingStatus.reached)
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 child: CustomButton(
-                  text: 'Complete Job',
+                  text: 'Complete Work',
                   onPressed: () {
                     Navigator.push(
                       context,
@@ -310,17 +317,42 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                       'Other',
                     ].map(
                       (reason) => InkWell(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Decline reason selected: $reason (Not implemented)',
-                              ),
-                            ),
+                        onTap: () async {
+                          final provider = context.read<ServiceBoyProvider>();
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            context,
                           );
+
+                          // Optimistically hide the reasons
                           setState(() {
                             _declineId = null;
                           });
+
+                          final success = await provider.cancelBookingRequest(
+                            widget.booking.id,
+                            reason,
+                          );
+
+                          if (success) {
+                            scaffoldMessenger.showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Cancellation request submitted.',
+                                ),
+                                backgroundColor: AppColors.success,
+                              ),
+                            );
+                          } else {
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  provider.bookingsError ??
+                                      'Failed to submit cancellation request.',
+                                ),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 10),

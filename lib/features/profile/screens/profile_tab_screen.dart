@@ -74,7 +74,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 phone: '',
                 userType: UserType.customer,
               );
-
+          print(user);
           if (provider.isLoadingProfile) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -90,14 +90,23 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     children: [
                       Stack(
                         children: [
-                          const CircleAvatar(
+                          CircleAvatar(
                             radius: 50,
                             backgroundColor: AppColors.background,
-                            child: Icon(
-                              Icons.person,
-                              size: 50,
-                              color: AppColors.primary,
-                            ),
+                            backgroundImage:
+                                (user.profilePhoto.isNotEmpty &&
+                                        !user.profilePhoto.contains('default'))
+                                    ? NetworkImage(user.profilePhoto)
+                                    : null,
+                            child:
+                                (user.profilePhoto.isEmpty ||
+                                        user.profilePhoto.contains('default'))
+                                    ? const Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: AppColors.primary,
+                                    )
+                                    : null,
                           ),
                           Positioned(
                             bottom: 0,
@@ -133,6 +142,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(user.name ?? 'Guest User', style: AppTextStyles.h3),
+                      Text(user.phone, style: AppTextStyles.bodyMedium),
+                      Text(
+                        (user.userType == UserType.serviceBoy &&
+                                !user.isProfileComplete
+                            // (user.name == null)
+                            )
+                            ? 'Account under review'
+                            : (user.name ?? 'Guest User'),
+                        style: AppTextStyles.bodyMedium,
+                      ),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -164,31 +183,39 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     children: [
                       _buildSectionHeader('GENERAL'),
 
-                      if (user.userType == UserType.customer) ...[
-                        _MenuItem(
-                          icon: Iconsax.heart,
-                          title: 'Favourite list',
-                          isExpanded: _isFavoritesExpanded,
-                          onTap:
-                              () => setState(
-                                () =>
-                                    _isFavoritesExpanded =
-                                        !_isFavoritesExpanded,
-                              ),
-                        ),
-                        if (_isFavoritesExpanded) _buildFavoritesList(),
-                        const Divider(
-                          height: 1,
-                          indent: 70,
-                          color: AppColors.background,
-                        ),
-                      ],
-
+                      // if (user.userType == UserType.customer) ...[
+                      //   _MenuItem(
+                      //     icon: Iconsax.heart,
+                      //     title: 'Favourite list',
+                      //     isExpanded: _isFavoritesExpanded,
+                      //     onTap:
+                      //         () => setState(
+                      //           () =>
+                      //               _isFavoritesExpanded =
+                      //                   !_isFavoritesExpanded,
+                      //         ),
+                      //   ),
+                      //   if (_isFavoritesExpanded) _buildFavoritesList(),
+                      //   const Divider(
+                      //     height: 1,
+                      //     indent: 70,
+                      //     color: AppColors.background,
+                      //   ),
+                      // ],
                       if (user.userType == UserType.serviceBoy) ...[
                         _MenuItem(
                           icon: Iconsax.briefcase,
                           title: 'My Services',
                           onTap: () {
+                            if (!user.isProfileComplete) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Account under review'),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -557,15 +584,73 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         }
 
         final locations = snapshot.data!;
+        final user = context.watch<ConsumerProvider>().currentUser;
+
+        // Filter out placeholder locations with coordinates [0.0, 0.0]
+        final validLocations =
+            locations.where((loc) {
+              final coords = loc['coordinates'] as List<dynamic>?;
+              if (coords == null || coords.length < 2) return false;
+              final lat = (coords[0] as num).toDouble();
+              final lng = (coords[1] as num).toDouble();
+              return !(lat == 0.0 && lng == 0.0);
+            }).toList();
+
+        if (validLocations.isEmpty) {
+          return Container(
+            color: AppColors.white,
+            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Iconsax.location_slash,
+                    size: 40,
+                    color: AppColors.textTertiary,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No location found',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
         return Container(
           color: AppColors.white,
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(
             children: [
-              ...locations.map((loc) {
-                final address = loc['address'] ?? 'Unknown Address';
+              ...validLocations.map((loc) {
+                final address = loc['address'] as String? ?? '';
                 final coordinates = loc['coordinates'] as List<dynamic>?;
+
+                bool isSelected = false;
+                if (user != null &&
+                    coordinates != null &&
+                    coordinates.length >= 2) {
+                  // Saved locally as [latitude, longitude]
+                  final savedLat = (coordinates[0] as num).toDouble();
+                  final savedLng = (coordinates[1] as num).toDouble();
+
+                  if (user.latitude != null && user.longitude != null) {
+                    // API returns GeoJSON [longitude, latitude], parsed into user.latitude/longitude
+                    isSelected =
+                        (savedLat - user.latitude!).abs() < 0.0005 &&
+                        (savedLng - user.longitude!).abs() < 0.0005;
+                    debugPrint(
+                      'Location check: saved=[$savedLat, $savedLng] vs profile=[${user.latitude}, ${user.longitude}] => isSelected=$isSelected',
+                    );
+                  } else if (user.location != 'Unknown') {
+                    // Fallback to address matching if lat/lng not available in user model
+                    isSelected = user.location == address;
+                  }
+                }
 
                 return Container(
                   margin: const EdgeInsets.symmetric(
@@ -573,8 +658,17 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color:
+                        isSelected
+                            ? AppColors.primary.withOpacity(0.05)
+                            : AppColors.white,
                     borderRadius: BorderRadius.circular(16),
+                    border:
+                        isSelected
+                            ? Border.all(
+                              color: AppColors.primary.withOpacity(0.1),
+                            )
+                            : null,
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.shadowLight,
@@ -601,7 +695,13 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       ),
                     ),
                     title: Text(
-                      loc['label'] ?? 'Saved Location',
+                      (loc['label'] != null &&
+                              loc['label'].toString().isNotEmpty)
+                          ? loc['label']
+                          : (loc['locality'] != null &&
+                              loc['locality'].toString().isNotEmpty)
+                          ? loc['locality']
+                          : 'Location',
                       style: AppTextStyles.labelSmall.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -614,12 +714,19 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: const Icon(
-                      Icons.check_circle_outline,
+                    trailing: Icon(
+                      isSelected
+                          ? Icons.check_circle
+                          : Icons.check_circle_outline,
                       size: 20,
-                      color: AppColors.textTertiary,
+                      color: isSelected ? Colors.green : AppColors.textTertiary,
                     ),
-                    onTap: () => _handleLocationUpdate(address, coordinates),
+                    onTap:
+                        () => _showLocationConfirmDialog(
+                          address,
+                          coordinates,
+                          loc['label'] as String? ?? address,
+                        ),
                   ),
                 );
               }),
@@ -640,12 +747,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             onLocationSelected: (locationData) async {
               final address = locationData['address'] as String;
               final coordinates = locationData['coordinates'] as List<double>;
-
+              print("=== ====== ========");
+              print(locationData);
               // Save to Storage
               await StorageService.saveUserLocation(
                 address: address,
                 coordinates: coordinates,
                 label: locationData['label'],
+                zipcode: locationData['zipcode'],
+                locality: locationData['locality'],
+                administrativeArea: locationData['administrativeArea'],
               );
 
               // Update Profile
@@ -655,6 +766,77 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             },
           ),
     );
+  }
+
+  Future<void> _showLocationConfirmDialog(
+    String address,
+    List<dynamic>? coordinates,
+    String label,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                const Icon(
+                  Iconsax.location,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+                const SizedBox(width: 10),
+                Text('Set as Current Location', style: AppTextStyles.h4),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: AppTextStyles.labelMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  address,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Confirm'),
+              ),
+            ],
+          ),
+    );
+
+    if (confirmed == true) {
+      await _handleLocationUpdate(address, coordinates);
+      // Refresh profile so the new coordinates are reflected in the highlight
+      if (mounted) {
+        await context.read<ConsumerProvider>().fetchUserProfile();
+        setState(() {}); // Rebuild FutureBuilder to update the highlighted card
+      }
+    }
   }
 
   Future<void> _handleLocationUpdate(

@@ -114,6 +114,7 @@ class _ServiceBoyServicesScreenState extends State<ServiceBoyServicesScreen> {
             itemBuilder: (context, index) {
               final service = provider.myServices[index];
               final serviceId = service.id;
+              print(serviceId);
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -161,8 +162,9 @@ class _ServiceBoyServicesScreenState extends State<ServiceBoyServicesScreen> {
                           children: [
                             Text(service.name, style: AppTextStyles.labelLarge),
                             const SizedBox(height: 4),
+
                             Text(
-                              'Duration: ${service.duration} mins • Price: \$${service.price}',
+                              service.description,
                               style: AppTextStyles.caption.copyWith(
                                 color: AppColors.textSecondary,
                               ),

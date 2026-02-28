@@ -1,4 +1,14 @@
-enum BookingStatus { pending, ongoing, completed, cancelled }
+import 'review_model.dart';
+
+enum BookingStatus {
+  open,
+  assigned,
+  reached,
+  // closedByCustomer,
+  // closed,
+  completed,
+  cancelled,
+}
 
 class BookingModel {
   final String id; // Backend ID (_id)
@@ -22,6 +32,7 @@ class BookingModel {
   final List<String> jobProofImages;
   final String? completionNotes;
   final String? otp;
+  final ReviewModel? review;
   BookingStatus status;
   bool isCompleteClicked;
   bool isOTPRequested;
@@ -45,13 +56,14 @@ class BookingModel {
     this.jobProofImages = const [],
     this.completionNotes,
     this.otp,
-    this.status = BookingStatus.pending,
+    this.status = BookingStatus.open,
     this.isCompleteClicked = false,
     this.isOTPRequested = false,
     this.isVerified = false,
     this.providerName,
     this.providerPhone,
     this.providerProfession,
+    this.review,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
@@ -140,24 +152,32 @@ class BookingModel {
       providerName: providerName,
       providerPhone: providerPhone,
       providerProfession: providerProfession,
+      review:
+          json['review'] != null ? ReviewModel.fromJson(json['review']) : null,
     );
   }
 
   static BookingStatus _parseStatus(String? status) {
-    if (status == null) return BookingStatus.pending;
+    if (status == null) return BookingStatus.open;
     switch (status.toUpperCase()) {
+      case 'OPEN':
+        return BookingStatus.open;
       case 'ASSIGNED':
       case 'PENDING':
-        return BookingStatus.pending;
+        return BookingStatus.assigned;
+      case 'REACHED':
       case 'ACCEPTED':
       case 'ONGOING':
-        return BookingStatus.ongoing;
+        return BookingStatus.reached;
+      case 'CLOSED_BY_CUSTOMER':
+        return BookingStatus.completed;
+      case 'CLOSED':
       case 'COMPLETED':
         return BookingStatus.completed;
       case 'CANCELLED':
         return BookingStatus.cancelled;
       default:
-        return BookingStatus.pending;
+        return BookingStatus.open;
     }
   }
 
@@ -186,6 +206,7 @@ class BookingModel {
     String? providerName,
     String? providerPhone,
     String? providerProfession,
+    ReviewModel? review,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -212,6 +233,7 @@ class BookingModel {
       providerName: providerName ?? this.providerName,
       providerPhone: providerPhone ?? this.providerPhone,
       providerProfession: providerProfession ?? this.providerProfession,
+      review: review ?? this.review,
     );
   }
 }
