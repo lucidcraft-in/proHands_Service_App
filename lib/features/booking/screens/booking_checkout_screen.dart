@@ -29,14 +29,21 @@ class BookingCheckoutScreen extends StatefulWidget {
 class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   String _selectedLocationAddress = 'Loading location...';
   String _selectedLocationLabel = 'Current Location';
-  String? _selectedZipcode;
-  String? _selectedLocality;
-  String? _selectedAdministrativeArea;
   List<double> _selectedCoordinates = [0.0, 0.0];
-  String _selectedPaymentMethod = 'Credit Card';
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
+  final _houseNameController = TextEditingController();
+  final _placeController = TextEditingController();
+  final _zipcodeController = TextEditingController();
   bool _isProcessing = false;
+
+  @override
+  void dispose() {
+    _houseNameController.dispose();
+    _placeController.dispose();
+    _zipcodeController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -52,9 +59,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
           setState(() {
             _selectedLocationAddress = locationData['address'];
             _selectedLocationLabel = locationData['label'] ?? 'Saved Location';
-            _selectedZipcode = locationData['zipcode'];
-            _selectedLocality = locationData['locality'];
-            _selectedAdministrativeArea = locationData['administrativeArea'];
+            _placeController.text = locationData['locality'] ?? '';
+            _zipcodeController.text = locationData['zipcode'] ?? '';
             if (locationData['coordinates'] != null) {
               _selectedCoordinates = List<double>.from(
                 locationData['coordinates'],
@@ -71,7 +77,6 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error loading location: $e');
       if (mounted) {
         setState(() {
           _selectedLocationAddress = 'Select a location';
@@ -119,10 +124,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                 _selectedLocationAddress = locationData['address'] ?? '';
                 _selectedLocationLabel =
                     locationData['label'] ?? 'Selected Location';
-                _selectedZipcode = locationData['zipcode'];
-                _selectedLocality = locationData['locality'];
-                _selectedAdministrativeArea =
-                    locationData['administrativeArea'];
+                _placeController.text = locationData['locality'] ?? '';
+                _zipcodeController.text = locationData['zipcode'] ?? '';
                 if (locationData['coordinates'] != null) {
                   _selectedCoordinates = List<double>.from(
                     locationData['coordinates'],
@@ -266,16 +269,137 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
               ),
             ),
 
+            const SizedBox(height: 24),
+
+            // Detailed Address Fields
+            Text('Detailed Address', style: AppTextStyles.labelLarge),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  _buildAddressField(
+                    controller: _houseNameController,
+                    label: 'House Name / Number',
+                    hint: 'e.g. Flat 101, Green Villa',
+                    icon: Iconsax.home,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildAddressField(
+                    controller: _placeController,
+                    label: 'Place / Locality',
+                    hint: 'e.g. MG Road, Sector 5',
+                    icon: Iconsax.location,
+                  ),
+                  const SizedBox(height: 16),
+                  _buildAddressField(
+                    controller: _zipcodeController,
+                    label: 'Zip Code',
+                    hint: 'e.g. 560001',
+                    icon: Iconsax.code,
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 32),
 
-            // Payment Method
-            Text('Payment Method', style: AppTextStyles.labelLarge),
+            // Schedule Section
+            Text('Schedule Service', style: AppTextStyles.labelLarge),
             const SizedBox(height: 16),
-            _buildPaymentOption('Credit Card', Iconsax.card),
-            const SizedBox(height: 12),
-            _buildPaymentOption('Wallet', Iconsax.wallet),
-            const SizedBox(height: 12),
-            _buildPaymentOption('Cash on Service', Iconsax.money),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _selectDate(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Iconsax.calendar,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Date',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            DateFormat('EEE, MMM d').format(_selectedDate),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _selectTime(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Iconsax.clock,
+                                size: 18,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Time',
+                                style: AppTextStyles.caption.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _selectedTime.format(context),
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
 
             const SizedBox(height: 40),
 
@@ -291,43 +415,47 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
     );
   }
 
-  Widget _buildPaymentOption(String title, IconData icon) {
-    final isSelected = _selectedPaymentMethod == title;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPaymentMethod = title),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: isSelected ? 2 : 1,
+  Widget _buildAddressField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          keyboardType: keyboardType,
+          style: AppTextStyles.bodyMedium,
+          decoration: InputDecoration(
+            hintText: hint,
+            prefixIcon: Icon(icon, size: 20, color: AppColors.primary),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(color: AppColors.primary),
+            ),
           ),
         ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              title,
-              style: AppTextStyles.bodyMedium.copyWith(
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-            const Spacer(),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: AppColors.primary,
-                size: 20,
-              ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
@@ -342,21 +470,25 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
       final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
       final formattedTime = _selectedTime.format(context);
 
-      // Construct address string preference by user: "Locality, AdministrativeArea - Zipcode"
-      // Example: "Mesa, New Jersey - 45463"
-      String finalAddress = _selectedLocationAddress;
-      if (_selectedLocality != null &&
-          _selectedAdministrativeArea != null &&
-          _selectedZipcode != null &&
-          _selectedLocality!.isNotEmpty &&
-          _selectedAdministrativeArea!.isNotEmpty &&
-          _selectedZipcode!.isNotEmpty) {
-        finalAddress =
-            '$_selectedLocality, $_selectedAdministrativeArea - $_selectedZipcode';
-      } else if (_selectedZipcode != null && _selectedZipcode!.isNotEmpty) {
-        // Fallback to "Label, Zipcode" if not all details present
-        finalAddress = '$_selectedLocationLabel, $_selectedZipcode';
+      // Construct address string divided by comma
+      final houseName = _houseNameController.text.trim();
+      final place = _placeController.text.trim();
+      final zipcode = _zipcodeController.text.trim();
+
+      if (place.isEmpty || zipcode.isEmpty) {
+        setState(() => _isProcessing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter place and zipcode')),
+        );
+        return;
       }
+
+      final List<String> addressParts = [];
+      if (houseName.isNotEmpty) addressParts.add(houseName);
+      addressParts.add(place);
+      addressParts.add(zipcode);
+
+      final finalAddress = addressParts.join(', ');
 
       final success = await consumerProvider.createBooking(
         serviceId: widget.serviceId,
@@ -392,7 +524,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                     Text('Booking Successful!', style: AppTextStyles.h4),
                     const SizedBox(height: 8),
                     Text(
-                      'Your service has been scheduled.\nLocation: $_selectedLocationAddress',
+                      'Your service has been scheduled.\nLocation: $finalAddress',
                       textAlign: TextAlign.center,
                       style: AppTextStyles.bodySmall,
                     ),

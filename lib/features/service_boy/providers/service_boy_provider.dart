@@ -95,14 +95,12 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   // Fetch My Services
   Future<void> fetchMyServices() async {
-    print("-- ---- --");
     _isLoadingServices = true;
     _servicesError = null;
     notifyListeners();
 
     try {
       _myServices = await _service.getMyServices();
-      print(_myServices);
     } catch (e) {
       _servicesError = e.toString().replaceAll('Exception: ', '');
     } finally {

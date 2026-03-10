@@ -278,7 +278,7 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                               padding: const EdgeInsets.only(bottom: 16),
                               child: ExpertCard(
                                 name: service.providerName,
-                                image: service.providerImage,
+                                image: service.image,
                                 profession: service.profession,
                                 rating: service.rating,
                                 reviews: service.reviewsCount,
@@ -292,7 +292,7 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                                     profession: service.profession,
                                     rating: service.rating,
                                     reviewsCount: service.reviewsCount,
-                                    serviceImage: service.providerImage,
+                                    serviceImage: service.image,
                                     // Add other fields with default/empty values
                                   );
                                   _navigateToProviderDetail(providerUser);

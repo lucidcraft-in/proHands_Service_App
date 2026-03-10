@@ -73,7 +73,7 @@ class ServiceProductModel {
   // }
 
   factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
-    String providerName = 'Unknown Provider';
+    String providerName = 'Service Expert';
     String providerImage = '';
     String providerId = '';
     double rating = 0.0;
@@ -83,7 +83,7 @@ class ServiceProductModel {
     if (json['providerId'] != null) {
       if (json['providerId'] is Map) {
         final provider = json['providerId'];
-        providerName = provider['name'] ?? 'Unknown Provider';
+        providerName = provider['name'] ?? 'Service Expert';
         providerId = provider['_id'] ?? '';
         rating = (provider['rating'] ?? 0).toDouble();
         reviewsCount = provider['reviewsCount'] ?? 0;

@@ -60,12 +60,10 @@ class _LocationSelectorBottomSheetState
   }
 
   Future<void> _useCurrentLocation() async {
-    debugPrint('Use Current Location tapped');
     setState(() => _isLoading = true);
 
     try {
       final position = await LocationService.getCurrentPosition();
-      debugPrint('Position result: $position');
 
       if (position != null) {
         _coordinates = [position.latitude, position.longitude];
@@ -73,7 +71,6 @@ class _LocationSelectorBottomSheetState
           position.latitude,
           position.longitude,
         );
-        debugPrint('Address result: $addressData');
 
         if (addressData != null && mounted) {
           setState(() {
@@ -97,7 +94,6 @@ class _LocationSelectorBottomSheetState
         }
       }
     } catch (e) {
-      debugPrint('Exception in _useCurrentLocation: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -107,7 +103,6 @@ class _LocationSelectorBottomSheetState
       if (mounted) {
         setState(() => _isLoading = false);
       }
-      debugPrint('Loading state set to false');
     }
   }
 

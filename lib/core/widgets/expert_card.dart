@@ -56,7 +56,7 @@ class ExpertCard extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
+                child: Image.network(
                   image,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {

@@ -14,7 +14,6 @@ class ServiceBoyService {
   // Get headers with token
   Future<Map<String, String>> _getHeaders() async {
     final token = await StorageService.getAuthToken();
-    print(token);
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -60,7 +59,6 @@ class ServiceBoyService {
       );
 
       final data = jsonDecode(response.body);
-      print(data);
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (data['success'] == true) {
           return data;
@@ -82,14 +80,9 @@ class ServiceBoyService {
     final url = Uri.parse('$baseUrl/services/my-services');
     try {
       final headers = await _getHeaders();
-      print(url);
-      print(headers);
       final response = await http.get(url, headers: headers);
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("-------  ---- ");
-        print(data);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'] ?? [];
           return servicesJson
@@ -113,10 +106,7 @@ class ServiceBoyService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          print(data['bookings']);
           final List<dynamic> bookingsJson = data['bookings'];
-          print("------- -------");
-          print(bookingsJson);
           return bookingsJson
               .map((json) => BookingModel.fromJson(json))
               .toList();
@@ -141,7 +131,6 @@ class ServiceBoyService {
         headers: headers,
         body: jsonEncode({'status': status}),
       );
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['success'] == true;
@@ -189,7 +178,6 @@ class ServiceBoyService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -329,11 +317,9 @@ class ServiceBoyService {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      print("-----------------------------------------------------");
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        print(data);
         if (data['success'] == true) {
           // If the backend returns multiple files, take the first one
           // if (data['files'] != null &&
@@ -347,8 +333,6 @@ class ServiceBoyService {
           // }
           // Try gallery format
           if (data['galleryItems'] != null) {
-            print("----------------------- ------------------------------");
-            print(data['galleryItems'][0]['imageUrl']);
             return data['galleryItems'][0]['imageUrl'];
           }
 

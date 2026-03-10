@@ -629,13 +629,15 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   final bookingsByStatus =
                       stats?['bookingsByStatus'] as Map<String, dynamic>?;
 
-                  final pending =
-                      (bookingsByStatus?['PENDING'] ?? 0) +
-                      (bookingsByStatus?['ASSIGNED'] ?? 0);
-                  final ongoing =
-                      (bookingsByStatus?['ACCEPTED'] ?? 0) +
-                      (bookingsByStatus?['ONGOING'] ?? 0);
-                  final completed = bookingsByStatus?['COMPLETED'] ?? 0;
+                  final pending = (bookingsByStatus?['ASSIGNED'] ?? 0);
+                  //  +
+                  // (bookingsByStatus?['ASSIGNED'] ?? 0);
+                  final ongoing = (bookingsByStatus?['REACHED'] ?? 0);
+                  //  +
+                  // (bookingsByStatus?['ONGOING'] ?? 0);
+                  final completed =
+                      bookingsByStatus?['CLOSED_BY_CUSTOMER'] +
+                      (bookingsByStatus?['CLOSED'] ?? 0);
                   final cancelled = bookingsByStatus?['CANCELLED'] ?? 0;
 
                   return Column(

@@ -7,6 +7,7 @@ import '../../../core/models/user_model.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../home/models/service_product_model.dart';
 import '../../booking/screens/booking_checkout_screen.dart';
+import 'service_product_detail_screen.dart';
 
 class ServiceProviderDetailScreen extends StatefulWidget {
   final UserModel provider;
@@ -361,7 +362,7 @@ class _ServiceProviderDetailScreenState
                             // Or just deep link to chat?
                             // For now keep it as "General Booking" if needed or hide it.
                             if (providerServices.isNotEmpty) {
-                              _navigateToCheckout(
+                              _navigateToDetail(
                                 context,
                                 providerServices.first,
                               );
@@ -409,16 +410,11 @@ class _ServiceProviderDetailScreenState
     );
   }
 
-  void _navigateToCheckout(BuildContext context, ServiceProductModel service) {
+  void _navigateToDetail(BuildContext context, ServiceProductModel service) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder:
-            (context) => BookingCheckoutScreen(
-              serviceName: service.name,
-              serviceId: service.id,
-              price: service.price,
-            ),
+        builder: (context) => ServiceProductDetailScreen(service: service),
       ),
     );
   }
@@ -494,7 +490,7 @@ class _ServiceProviderDetailScreenState
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => _navigateToCheckout(context, service),
+              onPressed: () => _navigateToDetail(context, service),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -502,7 +498,7 @@ class _ServiceProviderDetailScreenState
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Book This Service'),
+              child: const Text('View Details'),
             ),
           ),
         ],

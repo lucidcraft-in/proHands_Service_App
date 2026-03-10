@@ -212,10 +212,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           icon: Iconsax.briefcase,
                           title: 'My Services',
                           onTap: () {
-                            if (!user.isProfileComplete) {
+                            if (!user.isProfileComplete ||
+                                !user.isActive ||
+                                !user.isApproved) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Please complete your profile'),
+                                  content: Text(
+                                    'Please complete your profile or your account is not approved',
+                                  ),
                                   backgroundColor: AppColors.error,
                                 ),
                               );
