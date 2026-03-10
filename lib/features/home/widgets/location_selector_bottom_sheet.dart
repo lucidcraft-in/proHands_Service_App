@@ -3,7 +3,6 @@ import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
-import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/services/location_service.dart';
 
 class LocationSelectorBottomSheet extends StatefulWidget {
@@ -148,53 +147,70 @@ class _LocationSelectorBottomSheetState
             isOutlined: true,
             width: double.infinity,
           ),
-          const SizedBox(height: 20),
-          const Divider(),
-          const SizedBox(height: 20),
-          Text('Or Enter Manual Address', style: AppTextStyles.labelLarge),
-          const SizedBox(height: 16),
-          CustomTextField(
-            hint: 'Location Label (e.g. Home, Office)',
-            controller: _labelController,
-            prefixIcon: const Icon(Iconsax.tag),
-          ),
-          const SizedBox(height: 12),
-          CustomTextField(
-            hint: 'Full Address',
-            controller: _addressController,
-            prefixIcon: const Icon(Iconsax.location),
-            maxLines: 2,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: CustomTextField(
-                  hint: 'City',
-                  controller: _localityController,
-                ),
+          if (_addressController.text.isNotEmpty) ...[
+            const SizedBox(height: 24),
+            Text('Selected Location', style: AppTextStyles.labelLarge),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadowLight,
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: CustomTextField(
-                  hint: 'State',
-                  controller: _administrativeAreaController,
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Iconsax.location,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _labelController.text,
+                          style: AppTextStyles.labelMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _addressController.text,
+                          style: AppTextStyles.caption.copyWith(
+                            color: AppColors.textSecondary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          CustomTextField(
-            hint: 'Zipcode',
-            controller: _zipcodeController,
-            keyboardType: TextInputType.number,
-          ),
-          const SizedBox(height: 24),
-          GradientButton(
-            text: 'Confirm Location',
-            onPressed: _submitLocation,
-            width: double.infinity,
-          ),
+            ),
+            const SizedBox(height: 32),
+            GradientButton(
+              text: 'Confirm Location',
+              onPressed: _submitLocation,
+              width: double.infinity,
+            ),
+          ],
         ],
       ),
     );

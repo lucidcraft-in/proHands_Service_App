@@ -9,6 +9,7 @@ import '../../auth/screens/login_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_type.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/location_service.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../home/widgets/location_selector_bottom_sheet.dart';
 import '../../../core/widgets/custom_button.dart';
@@ -145,12 +146,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       Text(user.phone, style: AppTextStyles.bodyMedium),
                       Text(
                         (user.userType == UserType.serviceBoy &&
-                                !user.isProfileComplete
-                            // (user.name == null)
-                            )
+                                (!user.isActive || !user.isApproved))
                             ? 'Account under review'
                             : (user.name ?? 'Guest User'),
-                        style: AppTextStyles.bodyMedium,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color:
+                              (user.userType == UserType.serviceBoy &&
+                                      (!user.isActive || !user.isApproved))
+                                  ? AppColors.error
+                                  : AppColors.textPrimary,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Row(
@@ -210,7 +215,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                             if (!user.isProfileComplete) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('Account under review'),
+                                  content: Text('Please complete your profile'),
                                   backgroundColor: AppColors.error,
                                 ),
                               );
@@ -565,60 +570,48 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildLocationsList() {
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: StorageService.getSavedLocations(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Container(
-            color: AppColors.white,
-            padding: const EdgeInsets.all(20),
-            child: Center(
-              child: Text(
-                'No saved locations found.',
-                style: AppTextStyles.bodySmall.copyWith(
+    final user = context.watch<ConsumerProvider>().currentUser;
+    if (user == null || (user.location == 'Unknown' && user.latitude == null)) {
+      return Container(
+        color: AppColors.white,
+        padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
+        child: Center(
+          child: Column(
+            children: [
+              const Icon(
+                Iconsax.location_slash,
+                size: 40,
+                color: AppColors.textTertiary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No location found on server',
+                style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textSecondary,
                 ),
               ),
-            ),
-          );
-        }
+            ],
+          ),
+        ),
+      );
+    }
 
-        final locations = snapshot.data!;
-        final user = context.watch<ConsumerProvider>().currentUser;
+    final hasCoordinates = user.latitude != null && user.longitude != null;
+    final coordinates = hasCoordinates ? [user.latitude, user.longitude] : null;
 
-        // Filter out placeholder locations with coordinates [0.0, 0.0]
-        final validLocations =
-            locations.where((loc) {
-              final coords = loc['coordinates'] as List<dynamic>?;
-              if (coords == null || coords.length < 2) return false;
-              final lat = (coords[0] as num).toDouble();
-              final lng = (coords[1] as num).toDouble();
-              return !(lat == 0.0 && lng == 0.0);
-            }).toList();
-
-        if (validLocations.isEmpty) {
-          return Container(
-            color: AppColors.white,
-            padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Iconsax.location_slash,
-                    size: 40,
-                    color: AppColors.textTertiary,
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No location found',
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
+    return FutureBuilder<Map<String, String>?>(
+      future:
+          (user.location == 'Unknown' || user.location == 'Saved Location') &&
+                  hasCoordinates
+              ? LocationService.getAddressFromLatLng(
+                user.latitude!,
+                user.longitude!,
+              )
+              : Future.value(null),
+      builder: (context, snapshot) {
+        String displayAddress = user.location;
+        if (snapshot.hasData && snapshot.data != null) {
+          displayAddress = snapshot.data!['address'] ?? user.location;
         }
 
         return Container(
@@ -626,110 +619,64 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(
             children: [
-              ...validLocations.map((loc) {
-                final address = loc['address'] as String? ?? '';
-                final coordinates = loc['coordinates'] as List<dynamic>?;
-
-                bool isSelected = false;
-                if (user != null &&
-                    coordinates != null &&
-                    coordinates.length >= 2) {
-                  // Saved locally as [latitude, longitude]
-                  final savedLat = (coordinates[0] as num).toDouble();
-                  final savedLng = (coordinates[1] as num).toDouble();
-
-                  if (user.latitude != null && user.longitude != null) {
-                    // API returns GeoJSON [longitude, latitude], parsed into user.latitude/longitude
-                    isSelected =
-                        (savedLat - user.latitude!).abs() < 0.0005 &&
-                        (savedLng - user.longitude!).abs() < 0.0005;
-                    debugPrint(
-                      'Location check: saved=[$savedLat, $savedLng] vs profile=[${user.latitude}, ${user.longitude}] => isSelected=$isSelected',
-                    );
-                  } else if (user.location != 'Unknown') {
-                    // Fallback to address matching if lat/lng not available in user model
-                    isSelected = user.location == address;
-                  }
-                }
-
-                return Container(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 6,
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.shadowLight,
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
                   ),
-                  decoration: BoxDecoration(
-                    color:
-                        isSelected
-                            ? AppColors.primary.withOpacity(0.05)
-                            : AppColors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border:
-                        isSelected
-                            ? Border.all(
-                              color: AppColors.primary.withOpacity(0.1),
-                            )
-                            : null,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.shadowLight,
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
+                  leading: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Iconsax.location,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                    ),
-                    title: Text(
-                      (loc['label'] != null &&
-                              loc['label'].toString().isNotEmpty)
-                          ? loc['label']
-                          : (loc['locality'] != null &&
-                              loc['locality'].toString().isNotEmpty)
-                          ? loc['locality']
-                          : 'Location',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Text(
-                      address,
-                      style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Icon(
-                      isSelected
-                          ? Icons.check_circle
-                          : Icons.check_circle_outline,
+                    child: const Icon(
+                      Iconsax.location,
+                      color: AppColors.primary,
                       size: 20,
-                      color: isSelected ? Colors.green : AppColors.textTertiary,
                     ),
-                    onTap:
-                        () => _showLocationConfirmDialog(
-                          address,
-                          coordinates,
-                          loc['label'] as String? ?? address,
-                        ),
                   ),
-                );
-              }),
+                  title: Text(
+                    'Primary Location',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    displayAddress,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  trailing: const Icon(
+                    Icons.check_circle,
+                    size: 20,
+                    color: Colors.green,
+                  ),
+                  onTap:
+                      () => _showLocationConfirmDialog(
+                        displayAddress,
+                        coordinates,
+                        'Primary Location',
+                      ),
+                ),
+              ),
             ],
           ),
         );

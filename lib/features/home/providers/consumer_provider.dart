@@ -345,6 +345,7 @@ class ConsumerProvider extends ChangeNotifier {
       _currentUser = await _service.updateLocation(
         latitude: latitude,
         longitude: longitude,
+        address: address,
       );
 
       // Verify if address also needs to be updated in storage/backend

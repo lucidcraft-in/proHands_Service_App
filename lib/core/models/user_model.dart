@@ -9,6 +9,7 @@ class UserModel {
   final UserType userType;
   final bool isProfileComplete;
   final bool isActive;
+  final bool isApproved;
   final String?
   otp; // Keep if needed, but usually not stored in client model for long
   final String profession;
@@ -40,6 +41,7 @@ class UserModel {
     this.isProfileComplete = false,
     this.isActive = true,
     this.otp,
+    this.isApproved = false,
     this.profession = 'Technician',
     this.rating = 4.5,
     this.reviewsCount = 42,
@@ -63,13 +65,13 @@ class UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     // Parse location
-    String parsedLocation = 'Unknown';
+    String parsedLocation = json['address'] ?? 'Unknown';
     double? lat;
     double? lng;
 
     if (json['location'] is Map) {
       final locMap = json['location'] as Map<String, dynamic>;
-      parsedLocation = locMap['address'] ?? 'Unknown';
+      parsedLocation = locMap['address'] ?? json['address'] ?? 'Unknown';
 
       if (locMap['type'] == 'Point' && locMap['coordinates'] is List) {
         final coords = locMap['coordinates'] as List;
@@ -86,6 +88,11 @@ class UserModel {
       parsedLocation = json['location'];
     }
 
+    // Final fallback: If we have coordinates but still no address, show "Saved Location" instead of "Unknown"
+    if (parsedLocation == 'Unknown' && lat != null && lng != null) {
+      parsedLocation = 'Saved Location';
+    }
+
     return UserModel(
       id: json['_id'] ?? '',
       name:
@@ -94,6 +101,7 @@ class UserModel {
               : 'Guest',
       email: json['email'],
       phone: json['phone'] ?? '',
+      isApproved: json['isApproved'] ?? false,
       userType: _parseUserType(json['userType']),
       isProfileComplete: json['isProfileComplete'] ?? false,
       isActive: json['isActive'] ?? true,
@@ -138,6 +146,7 @@ class UserModel {
       'rating': rating,
       'reviewsCount': reviewsCount,
       'bio': bio,
+      'isApproved': isApproved,
       'specialties': specialties,
       'serviceImage': serviceImage,
       'profilePhoto': profilePhoto,

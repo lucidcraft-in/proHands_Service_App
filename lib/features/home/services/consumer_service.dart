@@ -474,11 +474,19 @@ class ConsumerService {
   Future<UserModel> updateLocation({
     required double latitude,
     required double longitude,
+    String? address,
   }) async {
     final url = Uri.parse('$baseUrl/users/me');
     try {
       final headers = await _getHeaders();
-      final body = jsonEncode({'latitude': latitude, 'longitude': longitude});
+      final bodyMap = <String, dynamic>{
+        'latitude': latitude,
+        'longitude': longitude,
+      };
+      if (address != null) {
+        bodyMap['address'] = address;
+      }
+      final body = jsonEncode(bodyMap);
 
       final response = await http.patch(url, headers: headers, body: body);
 

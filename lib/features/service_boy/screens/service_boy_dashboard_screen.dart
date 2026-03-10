@@ -329,6 +329,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("----------------------");
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -354,7 +356,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         phone: '',
                         userType: UserType.serviceBoy,
                       );
-
+                  print("----------------------");
+                  print(user.profilePhoto);
                   final hasName = user.name != null && user.name!.isNotEmpty;
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -405,19 +408,22 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         children: [
                           CircleAvatar(
                             radius: 28,
-                            backgroundColor: AppColors.primary,
+                            backgroundColor:
+                                (user.profilePhoto.isEmpty)
+                                    ? AppColors.background
+                                    : AppColors.primary,
                             backgroundImage:
-                                _profileImage != null
-                                    ? AssetImage(_profileImage!)
+                                (user.profilePhoto.isNotEmpty)
+                                    ? NetworkImage(user.profilePhoto)
                                     : null,
                             child:
-                                _profileImage == null
-                                    ? const Icon(
+                                (user.profilePhoto.isNotEmpty)
+                                    ? null
+                                    : const Icon(
                                       Icons.person,
-                                      color: AppColors.white,
                                       size: 28,
-                                    )
-                                    : null,
+                                      color: Color.fromARGB(255, 243, 243, 245),
+                                    ),
                           ),
                           Positioned(
                             bottom: 0,
