@@ -32,13 +32,16 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   List<double> _selectedCoordinates = [0.0, 0.0];
   DateTime _selectedDate = DateTime.now().add(const Duration(days: 1));
   TimeOfDay _selectedTime = const TimeOfDay(hour: 10, minute: 0);
+  final _nameController = TextEditingController();
   final _houseNameController = TextEditingController();
   final _placeController = TextEditingController();
   final _zipcodeController = TextEditingController();
   bool _isProcessing = false;
+  bool _showNameField = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _houseNameController.dispose();
     _placeController.dispose();
     _zipcodeController.dispose();
@@ -49,6 +52,22 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   void initState() {
     super.initState();
     _loadSavedLocation();
+    _checkUserName();
+  }
+
+  void _checkUserName() {
+    print("+++++++++++++++++++");
+    final user = context.read<ConsumerProvider>().currentUser;
+    print(user?.name);
+    if (user?.name == null ||
+        user!.name!.isEmpty ||
+        user.name!.toLowerCase() == 'guest') {
+      setState(() {
+        _showNameField = true;
+      });
+    } else {
+      _nameController.text = user.name!;
+    }
   }
 
   Future<void> _loadSavedLocation() async {
@@ -150,6 +169,50 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (_showNameField) ...[
+              Text('Your Information', style: AppTextStyles.labelLarge),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: _buildAddressField(
+                  controller: _nameController,
+                  label: 'Full Name',
+                  hint: 'Enter your full name',
+                  icon: Iconsax.user,
+                ),
+              ),
+              const SizedBox(height: 24),
+            ] else ...[
+              Text('Customer', style: AppTextStyles.labelLarge),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Iconsax.user, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Text(
+                      _nameController.text,
+                      style: AppTextStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+
             // Service Summary Card
             Text('Service Selected', style: AppTextStyles.labelLarge),
             const SizedBox(height: 16),
@@ -469,6 +532,38 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
       );
       final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate);
       final formattedTime = _selectedTime.format(context);
+
+      // 1. Update Profile Name if field was shown and name is provided
+      if (_showNameField) {
+        final name = _nameController.text.trim();
+        if (name.isEmpty) {
+          setState(() => _isProcessing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter your name')),
+          );
+          return;
+        }
+
+        final currentUser = consumerProvider.currentUser;
+        final success = await consumerProvider.updateProfile(
+          name: name,
+          email: currentUser?.email ?? '',
+          address: currentUser?.location ?? '',
+        );
+
+        if (!success) {
+          setState(() => _isProcessing = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                consumerProvider.updateProfileError ??
+                    'Failed to update profile name',
+              ),
+            ),
+          );
+          return;
+        }
+      }
 
       // Construct address string divided by comma
       final houseName = _houseNameController.text.trim();

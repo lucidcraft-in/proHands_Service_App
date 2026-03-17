@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:service_app/features/location/screens/location_fetch_screen.dart';
 import '../providers/consumer_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/services/storage_service.dart';
 
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../widgets/category_item.dart';
@@ -22,9 +24,12 @@ class HomeTabScreen extends StatefulWidget {
 }
 
 class _HomeTabScreenState extends State<HomeTabScreen> {
+  String _locationText = 'Locating...';
+
   @override
   void initState() {
     super.initState();
+    _loadLocation();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Check if categories are already loaded to avoid redundant calls if maintained in provider
       // But allow refresh if needed. Provider usually keeps state.
@@ -34,6 +39,15 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     });
     if (context.read<ConsumerProvider>().feeds.isEmpty) {
       context.read<ConsumerProvider>().fetchFeeds();
+    }
+  }
+
+  Future<void> _loadLocation() async {
+    final locationData = await StorageService.getUserLocation();
+    if (mounted) {
+      setState(() {
+        _locationText = locationData?['address'] ?? 'Set your location';
+      });
     }
   }
 
@@ -52,14 +66,15 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             // App Bar with location
             SliverToBoxAdapter(
               child: Container(
-                color: AppColors.white,
+                color: const Color.fromARGB(255, 255, 255, 255),
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Image.asset(
-                          'assets/images/logo.jpg',
+                          'assets/images/logo1.png',
+
                           height: 32,
                           fit: BoxFit.contain,
                         ),
@@ -67,81 +82,60 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         Text(
                           'PRO HANDS',
                           style: AppTextStyles.h4.copyWith(
-                            color: AppColors.primary,
+                            color: const Color.fromARGB(255, 62, 66, 83),
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
                           ),
                         ),
                         const Spacer(),
-                        Row(
-                          children: [
-                            // Container(
-                            //   decoration: BoxDecoration(
-                            //     color: AppColors.background,
-                            //     borderRadius: BorderRadius.circular(12),
-                            //   ),
-                            //   child: IconButton(
-                            //     icon: const Icon(
-                            //       Iconsax.search_normal_1,
-                            //       size: 20,
-                            //     ),
-                            //     color: AppColors.textPrimary,
-                            //     onPressed: () {
-                            //       // In a real app, this could open a search delegate or focus the search bar
-                            //       MainScreen.of(
-                            //         context,
-                            //       )?.setIndex(2); // Navigate to Explore
-                            //     },
-                            //   ),
-                            // ),
-                            // const SizedBox(width: 12),
-                            // Container(
-                            //   decoration: BoxDecoration(
-                            //     color: AppColors.background,
-                            //     borderRadius: BorderRadius.circular(12),
-                            //   ),
-                            //   child: IconButton(
-                            //     icon: const Icon(
-                            //       Iconsax.notification,
-                            //       size: 20,
-                            //     ),
-                            //     color: AppColors.textPrimary,
-                            //     onPressed: () {
-                            //       Navigator.push(
-                            //         context,
-                            //         MaterialPageRoute(
-                            //           builder:
-                            //               (context) =>
-                            //                   const CustomerBookingsScreen(),
-                            //         ),
-                            //       );
-                            //     },
-                            //   ),
-                            // ),
-                            // const SizedBox(width: 12),
-                            // Container(
-                            //   decoration: BoxDecoration(
-                            //     color: AppColors.background,
-                            //     borderRadius: BorderRadius.circular(12),
-                            //   ),
-                            //   child: IconButton(
-                            //     icon: const Icon(
-                            //       Iconsax.shopping_cart,
-                            //       size: 20,
-                            //     ),
-                            //     color: AppColors.textPrimary,
-                            //     onPressed: () {
-                            //       Navigator.of(context).push(
-                            //         MaterialPageRoute(
-                            //           builder: (context) => const CartScreen(),
-                            //         ),
-                            //       );
-                            //     },
-                            //   ),
-                            // ),
+                        Row(children: [
                           ],
                         ),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+                    // Location Display Row
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LocationFetchScreen(),
+                          ),
+                        ).then(
+                          (_) => _loadLocation(),
+                        ); // Refresh location after returning
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.07),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Iconsax.location,
+                              size: 16,
+                              color: AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _locationText,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),

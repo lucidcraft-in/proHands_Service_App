@@ -4,6 +4,7 @@ enum BookingStatus {
   open,
   assigned,
   reached,
+  reassignRequested,
   // closedByCustomer,
   // closed,
   completed,
@@ -158,6 +159,8 @@ class BookingModel {
   }
 
   static BookingStatus _parseStatus(String? status) {
+    print("status: $status");
+    print("------------------------------");
     if (status == null) return BookingStatus.open;
     switch (status.toUpperCase()) {
       case 'OPEN':
@@ -165,6 +168,8 @@ class BookingModel {
       case 'ASSIGNED':
       case 'PENDING':
         return BookingStatus.assigned;
+      case 'REASSIGN_REQUESTED':
+        return BookingStatus.reassignRequested;
       case 'REACHED':
       case 'ACCEPTED':
       case 'ONGOING':

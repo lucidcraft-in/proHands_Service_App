@@ -5,7 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/models/user_type.dart';
-import '../../home/screens/main_screen.dart';
+import '../../location/screens/location_fetch_screen.dart';
 import '../../service_boy/screens/service_boy_main_screen.dart';
 import '../providers/auth_provider.dart';
 import '../../home/services/consumer_service.dart';
@@ -155,9 +155,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               // Continue login even if profile fetch fails
             }
 
-            debugPrint('========= step: navigating to MainScreen ==========');
+            debugPrint(
+              '========= step: navigating to LocationFetchScreen ==========',
+            );
             Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (context) => const MainScreen()),
+              MaterialPageRoute(
+                builder: (context) => const LocationFetchScreen(),
+              ),
               (route) => false,
             );
           } else {

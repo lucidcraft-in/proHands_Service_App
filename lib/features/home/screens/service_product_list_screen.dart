@@ -250,63 +250,69 @@ class _ServiceProductCard extends StatelessWidget {
               ],
             ),
 
-            // Gallery Section
-            if (service.gallery.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              SizedBox(
-                height: 60,
-                child: Row(
-                  children:
-                      service.gallery.take(3).map((imageUrl) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              imageUrl,
-                              width: 60,
-                              height: 60,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (context, error, stackTrace) => Container(
-                                    width: 60,
-                                    height: 60,
-                                    color: AppColors.background,
-                                    child: const Icon(
-                                      Icons.broken_image,
-                                      size: 20,
-                                    ),
-                                  ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                ),
-              ),
-            ],
-            const SizedBox(height: 16),
+            // Gallery Section (always show 3 image slots)
+            const SizedBox(height: 12),
             SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              ServiceProductDetailScreen(service: service),
+              height: 72,
+              child: Row(
+                children: List.generate(3, (i) {
+                  final imageUrl =
+                      i < service.gallery.length ? service.gallery[i] : null;
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: i < 2 ? 8 : 0),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child:
+                            imageUrl != null
+                                ? Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  height: 72,
+                                  errorBuilder:
+                                      (context, error, stackTrace) => Container(
+                                        height: 72,
+                                        color: AppColors.background,
+                                        child: const Icon(
+                                          Icons.broken_image,
+                                          size: 20,
+                                        ),
+                                      ),
+                                )
+                                : Container(
+                                  height: 72,
+                                  color: AppColors.background,
+                                  child: const Icon(
+                                    Icons.image_outlined,
+                                    size: 20,
+                                    color: AppColors.textTertiary,
+                                  ),
+                                ),
+                      ),
                     ),
                   );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                child: const Text('View Details'),
+                }),
               ),
+            ),
+            const SizedBox(height: 12),
+            // Arrow to navigate
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  'View Details',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: AppColors.primary,
+                ),
+              ],
             ),
           ],
         ),
