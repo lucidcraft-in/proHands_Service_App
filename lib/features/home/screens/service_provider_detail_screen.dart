@@ -353,54 +353,55 @@ class _ServiceProviderDetailScreenState
                       ),
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // General inquiry or book the first available service?
-                            // Or just deep link to chat?
-                            // For now keep it as "General Booking" if needed or hide it.
-                            if (providerServices.isNotEmpty) {
-                              _navigateToDetail(
-                                context,
-                                providerServices.first,
-                              );
-                            } else {
-                              // Fallback if no specific services listed
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (context) => BookingCheckoutScreen(
-                                        serviceName:
-                                            '${provider.profession} - ${provider.name ?? 'Provider'}',
-                                        serviceId: provider.id,
-                                        price: 45.0,
-                                      ),
-                                ),
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: AppColors.primary,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          child: const Text(
-                            'General Booking',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+
+                  // child: Row(
+                  //   children: [
+                  //     Expanded(
+                  //       child: ElevatedButton(
+                  //         onPressed: () {
+                  //           // General inquiry or book the first available service?
+                  //           // Or just deep link to chat?
+                  //           // For now keep it as "General Booking" if needed or hide it.
+                  //           if (providerServices.isNotEmpty) {
+                  //             _navigateToDetail(
+                  //               context,
+                  //               providerServices.first,
+                  //             );
+                  //           } else {
+                  //             // Fallback if no specific services listed
+                  //             Navigator.push(
+                  //               context,
+                  //               MaterialPageRoute(
+                  //                 builder:
+                  //                     (context) => BookingCheckoutScreen(
+                  //                       serviceName:
+                  //                           '${provider.profession} - ${provider.name ?? 'Provider'}',
+                  //                       serviceId: provider.id,
+                  //                       price: 45.0,
+                  //                     ),
+                  //               ),
+                  //             );
+                  //           }
+                  //         },
+                  //         style: ElevatedButton.styleFrom(
+                  //           padding: const EdgeInsets.symmetric(vertical: 16),
+                  //           backgroundColor: AppColors.primary,
+                  //           shape: RoundedRectangleBorder(
+                  //             borderRadius: BorderRadius.circular(16),
+                  //           ),
+                  //         ),
+                  //         child: const Text(
+                  //           'General Booking',
+                  //           style: TextStyle(
+                  //             fontSize: 16,
+                  //             fontWeight: FontWeight.bold,
+                  //             color: Colors.white,
+                  //           ),
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                 ),
               ),
             ],
@@ -473,14 +474,14 @@ class _ServiceProviderDetailScreenState
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '₹${service.price}',
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    // const SizedBox(height: 8),
+                    // Text(
+                    //   '₹${service.price}',
+                    //   style: AppTextStyles.labelSmall.copyWith(
+                    //     color: AppColors.primary,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

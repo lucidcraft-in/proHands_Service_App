@@ -9,6 +9,7 @@ import '../models/feed_model.dart';
 import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/review_model.dart';
+import '../../../core/models/booking_log_model.dart';
 
 class ConsumerService {
   final String baseUrl = AuthService.baseUrl;
@@ -666,6 +667,104 @@ class ConsumerService {
       }
     } catch (e) {
       throw Exception('Error requesting cancellation: $e');
+    }
+  }
+
+  // Submit Reassign Choice
+  Future<bool> submitReassignChoice({
+    required String bookingId,
+    required String choice,
+    String? newServiceId,
+  }) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/reassign-choice');
+    try {
+      final headers = await _getHeaders();
+      final Map<String, dynamic> bodyMap = {'choice': choice};
+      if (newServiceId != null) {
+        bodyMap['newServiceId'] = newServiceId;
+      }
+      final body = jsonEncode(bodyMap);
+      final response = await http.post(url, headers: headers, body: body);
+      print(response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Failed to submit reassign choice');
+      }
+    } catch (e) {
+      throw Exception('Error submitting reassign choice: $e');
+    }
+  }
+
+  // Get Booking Logs
+  Future<List<BookingLogModel>> getBookingLogs(String bookingId) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/logs');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> logsJson = data['logs'] ?? [];
+          return logsJson
+              .map((json) => BookingLogModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load booking logs');
+        }
+      } else {
+        throw Exception('Failed to load booking logs: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching booking logs: $e');
+    }
+  }
+
+  // Handle Delay Request
+  Future<bool> handleDelayRequest(String bookingId, String action) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/delay-handle');
+    try {
+      final headers = await _getHeaders();
+      final body = jsonEncode({'action': action});
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(data['message'] ?? 'Failed to handle delay request');
+      }
+    } catch (e) {
+      throw Exception('Error handling delay request: $e');
+    }
+  }
+
+  // Search Services
+  Future<List<ServiceProductModel>> searchServices(String keyword) async {
+    final url = Uri.parse('$baseUrl/services/search?keyword=$keyword');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> servicesJson = data['services'];
+          return servicesJson
+              .map((json) => ServiceProductModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to search services');
+        }
+      } else {
+        throw Exception('Failed to search services: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error searching services: $e');
     }
   }
 }

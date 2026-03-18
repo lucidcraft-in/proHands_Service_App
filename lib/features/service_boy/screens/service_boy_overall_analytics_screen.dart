@@ -95,15 +95,15 @@ class _ServiceBoyOverallAnalyticsScreenState
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                _buildSummaryCard(
-                  'Total Revenue',
-                  '₹${analytics.totalRevenue.toStringAsFixed(0)}',
-                  Iconsax.wallet,
-                  AppColors.success,
-                  fullWidth: true,
-                ),
                 const SizedBox(height: 32),
+                // _buildSummaryCard(
+                //   'Total Revenue',
+                //   '₹${analytics.totalRevenue.toStringAsFixed(0)}',
+                //   Iconsax.wallet,
+                //   AppColors.success,
+                //   fullWidth: true,
+                // ),
+                // const SizedBox(height: 32),
 
                 // Bookings by Category
                 if (analytics.bookingsByCategory.isNotEmpty) ...[

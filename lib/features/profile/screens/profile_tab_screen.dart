@@ -871,101 +871,98 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(
             children:
-                reviews
-                    .map(
-                      (rev) => Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 8,
+                reviews.map((rev) {
+                  print(rev.reviewerPhone);
+                  return Container(
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.shadowLight,
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.shadowLight,
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 12,
-                                      backgroundColor: AppColors.primary
-                                          .withOpacity(0.1),
-                                      child: Text(
-                                        rev.reviewerPhone.isNotEmpty
-                                            ? rev.reviewerPhone[0]
-                                            : 'U',
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 10,
-                                        ),
-                                      ),
+                                CircleAvatar(
+                                  radius: 12,
+                                  backgroundColor: AppColors.primary
+                                      .withOpacity(0.1),
+                                  child: Text(
+                                    rev.reviewerPhone.isNotEmpty
+                                        ? rev.reviewerPhone[0]
+                                        : 'U',
+                                    style: AppTextStyles.caption.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      rev.reviewerPhone,
-                                      style: AppTextStyles.labelSmall,
-                                    ),
-                                  ],
+                                  ),
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFFFA928,
-                                    ).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.star,
-                                        size: 12,
-                                        color: Color(0xFFFFA928),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        rev.rating.toStringAsFixed(1),
-                                        style: AppTextStyles.caption.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                          color: const Color(0xFFFFA928),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  rev.reviewerPhone,
+                                  style: AppTextStyles.labelSmall,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              rev.comment,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
-                                height: 1.4,
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
                               ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFA928).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.star,
+                                    size: 12,
+                                    color: Color(0xFFFFA928),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    rev.rating.toStringAsFixed(1),
+                                    style: AppTextStyles.caption.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFFFFA928),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    )
-                    .toList(),
+                        // const SizedBox(height: 12),
+                        // Text(
+                        //   rev.comment,
+                        //   style: AppTextStyles.bodySmall.copyWith(
+                        //     color: AppColors.textSecondary,
+                        //     height: 1.4,
+                        //   ),
+                        //   maxLines: 2,
+                        //   overflow: TextOverflow.ellipsis,
+                        // ),
+                      ],
+                    ),
+                  );
+                }).toList(),
           ),
         );
       },

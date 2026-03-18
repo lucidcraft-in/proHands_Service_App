@@ -35,7 +35,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 4,
+      length: 5,
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
@@ -47,6 +47,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
             tabs: const [
               Tab(text: 'Assigned'),
               Tab(text: 'Ongoing'),
+              Tab(text: 'Delayed'),
               Tab(text: 'Completed'),
               Tab(text: 'Canceled'),
             ],
@@ -95,6 +96,10 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
                 _buildRefreshableList(
                   provider.ongoingBookings,
                   BookingStatus.reached,
+                ),
+                _buildRefreshableList(
+                  provider.delayRequestedBookings,
+                  BookingStatus.delayRequested,
                 ),
                 _buildRefreshableList(
                   provider.completedBookings,

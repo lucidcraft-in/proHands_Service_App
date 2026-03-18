@@ -9,6 +9,7 @@ enum BookingStatus {
   // closed,
   completed,
   cancelled,
+  delayRequested,
 }
 
 class BookingModel {
@@ -22,6 +23,7 @@ class BookingModel {
   final String? providerName;
   final String? providerPhone;
   final String? providerProfession;
+  final String? categoryId;
 
   final String customerName;
   final String customerPhone;
@@ -38,6 +40,9 @@ class BookingModel {
   bool isCompleteClicked;
   bool isOTPRequested;
   bool isVerified;
+
+  final String? delayTime;
+  final String? delayNote;
 
   BookingModel({
     required this.id,
@@ -65,6 +70,9 @@ class BookingModel {
     this.providerPhone,
     this.providerProfession,
     this.review,
+    this.delayTime,
+    this.delayNote,
+    this.categoryId,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
@@ -73,12 +81,17 @@ class BookingModel {
     final customerIdx = json['customerId'];
     final locationIdx = json['location'];
     final providerIdx = json['providerId'];
+    String? categoryId = json['categoryId'] ?? json['category_id'];
 
     String serviceName = 'Unknown Service';
     String serviceIdStr = '';
     if (serviceIdx is Map) {
       serviceName = serviceIdx['name'] ?? 'Unknown Service';
       serviceIdStr = serviceIdx['_id'] ?? '';
+      categoryId ??=
+          serviceIdx['categoryId'] ??
+          serviceIdx['category']?['_id'] ??
+          serviceIdx['category'];
     } else if (serviceIdx is String) {
       serviceIdStr = serviceIdx;
     }
@@ -155,6 +168,9 @@ class BookingModel {
       providerProfession: providerProfession,
       review:
           json['review'] != null ? ReviewModel.fromJson(json['review']) : null,
+      delayTime: json['delayTime'],
+      delayNote: json['delayNote'],
+      categoryId: categoryId,
     );
   }
 
@@ -181,6 +197,8 @@ class BookingModel {
         return BookingStatus.completed;
       case 'CANCELLED':
         return BookingStatus.cancelled;
+      case 'DELAY_REQUESTED':
+        return BookingStatus.delayRequested;
       default:
         return BookingStatus.open;
     }
@@ -212,6 +230,9 @@ class BookingModel {
     String? providerPhone,
     String? providerProfession,
     ReviewModel? review,
+    String? delayTime,
+    String? delayNote,
+    String? categoryId,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -239,6 +260,9 @@ class BookingModel {
       providerPhone: providerPhone ?? this.providerPhone,
       providerProfession: providerProfession ?? this.providerProfession,
       review: review ?? this.review,
+      delayTime: delayTime ?? this.delayTime,
+      delayNote: delayNote ?? this.delayNote,
+      categoryId: categoryId ?? this.categoryId,
     );
   }
 }

@@ -9,7 +9,8 @@ import 'professional_screen.dart';
 import '../../cart/screens/cart_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int initialIndex;
+  const MainScreen({super.key, this.initialIndex = 0});
 
   static MainScreenState? of(BuildContext context) {
     return context.findAncestorStateOfType<MainScreenState>();
@@ -20,7 +21,13 @@ class MainScreen extends StatefulWidget {
 }
 
 class MainScreenState extends State<MainScreen> {
-  int currentIndex = 0;
+  late int currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+  }
 
   void setIndex(int index) {
     setState(() => currentIndex = index);

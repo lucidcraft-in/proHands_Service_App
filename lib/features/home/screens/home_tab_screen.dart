@@ -13,6 +13,8 @@ import 'full_image_screen.dart';
 import 'main_screen.dart';
 import 'service_product_list_screen.dart';
 import 'customer_bookings_screen.dart';
+import 'notification_screen.dart';
+import '../providers/notification_provider.dart';
 
 import '../../cart/screens/cart_screen.dart';
 
@@ -36,6 +38,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       if (context.read<ConsumerProvider>().categories.isEmpty) {
         context.read<ConsumerProvider>().fetchCategories();
       }
+      context.read<NotificationProvider>().fetchNotifications();
     });
     if (context.read<ConsumerProvider>().feeds.isEmpty) {
       context.read<ConsumerProvider>().fetchFeeds();
@@ -88,7 +91,34 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                           ),
                         ),
                         const Spacer(),
-                        Row(children: [
+                        Row(
+                          children: [
+                            Consumer<NotificationProvider>(
+                              builder: (context, provider, child) {
+                                return IconButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const NotificationScreen(),
+                                      ),
+                                    );
+                                  },
+                                  icon: Badge(
+                                    label: Text(
+                                      provider.unreadCount.toString(),
+                                    ),
+                                    isLabelVisible: provider.unreadCount > 0,
+                                    child: const Icon(
+                                      Iconsax.notification,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ],

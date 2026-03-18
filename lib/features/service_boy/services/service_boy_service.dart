@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/models/booking_model.dart';
+import '../../../core/models/booking_log_model.dart';
 import '../models/service_category_model.dart';
 import '../models/service_model.dart';
 import '../models/gallery_image_model.dart';
@@ -14,6 +15,8 @@ class ServiceBoyService {
   // Get headers with token
   Future<Map<String, String>> _getHeaders() async {
     final token = await StorageService.getAuthToken();
+    print("----------- token -------  ");
+    print(token);
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -479,6 +482,60 @@ class ServiceBoyService {
       }
     } catch (e) {
       throw Exception('Error submitting review: $e');
+    }
+  }
+
+  // Get Booking Logs
+  Future<List<BookingLogModel>> getBookingLogs(String bookingId) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/logs');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> logsJson = data['logs'] ?? [];
+          print("----------- logsJson -------");
+          print(logsJson);
+          return logsJson
+              .map((json) => BookingLogModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load booking logs');
+        }
+      } else {
+        throw Exception('Failed to load logs: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching booking logs: $e');
+    }
+  }
+
+  // Request Delay (Service Boy)
+  Future<bool> requestDelay(
+    String bookingId,
+    String delayTime,
+    String delayNote,
+  ) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/delay-request');
+    try {
+      final headers = await _getHeaders();
+      final body = jsonEncode({'delayTime': delayTime, 'delayNote': delayNote});
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ??
+              'Failed to submit delay request: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error submitting delay request: $e');
     }
   }
 }

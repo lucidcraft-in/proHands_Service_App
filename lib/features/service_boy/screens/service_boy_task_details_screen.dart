@@ -10,7 +10,6 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/full_screen_image.dart';
-import '../../../core/models/review_model.dart';
 
 class ServiceBoyTaskDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -40,7 +39,9 @@ class _ServiceBoyTaskDetailsScreenState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ServiceBoyProvider>().fetchBookingDetails(widget.booking.id);
+      final provider = context.read<ServiceBoyProvider>();
+      provider.fetchBookingDetails(widget.booking.id);
+      provider.fetchBookingLogs(widget.booking.id);
     });
   }
 
@@ -320,55 +321,79 @@ class _ServiceBoyTaskDetailsScreenState
                 //   const SizedBox(height: 24),
                 //   _buildRateCustomerSection(booking.id),
                 // ],
-                const SizedBox(height: 40),
-
-                // Action Buttons
+                const SizedBox(height: 15),
                 if (booking.status == BookingStatus.assigned)
-                  Row(
+                  CustomButton(
+                    text: 'Delay Request',
+                    onPressed:
+                        () => _showDelayRequestDialog(context, booking.id),
+                    isOutlined: true,
+                    backgroundColor: AppColors.white,
+                    textColor: AppColors.warning,
+                    height: 50,
+                    fontSize: 13,
+                  ),
+                const SizedBox(height: 15),
+                // A const SizedBox(height: 16),ction Buttons
+                if (booking.status == BookingStatus.assigned)
+                  Column(
                     children: [
-                      Expanded(
-                        child: CustomButton(
-                          text: 'Decline',
-                          onPressed:
-                              () => _showDeclineDialog(context, booking.id),
-                          isOutlined: true,
-                          backgroundColor: AppColors.error,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: CustomButton(
-                          text: 'Accept',
-                          onPressed: () async {
-                            final provider = context.read<ServiceBoyProvider>();
-                            final scaffoldMessenger = ScaffoldMessenger.of(
-                              context,
-                            );
-                            final success = await provider.acceptBooking(
-                              booking.id,
-                            );
+                      Row(
+                        children: [
+                          Expanded(
+                            child: CustomButton(
+                              text: 'Decline',
+                              onPressed:
+                                  () => _showDeclineDialog(context, booking.id),
+                              isOutlined: true,
+                              backgroundColor: AppColors.white,
+                              textColor: AppColors.textPrimary,
+                              height: 50,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: CustomButton(
+                              text: 'Accept',
+                              onPressed: () async {
+                                final provider =
+                                    context.read<ServiceBoyProvider>();
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  context,
+                                );
+                                final success = await provider.acceptBooking(
+                                  booking.id,
+                                );
 
-                            if (success && mounted) {
-                              scaffoldMessenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Work accepted successfully!'),
-                                  backgroundColor: AppColors.success,
-                                ),
-                              );
-                              Navigator.pop(context);
-                            } else if (mounted) {
-                              scaffoldMessenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    provider.bookingsError ??
-                                        'Failed to accept work',
-                                  ),
-                                  backgroundColor: AppColors.error,
-                                ),
-                              );
-                            }
-                          },
-                        ),
+                                if (success && mounted) {
+                                  scaffoldMessenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Work accepted successfully!',
+                                      ),
+                                      backgroundColor: AppColors.success,
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+                                } else if (mounted) {
+                                  scaffoldMessenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        provider.bookingsError ??
+                                            'Failed to accept work',
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                    ),
+                                  );
+                                }
+                              },
+                              backgroundColor: AppColors.primary,
+                              height: 50,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   )
@@ -420,9 +445,24 @@ class _ServiceBoyTaskDetailsScreenState
                         text: _isCompleting ? 'Completing...' : 'Complete Work',
                         onPressed: _isCompleting ? null : _completeTask,
                         backgroundColor: AppColors.success,
+                        height: 44,
+                        fontSize: 14,
+                      ),
+                      const SizedBox(height: 16),
+                      CustomButton(
+                        text: 'Delay Req',
+                        onPressed:
+                            () => _showDelayRequestDialog(context, booking.id),
+                        isOutlined: true,
+                        backgroundColor: AppColors.white,
+                        textColor: AppColors.warning,
+                        height: 44,
+                        fontSize: 13,
                       ),
                     ],
                   ),
+                const SizedBox(height: 24),
+                _buildLogsTimeline(),
               ],
             ),
           );
@@ -566,6 +606,220 @@ class _ServiceBoyTaskDetailsScreenState
               ],
             );
           },
+        );
+      },
+    );
+  }
+
+  Widget _buildLogsTimeline() {
+    return Consumer<ServiceBoyProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoadingBookingLogs) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        if (provider.bookingLogs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Booking Timeline', style: AppTextStyles.h4),
+            const SizedBox(height: 16),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: provider.bookingLogs.length,
+              itemBuilder: (context, index) {
+                final log = provider.bookingLogs[index];
+                final isLast = index == provider.bookingLogs.length - 1;
+
+                DateTime? dateTime;
+                try {
+                  dateTime = DateTime.parse(log.createdAt).toLocal();
+                } catch (_) {}
+
+                final dateStr =
+                    dateTime != null
+                        ? "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"
+                        : log.createdAt;
+
+                return IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          if (!isLast)
+                            Expanded(
+                              child: Container(
+                                width: 2,
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    log.createdByUserType,
+                                    style: AppTextStyles.bodyLarge.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    dateStr,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textTertiary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                log.notes,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                "By: ${log.createdByName}",
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.textTertiary,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showDelayRequestDialog(BuildContext context, String bookingId) {
+    final timeController = TextEditingController();
+    final noteController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Request Delay'),
+          backgroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CustomTextField(
+                hint: 'Delay Time (e.g. 30 minutes)',
+                controller: timeController,
+                prefixIcon: const Icon(Iconsax.clock),
+              ),
+              const SizedBox(height: 16),
+              CustomTextField(
+                hint: 'Reason for delay',
+                controller: noteController,
+                maxLines: 3,
+                prefixIcon: const Icon(Iconsax.note),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ),
+            Consumer<ServiceBoyProvider>(
+              builder: (context, provider, child) {
+                return TextButton(
+                  onPressed:
+                      provider.isRequestingDelay
+                          ? null
+                          : () async {
+                            if (timeController.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please enter delay time'),
+                                ),
+                              );
+                              return;
+                            }
+                            final success = await provider.requestDelay(
+                              bookingId: bookingId,
+                              delayTime: timeController.text.trim(),
+                              delayNote: noteController.text.trim(),
+                            );
+
+                            if (mounted) {
+                              Navigator.pop(context);
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Delay request submitted'),
+                                    backgroundColor: AppColors.success,
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      provider.delayError ?? 'Failed to submit',
+                                    ),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                  child: Text(
+                    provider.isRequestingDelay ? 'Submitting...' : 'Submit',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
         );
       },
     );

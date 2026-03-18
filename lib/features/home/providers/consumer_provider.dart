@@ -6,6 +6,7 @@ import '../models/feed_model.dart';
 import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/review_model.dart';
+import '../../../core/models/booking_log_model.dart';
 import '../services/consumer_service.dart';
 import '../../../core/services/storage_service.dart';
 
@@ -16,6 +17,9 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isLoadingCategories = false;
   String? _categoriesError;
 
+  bool _isRequestingCancellation = false;
+  String? _cancellationError;
+
   bool _isSubmittingReview = false;
   String? _reviewError;
 
@@ -23,16 +27,41 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isLoadingAllServices = false;
   String? _allServicesError;
 
+  bool _isSubmittingReassignChoice = false;
+  String? _reassignChoiceError;
+
+  List<BookingLogModel> _bookingLogs = [];
+  bool _isLoadingBookingLogs = false;
+  String? _bookingLogsError;
+
+  List<ServiceProductModel> _searchResults = [];
+  bool _isSearching = false;
+  String? _searchError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
 
+  bool get isRequestingCancellation => _isRequestingCancellation;
+  String? get cancellationError => _cancellationError;
+
   bool get isSubmittingReview => _isSubmittingReview;
   String? get reviewError => _reviewError;
+
+  bool get isSubmittingReassignChoice => _isSubmittingReassignChoice;
+  String? get reassignChoiceError => _reassignChoiceError;
+
+  List<BookingLogModel> get bookingLogs => _bookingLogs;
+  bool get isLoadingBookingLogs => _isLoadingBookingLogs;
+  String? get bookingLogsError => _bookingLogsError;
 
   List<ServiceProductModel> get allServices => _allServices;
   bool get isLoadingAllServices => _isLoadingAllServices;
   String? get allServicesError => _allServicesError;
+
+  List<ServiceProductModel> get searchResults => _searchResults;
+  bool get isSearching => _isSearching;
+  String? get searchError => _searchError;
 
   Future<void> fetchCategories() async {
     _isLoadingCategories = true;
@@ -111,6 +140,37 @@ class ConsumerProvider extends ChangeNotifier {
       _isLoadingTrendingServices = false;
       notifyListeners();
     }
+  }
+
+  // Search Services
+  Future<void> searchServices(String keyword) async {
+    if (keyword.isEmpty) {
+      _searchResults = [];
+      _isSearching = false;
+      _searchError = null;
+      notifyListeners();
+      return;
+    }
+
+    _isSearching = true;
+    _searchError = null;
+    notifyListeners();
+
+    try {
+      _searchResults = await _service.searchServices(keyword);
+    } catch (e) {
+      _searchError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isSearching = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSearch() {
+    _searchResults = [];
+    _isSearching = false;
+    _searchError = null;
+    notifyListeners();
   }
 
   // My Bookings
@@ -497,12 +557,6 @@ class ConsumerProvider extends ChangeNotifier {
   }
 
   // Cancel Booking Request
-  bool _isRequestingCancellation = false;
-  String? _cancellationError;
-
-  bool get isRequestingCancellation => _isRequestingCancellation;
-  String? get cancellationError => _cancellationError;
-
   Future<bool> cancelBookingRequest({
     required String bookingId,
     required String reason,
@@ -519,6 +573,90 @@ class ConsumerProvider extends ChangeNotifier {
     } catch (e) {
       _isRequestingCancellation = false;
       _cancellationError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> submitReassignChoice({
+    required String bookingId,
+    required String choice,
+    String? newServiceId,
+  }) async {
+    _isSubmittingReassignChoice = true;
+    _reassignChoiceError = null;
+    notifyListeners();
+
+    try {
+      final success = await _service.submitReassignChoice(
+        bookingId: bookingId,
+        choice: choice,
+        newServiceId: newServiceId,
+      );
+      _isSubmittingReassignChoice = false;
+      if (success) {
+        // Optionally refresh bookings after success
+        await fetchMyBookings();
+      }
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isSubmittingReassignChoice = false;
+      _reassignChoiceError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> fetchBookingLogs(String bookingId) async {
+    _isLoadingBookingLogs = true;
+    _bookingLogsError = null;
+    notifyListeners();
+
+    try {
+      _bookingLogs = await _service.getBookingLogs(bookingId);
+      // Sort logs by date descending (newest first)
+      _bookingLogs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (e) {
+      _bookingLogsError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingBookingLogs = false;
+      notifyListeners();
+    }
+  }
+
+  Future<BookingModel?> fetchBookingDetails(String bookingId) async {
+    try {
+      final booking = await _service.getBookingDetails(bookingId);
+      return booking;
+    } catch (e) {
+      debugPrint('Error fetching booking details: $e');
+      return null;
+    }
+  }
+
+  bool _isHandlingDelay = false;
+  String? _delayHandleError;
+
+  bool get isHandlingDelay => _isHandlingDelay;
+  String? get delayHandleError => _delayHandleError;
+
+  Future<bool> handleDelayRequest({
+    required String bookingId,
+    required String action,
+  }) async {
+    _isHandlingDelay = true;
+    _delayHandleError = null;
+    notifyListeners();
+
+    try {
+      final success = await _service.handleDelayRequest(bookingId, action);
+      _isHandlingDelay = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isHandlingDelay = false;
+      _delayHandleError = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
     }

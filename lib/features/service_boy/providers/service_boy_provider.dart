@@ -6,6 +6,7 @@ import '../models/gallery_image_model.dart';
 import '../models/overall_analytics_model.dart';
 import '../services/service_boy_service.dart';
 import '../../../core/models/booking_model.dart';
+import '../../../core/models/booking_log_model.dart';
 
 class ServiceBoyProvider extends ChangeNotifier {
   final ServiceBoyService _service = ServiceBoyService();
@@ -24,6 +25,13 @@ class ServiceBoyProvider extends ChangeNotifier {
   bool _isSubmittingReview = false;
   String? _reviewError;
 
+  bool _isRequestingDelay = false;
+  String? _delayError;
+
+  List<BookingLogModel> _bookingLogs = [];
+  bool _isLoadingBookingLogs = false;
+  String? _bookingLogsError;
+
   // Getters
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
@@ -38,6 +46,13 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   bool get isSubmittingReview => _isSubmittingReview;
   String? get reviewError => _reviewError;
+
+  bool get isRequestingDelay => _isRequestingDelay;
+  String? get delayError => _delayError;
+
+  List<BookingLogModel> get bookingLogs => _bookingLogs;
+  bool get isLoadingBookingLogs => _isLoadingBookingLogs;
+  String? get bookingLogsError => _bookingLogsError;
 
   // Fetch Categories
   Future<void> fetchCategories() async {
@@ -130,6 +145,9 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   List<BookingModel> get cancelledBookings =>
       _bookings.where((b) => b.status == BookingStatus.cancelled).toList();
+
+  List<BookingModel> get delayRequestedBookings =>
+      _bookings.where((b) => b.status == BookingStatus.delayRequested).toList();
 
   Future<void> fetchBookings() async {
     _isLoadingBookings = true;
@@ -421,6 +439,54 @@ class ServiceBoyProvider extends ChangeNotifier {
       _reviewError = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
+    }
+  }
+
+  // Request Delay (Service Boy)
+  Future<bool> requestDelay({
+    required String bookingId,
+    required String delayTime,
+    required String delayNote,
+  }) async {
+    _isRequestingDelay = true;
+    _delayError = null;
+    notifyListeners();
+
+    try {
+      final success = await _service.requestDelay(
+        bookingId,
+        delayTime,
+        delayNote,
+      );
+      if (success) {
+        await fetchBookings();
+      }
+      _isRequestingDelay = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isRequestingDelay = false;
+      _delayError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Fetch Booking Logs
+  Future<void> fetchBookingLogs(String bookingId) async {
+    _isLoadingBookingLogs = true;
+    _bookingLogsError = null;
+    notifyListeners();
+
+    try {
+      _bookingLogs = await _service.getBookingLogs(bookingId);
+      // Sort logs by date descending (newest first)
+      _bookingLogs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (e) {
+      _bookingLogsError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingBookingLogs = false;
+      notifyListeners();
     }
   }
 }

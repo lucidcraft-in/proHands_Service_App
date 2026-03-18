@@ -13,6 +13,7 @@ class CustomButton extends StatelessWidget {
   final double? width;
   final double height;
   final double borderRadius;
+  final double? fontSize;
 
   const CustomButton({
     super.key,
@@ -26,6 +27,7 @@ class CustomButton extends StatelessWidget {
     this.width,
     this.height = 56,
     this.borderRadius = 12,
+    this.fontSize,
   });
 
   @override
@@ -86,6 +88,7 @@ class CustomButton extends StatelessWidget {
     final textWidget = Text(
       text,
       style: AppTextStyles.button.copyWith(
+        fontSize: fontSize,
         color:
             textColor ??
             (isOutlined

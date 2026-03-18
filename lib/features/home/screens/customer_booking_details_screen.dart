@@ -28,6 +28,16 @@ class _CustomerBookingDetailsScreenState
   final List<File> _images = [];
   final _picker = ImagePicker();
   bool _reviewSubmitted = false;
+  late BookingModel _currentBooking;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentBooking = widget.booking;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ConsumerProvider>().fetchBookingLogs(_currentBooking.id);
+    });
+  }
 
   @override
   void dispose() {
@@ -54,7 +64,7 @@ class _CustomerBookingDetailsScreenState
 
     final provider = context.read<ConsumerProvider>();
     final success = await provider.submitReview(
-      bookingId: widget.booking.id,
+      bookingId: _currentBooking.id,
       rating: _rating,
       comment: _commentController.text,
       imagePaths: _images.map((file) => file.path).toList(),
@@ -82,7 +92,7 @@ class _CustomerBookingDetailsScreenState
 
   @override
   Widget build(BuildContext context) {
-    print(widget.booking.status);
+    debugPrint("Current Booking Status: ${_currentBooking.status}");
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -100,8 +110,22 @@ class _CustomerBookingDetailsScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Status Timeline
-            _buildTimeline(widget.booking.status),
+            _buildTimeline(_currentBooking.status),
             const SizedBox(height: 24),
+
+            // Delay Request Section
+            if (_currentBooking.status == BookingStatus.delayRequested)
+              _buildDelaySection(),
+
+            if (_currentBooking.status == BookingStatus.delayRequested)
+              const SizedBox(height: 24),
+
+            // Reassign Options
+            if (_currentBooking.status == BookingStatus.reassignRequested)
+              _buildReassignSection(),
+
+            if (_currentBooking.status == BookingStatus.reassignRequested)
+              const SizedBox(height: 24),
 
             // Service Details Card
             Container(
@@ -130,7 +154,7 @@ class _CustomerBookingDetailsScreenState
                         ),
                       ),
                       Text(
-                        widget.booking.bookingId,
+                        _currentBooking.bookingId,
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -138,27 +162,27 @@ class _CustomerBookingDetailsScreenState
                     ],
                   ),
                   const Divider(height: 24),
-                  Text(widget.booking.serviceName, style: AppTextStyles.h4),
+                  Text(_currentBooking.serviceName, style: AppTextStyles.h4),
                   const SizedBox(height: 8),
                   Text(
-                    widget.booking.description,
+                    _currentBooking.description,
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildDetailRow(Iconsax.calendar, widget.booking.date),
+                  _buildDetailRow(Iconsax.calendar, _currentBooking.date),
                   const SizedBox(height: 8),
-                  _buildDetailRow(Iconsax.clock, widget.booking.time),
+                  _buildDetailRow(Iconsax.clock, _currentBooking.time),
                   const SizedBox(height: 8),
-                  _buildDetailRow(Iconsax.location, widget.booking.location),
+                  _buildDetailRow(Iconsax.location, _currentBooking.location),
                   const Divider(height: 24),
                   // Row(
                   //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   //   children: [
                   //     Text('Total Amount', style: AppTextStyles.h4),
                   //     Text(
-                  //       '₹${widget.booking.price.toStringAsFixed(0)}',
+                  //       '₹${_currentBooking.price.toStringAsFixed(0)}',
                   //       style: AppTextStyles.h4.copyWith(
                   //         color: AppColors.primary,
                   //       ),
@@ -171,7 +195,7 @@ class _CustomerBookingDetailsScreenState
             const SizedBox(height: 24),
 
             // Provider Details (if assigned)
-            if (widget.booking.providerName != null)
+            if (_currentBooking.providerName != null)
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -201,14 +225,14 @@ class _CustomerBookingDetailsScreenState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.booking.providerName!,
+                              _currentBooking.providerName!,
                               style: AppTextStyles.bodyLarge.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            if (widget.booking.providerProfession != null)
+                            if (_currentBooking.providerProfession != null)
                               Text(
-                                widget.booking.providerProfession!,
+                                _currentBooking.providerProfession!,
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
@@ -217,27 +241,27 @@ class _CustomerBookingDetailsScreenState
                         ),
                       ],
                     ),
-                    if (widget.booking.providerPhone != null &&
-                        widget.booking.status == BookingStatus.reached)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 16),
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // Call functionality
-                          },
-                          icon: const Icon(Icons.call),
-                          label: const Text('Call Provider'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
+                    // if (_currentBooking.providerPhone != null &&
+                    //     _currentBooking.status == BookingStatus.reached)
+                    //   Padding(
+                    //     padding: const EdgeInsets.only(top: 16),
+                    //     child: ElevatedButton.icon(
+                    //       onPressed: () {
+                    //         // Call functionality
+                    //       },
+                    //       icon: const Icon(Icons.call),
+                    //       label: const Text('Call Provider'),
+                    //       style: ElevatedButton.styleFrom(
+                    //         backgroundColor: Colors.green,
+                    //         foregroundColor: Colors.white,
+                    //       ),
+                    //     ),
+                    //   ),
                   ],
                 ),
               ),
 
-            if (widget.booking.status == BookingStatus.completed)
+            if (_currentBooking.status == BookingStatus.completed)
               Container(
                 margin: const EdgeInsets.only(top: 24),
                 padding: const EdgeInsets.all(20),
@@ -267,7 +291,7 @@ class _CustomerBookingDetailsScreenState
                           ),
                         ),
                         Text(
-                          widget.booking.paymentMode,
+                          _currentBooking.paymentMode,
                           style: AppTextStyles.bodyMedium.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -285,7 +309,7 @@ class _CustomerBookingDetailsScreenState
                           ),
                         ),
                         Text(
-                          '₹${widget.booking.totalAmount.toStringAsFixed(0)}',
+                          '₹${_currentBooking.totalAmount.toStringAsFixed(0)}',
                           style: AppTextStyles.h4.copyWith(
                             color: AppColors.primary,
                           ),
@@ -296,23 +320,26 @@ class _CustomerBookingDetailsScreenState
                 ),
               ),
 
-            if (widget.booking.status == BookingStatus.completed) ...[
+            if (_currentBooking.status == BookingStatus.completed) ...[
               const SizedBox(height: 24),
               Text('Job Proof Photos', style: AppTextStyles.h4),
               const SizedBox(height: 12),
-              widget.booking.jobProofImages.isEmpty
+              _currentBooking.jobProofImages.isEmpty
                   ? _buildEmptyPhotoPlaceholder('No proof photos available')
-                  : _buildNetworkImageGallery(widget.booking.jobProofImages),
+                  : _buildNetworkImageGallery(_currentBooking.jobProofImages),
             ],
 
             // Review Section
-            if (widget.booking.status == BookingStatus.completed &&
+            if (_currentBooking.status == BookingStatus.completed &&
                 !_reviewSubmitted)
               _buildReviewSection(),
 
+            const SizedBox(height: 24),
+            _buildLogsTimeline(),
+
             // Cancel Booking Section
-            if (widget.booking.status != BookingStatus.completed &&
-                widget.booking.status != BookingStatus.cancelled)
+            if (_currentBooking.status != BookingStatus.completed &&
+                _currentBooking.status != BookingStatus.cancelled)
               Column(
                 children: [
                   const SizedBox(height: 32),
@@ -328,6 +355,106 @@ class _CustomerBookingDetailsScreenState
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLogsTimeline() {
+    return Consumer<ConsumerProvider>(
+      builder: (context, provider, child) {
+        if (provider.isLoadingBookingLogs) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (provider.bookingLogs.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Booking Timeline', style: AppTextStyles.h4),
+            const SizedBox(height: 16),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: provider.bookingLogs.length,
+              itemBuilder: (context, index) {
+                final log = provider.bookingLogs[index];
+                final isLast = index == provider.bookingLogs.length - 1;
+
+                DateTime? dateTime;
+                try {
+                  dateTime = DateTime.parse(log.createdAt).toLocal();
+                  ;
+                } catch (_) {}
+
+                final dateStr =
+                    dateTime != null
+                        ? "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"
+                        : log.createdAt;
+
+                return IntrinsicHeight(
+                  child: Row(
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            width: 12,
+                            height: 12,
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          if (!isLast)
+                            Expanded(
+                              child: Container(
+                                width: 2,
+                                color: AppColors.border,
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              log.notes,
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                Text(
+                                  dateStr,
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  "  created by ${log.createdByName}",
+                                  style: AppTextStyles.caption.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -396,7 +523,7 @@ class _CustomerBookingDetailsScreenState
 
     final provider = context.read<ConsumerProvider>();
     final success = await provider.cancelBookingRequest(
-      bookingId: widget.booking.id,
+      bookingId: _currentBooking.id,
       reason: reason,
     );
 
@@ -617,6 +744,144 @@ class _CustomerBookingDetailsScreenState
     );
   }
 
+  Widget _buildDelaySection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Iconsax.clock, color: AppColors.warning),
+              const SizedBox(width: 12),
+              Text(
+                'Delay Requested',
+                style: AppTextStyles.h4.copyWith(color: AppColors.warning),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'The technician has requested to delay this service.',
+            style: AppTextStyles.bodyMedium,
+          ),
+          if (_currentBooking.delayTime != null) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Text(
+                  'Proposed Time: ',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  _currentBooking.delayTime!,
+                  style: AppTextStyles.bodyMedium,
+                ),
+              ],
+            ),
+          ],
+          if (_currentBooking.delayNote != null &&
+              _currentBooking.delayNote!.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Reason: ',
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    _currentBooking.delayNote!,
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                ),
+              ],
+            ),
+          ],
+          const SizedBox(height: 20),
+          Consumer<ConsumerProvider>(
+            builder: (context, provider, child) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: CustomButton(
+                      text: 'Reject',
+                      onPressed:
+                          provider.isHandlingDelay
+                              ? null
+                              : () => _handleDelay('REJECT'),
+                      backgroundColor: AppColors.error,
+                      isOutlined: true,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: CustomButton(
+                      text: 'Accept',
+                      onPressed:
+                          provider.isHandlingDelay
+                              ? null
+                              : () => _handleDelay('ACCEPT'),
+                      isLoading: provider.isHandlingDelay,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleDelay(String action) async {
+    final provider = context.read<ConsumerProvider>();
+    final success = await provider.handleDelayRequest(
+      bookingId: _currentBooking.id,
+      action: action,
+    );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Delay request $action'
+            'ED successfully',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      // Fetch fresh booking details to update UI
+      final updatedBooking = await provider.fetchBookingDetails(
+        _currentBooking.id,
+      );
+      if (updatedBooking != null && mounted) {
+        setState(() {
+          _currentBooking = updatedBooking;
+        });
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            provider.delayHandleError ?? 'Failed to handle delay request',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   Widget _buildDetailRow(IconData icon, String text) {
     return Row(
       children: [
@@ -631,6 +896,185 @@ class _CustomerBookingDetailsScreenState
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildReassignSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Reassignment Required',
+            style: AppTextStyles.h4.copyWith(color: AppColors.primary),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'The provider has requested a reassignment. Please choose how you would like to proceed.',
+            style: AppTextStyles.bodySmall,
+          ),
+          const SizedBox(height: 16),
+          _buildReassignOption(
+            title: 'Let Admin Choose',
+            subtitle: 'We will assign the best available professional for you.',
+            icon: Iconsax.user_tick,
+            onTap: () => _handleReassignChoice('ADMIN_CHOOSE'),
+          ),
+          const SizedBox(height: 12),
+          _buildReassignOption(
+            title: 'Choose Another Service',
+            subtitle: 'Pick a different service that fits your needs.',
+            icon: Iconsax.search_status,
+            onTap: () => _showServicePicker(),
+          ),
+          const SizedBox(height: 12),
+          _buildReassignOption(
+            title: 'I Will Wait',
+            subtitle: 'Keep the current booking and wait for updates.',
+            icon: Iconsax.clock,
+            onTap: () => _handleReassignChoice('WAIT'),
+          ),
+          const SizedBox(height: 12),
+          _buildReassignOption(
+            title: 'Cancel Booking',
+            subtitle: 'If you no longer need the service.',
+            icon: Iconsax.close_circle,
+            color: AppColors.error,
+            onTap: () => _handleReassignChoice('CANCELLED'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReassignOption({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required VoidCallback onTap,
+    Color color = AppColors.primary,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Iconsax.arrow_right_3,
+              size: 16,
+              color: AppColors.textTertiary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleReassignChoice(
+    String choice, {
+    String? newServiceId,
+  }) async {
+    final provider = context.read<ConsumerProvider>();
+    final success = await provider.submitReassignChoice(
+      bookingId: _currentBooking.id,
+      choice: choice,
+      newServiceId: choice == 'CHOOSE_ANOTHER_SERVICE' ? newServiceId : null,
+    );
+
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Choice submitted successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        // Reload booking details and logs after success
+        _reloadBookingDetails();
+        provider.fetchBookingLogs(_currentBooking.id);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              provider.reassignChoiceError ?? 'Failed to submit choice',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _reloadBookingDetails() async {
+    final provider = context.read<ConsumerProvider>();
+    final updatedBooking = await provider.fetchBookingDetails(
+      _currentBooking.id,
+    );
+    if (updatedBooking != null && mounted) {
+      setState(() {
+        _currentBooking = updatedBooking;
+      });
+    }
+  }
+
+  void _showServicePicker() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => _ServicePickerSheet(
+            categoryId: _currentBooking.categoryId ?? '',
+            onServiceSelected: (serviceId) {
+              Navigator.pop(context);
+              _handleReassignChoice(
+                'CHOOSE_ANOTHER_SERVICE',
+                newServiceId: serviceId,
+              );
+            },
+          ),
     );
   }
 
@@ -740,6 +1184,180 @@ class _CustomerBookingDetailsScreenState
           }),
         ),
       ],
+    );
+  }
+}
+
+class _ServicePickerSheet extends StatefulWidget {
+  final Function(String) onServiceSelected;
+  final String categoryId;
+
+  const _ServicePickerSheet({
+    required this.onServiceSelected,
+    required this.categoryId,
+  });
+
+  @override
+  State<_ServicePickerSheet> createState() => _ServicePickerSheetState();
+}
+
+class _ServicePickerSheetState extends State<_ServicePickerSheet> {
+  String? _selectedCategoryId;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = context.read<ConsumerProvider>();
+      provider.fetchCategories();
+      setState(() {
+        _selectedCategoryId =
+            widget.categoryId.isEmpty ? null : widget.categoryId;
+      });
+      if (_selectedCategoryId != null) {
+        provider.fetchServicesByCategory(_selectedCategoryId!);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: const BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            _selectedCategoryId == null ? 'Select Category' : 'Select Service',
+            style: AppTextStyles.h4,
+          ),
+          const SizedBox(height: 16),
+          Expanded(
+            child: Consumer<ConsumerProvider>(
+              builder: (context, provider, child) {
+                if (_selectedCategoryId == null) {
+                  if (provider.isLoadingCategories) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (provider.categoriesError != null) {
+                    return Center(child: Text(provider.categoriesError!));
+                  }
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: provider.categories.length,
+                    itemBuilder: (context, index) {
+                      final category = provider.categories[index];
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.primary.withOpacity(0.1),
+                          child: const Icon(
+                            Iconsax.category,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          category.name,
+                          style: AppTextStyles.bodyLarge,
+                        ),
+                        trailing: const Icon(Iconsax.arrow_right_3, size: 16),
+                        onTap: () {
+                          setState(() {
+                            _selectedCategoryId = category.id;
+                          });
+                          provider.fetchServicesByCategory(category.id);
+                        },
+                      );
+                    },
+                  );
+                } else {
+                  if (provider.isLoadingServices) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (provider.servicesError != null) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(provider.servicesError!),
+                        TextButton(
+                          onPressed:
+                              () => setState(() => _selectedCategoryId = null),
+                          child: const Text('Back to Categories'),
+                        ),
+                      ],
+                    );
+                  }
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back),
+                              onPressed:
+                                  () => setState(
+                                    () => _selectedCategoryId = null,
+                                  ),
+                            ),
+                            const Text('Service List'),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.all(20),
+                          itemCount: provider.services.length,
+                          itemBuilder: (context, index) {
+                            final service = provider.services[index];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              decoration: BoxDecoration(
+                                color: AppColors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: AppColors.border),
+                              ),
+                              child: ListTile(
+                                title: Text(
+                                  service.name,
+                                  style: AppTextStyles.bodyLarge,
+                                ),
+                                // subtitle: Text(
+                                //   '₹${service.price}',
+                                //   style: AppTextStyles.bodySmall,
+                                // ),
+                                trailing: const Icon(
+                                  Iconsax.add_circle,
+                                  color: AppColors.primary,
+                                ),
+                                onTap:
+                                    () => widget.onServiceSelected(service.id),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

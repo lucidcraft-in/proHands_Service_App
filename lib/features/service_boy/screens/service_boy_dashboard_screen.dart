@@ -15,6 +15,8 @@ import 'service_boy_overall_analytics_screen.dart';
 import 'package:provider/provider.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
 import '../../home/providers/consumer_provider.dart';
+import '../../home/providers/notification_provider.dart';
+import '../../home/screens/notification_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/user_type.dart';
 
@@ -48,6 +50,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
       if (userId != null) {
         sbProvider.fetchGalleryImages(userId);
       }
+      context.read<NotificationProvider>().fetchNotifications();
     });
   }
 
@@ -374,90 +377,96 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                             style: AppTextStyles.h3,
                           ),
                           const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              // const Icon(
-                              //   Icons.star,
-                              //   color: Color(0xFFFFA928),
-                              //   size: 14,
-                              // ),
-                              // const SizedBox(width: 4),
-                              // Text(
-                              //   user.isActive ? 'Active' : 'Inactive',
-                              //   style: AppTextStyles.labelSmall.copyWith(
-                              //     color:
-                              //         !user.isActive
-                              //             ? Colors.red
-                              //             : Colors.green,
-                              //     fontWeight: FontWeight.bold,
-                              //   ),
-                              // ),
-                              // const SizedBox(width: 8),
-                              // Text(
-                              //   '(120 Reviews)',
-                              //   style: AppTextStyles.caption.copyWith(
-                              //     fontSize: 10,
-                              //     color: AppColors.textTertiary,
-                              //   ),
-                              // ),
-                            ],
-                          ),
+                          Row(children: const []),
                         ],
                       ),
-                      Stack(
+                      Row(
                         children: [
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor:
-                                (user.profilePhoto.isEmpty)
-                                    ? AppColors.background
-                                    : AppColors.primary,
-                            backgroundImage:
-                                (user.profilePhoto.isNotEmpty)
-                                    ? NetworkImage(user.profilePhoto)
-                                    : null,
-                            child:
-                                (user.profilePhoto.isNotEmpty)
-                                    ? null
-                                    : const Icon(
-                                      Icons.person,
-                                      size: 28,
-                                      color: Color.fromARGB(255, 243, 243, 245),
+                          Consumer<NotificationProvider>(
+                            builder: (context, provider, child) {
+                              return IconButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              const NotificationScreen(),
                                     ),
-                          ),
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder:
-                                        (context) => const EditProfileScreen(),
+                                  );
+                                },
+                                icon: Badge(
+                                  label: Text(provider.unreadCount.toString()),
+                                  isLabelVisible: provider.unreadCount > 0,
+                                  child: const Icon(
+                                    Iconsax.notification,
+                                    color: AppColors.textPrimary,
                                   ),
-                                );
-                              },
-                              // _showImageOptions,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: const BoxDecoration(
-                                  color: AppColors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.shadowLight,
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
                                 ),
-                                child: const Icon(
-                                  Iconsax.camera,
-                                  size: 14,
-                                  color: AppColors.primary,
+                              );
+                            },
+                          ),
+                          Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 28,
+                                backgroundColor:
+                                    user.profilePhoto.isEmpty
+                                        ? AppColors.background
+                                        : AppColors.primary,
+                                backgroundImage:
+                                    user.profilePhoto.isNotEmpty
+                                        ? NetworkImage(user.profilePhoto)
+                                        : null,
+                                child:
+                                    user.profilePhoto.isNotEmpty
+                                        ? null
+                                        : const Icon(
+                                          Icons.person,
+                                          size: 28,
+                                          color: Color.fromARGB(
+                                            255,
+                                            243,
+                                            243,
+                                            245,
+                                          ),
+                                        ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const EditProfileScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.shadowLight,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Icon(
+                                      Iconsax.camera,
+                                      size: 14,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),

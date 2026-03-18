@@ -27,24 +27,6 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
 
   @override
   Widget build(BuildContext context) {
-    Color statusColor;
-    switch (widget.booking.status) {
-      case BookingStatus.assigned:
-        statusColor = AppColors.warning;
-        break;
-      case BookingStatus.reached:
-        statusColor = AppColors.primary;
-        break;
-      case BookingStatus.completed:
-        statusColor = AppColors.success;
-        break;
-      case BookingStatus.cancelled:
-        statusColor = AppColors.error;
-        break;
-      default:
-        statusColor = AppColors.textTertiary;
-    }
-
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -57,282 +39,226 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 20),
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadowLight,
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 15,
               offset: const Offset(0, 4),
             ),
           ],
+          border: Border.all(color: AppColors.divider.withValues(alpha: 0.1)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: Booking ID and Status
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    widget.booking.bookingId,
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar/Icon Section
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: Text(
-                      (widget.booking.status == BookingStatus.reached
-                              ? 'Ongoing'
-                              : widget.booking.status == BookingStatus.completed
-                              ? 'Completed'
-                              : widget.booking.status.name)
-                          .toUpperCase(),
-                      style: AppTextStyles.labelSmall.copyWith(
-                        color: statusColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                  child: const Icon(
+                    Iconsax.user,
+                    color: AppColors.primary,
+                    size: 24,
                   ),
-                ],
-              ),
-            ),
-
-            const Divider(height: 1, thickness: 1, color: AppColors.background),
-
-            // Content: Icon, Name, Date/Time
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(
-                      Icons.cleaning_services_rounded,
-                      color: AppColors.primary,
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.booking.serviceName,
-                          style: AppTextStyles.h4.copyWith(fontSize: 18),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(
-                              Iconsax.calendar,
-                              size: 16,
+                ),
+                const SizedBox(width: 14),
+                // Content Section
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.booking.serviceName,
+                              style: AppTextStyles.h4.copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            widget.booking.time,
+                            style: AppTextStyles.caption.copyWith(
                               color: AppColors.textTertiary,
+                              fontWeight: FontWeight.w500,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.booking.date,
-                              style: AppTextStyles.bodySmall,
-                            ),
-                            const SizedBox(width: 16),
-                            const Icon(
-                              Iconsax.clock,
-                              size: 16,
-                              color: AppColors.textTertiary,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              widget.booking.time,
-                              style: AppTextStyles.bodySmall,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Location
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  const Icon(
-                    Iconsax.location5,
-                    size: 18,
-                    color: AppColors.textSecondary,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.booking.location,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.textSecondary,
+                          ),
+                        ],
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${widget.booking.customerName} • ${widget.booking.location}',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                          height: 1.3,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 20),
 
             // Action Buttons
-            if (widget.booking.status == BookingStatus.assigned)
+            if (widget.booking.status == BookingStatus.assigned ||
+                widget.booking.status == BookingStatus.reached)
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                padding: const EdgeInsets.only(top: 16),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: CustomButton(
-                        text:
-                            _declineId == widget.booking.id
-                                ? 'Cancel'
-                                : 'Decline',
-                        onPressed: () {
-                          setState(() {
-                            if (_declineId == widget.booking.id) {
-                              _declineId = null;
-                            } else {
-                              _declineId = widget.booking.id;
-                            }
-                          });
-                        },
-                        isOutlined: true,
-                        backgroundColor: AppColors.error,
-                        height: 50,
+                    if (widget.booking.status == BookingStatus.assigned) ...[
+                      Expanded(
+                        child: CustomButton(
+                          text:
+                              _declineId == widget.booking.id
+                                  ? 'Cancel'
+                                  : 'Decline',
+                          onPressed: () {
+                            setState(() {
+                              if (_declineId == widget.booking.id) {
+                                _declineId = null;
+                              } else {
+                                _declineId = widget.booking.id;
+                              }
+                            });
+                          },
+                          isOutlined: true,
+                          backgroundColor: AppColors.white,
+                          textColor: AppColors.textPrimary,
+                          height: 50,
+                          fontSize: 13,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: CustomButton(
-                        text: 'Accept',
-                        onPressed: () async {
-                          final provider = context.read<ServiceBoyProvider>();
-                          final scaffoldMessenger = ScaffoldMessenger.of(
-                            context,
-                          );
-
-                          final success = await provider.acceptBooking(
-                            widget.booking.id,
-                          );
-
-                          if (success) {
-                            scaffoldMessenger.showSnackBar(
-                              const SnackBar(
-                                content: Text('Work accepted successfully!'),
-                                backgroundColor: AppColors.success,
-                              ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: CustomButton(
+                          text: 'Accept',
+                          onPressed: () async {
+                            final provider = context.read<ServiceBoyProvider>();
+                            final scaffoldMessenger = ScaffoldMessenger.of(
+                              context,
                             );
-                          } else {
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  provider.bookingsError ??
-                                      'Failed to accept work',
+                            final success = await provider.acceptBooking(
+                              widget.booking.id,
+                            );
+                            if (success) {
+                              scaffoldMessenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Work accepted successfully!'),
+                                  backgroundColor: AppColors.success,
                                 ),
-                                backgroundColor: AppColors.error,
+                              );
+                            } else {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.bookingsError ??
+                                        'Failed to accept work',
+                                  ),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                            }
+                          },
+                          backgroundColor: AppColors.primary,
+                          height: 50,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: CustomButton(
+                          text: 'Delay',
+                          onPressed:
+                              () => _showDelayRequestDialog(
+                                context,
+                                widget.booking.id,
+                              ),
+                          isOutlined: true,
+                          backgroundColor: AppColors.white,
+                          textColor: AppColors.warning,
+                          height: 50,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ] else if (widget.booking.status == BookingStatus.reached)
+                      Expanded(
+                        child: CustomButton(
+                          text: 'Complete Work',
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ServiceBoyTaskDetailsScreen(
+                                      booking: widget.booking,
+                                    ),
                               ),
                             );
-                          }
-                        },
-                        height: 50,
+                          },
+                          backgroundColor: AppColors.success,
+                          height: 50,
+                          fontSize: 14,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
 
-            // Completion Navigation for Ongoing Tasks
-            if (widget.booking.status == BookingStatus.reached)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: CustomButton(
-                  text: 'Complete Work',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) => ServiceBoyTaskDetailsScreen(
-                              booking: widget.booking,
-                            ),
-                      ),
-                    );
-                  },
-                  backgroundColor: AppColors.success,
-                  width: double.infinity,
-                  height: 50,
-                ),
-              ),
-
-            // Inline Decline Reasons Section
+            // Inline Decline Reasons
             if (_declineId == widget.booking.id)
               Container(
-                margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(top: 16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppColors.background,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(
+                    color: AppColors.divider.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Select Reason for Declining',
+                      'Select Reason',
                       style: AppTextStyles.labelSmall.copyWith(
-                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    ...[
-                      'Schedule Conflict',
-                      'Location too far',
-                      'Technical Issues',
-                      'Other',
-                    ].map(
+                    const SizedBox(height: 8),
+                    ...['Schedule Conflict', 'Location too far', 'Other'].map(
                       (reason) => InkWell(
                         onTap: () async {
                           final provider = context.read<ServiceBoyProvider>();
                           final scaffoldMessenger = ScaffoldMessenger.of(
                             context,
                           );
-
-                          // Optimistically hide the reasons
-                          setState(() {
-                            _declineId = null;
-                          });
-
+                          setState(() => _declineId = null);
                           final success = await provider.cancelBookingRequest(
                             widget.booking.id,
                             reason,
                           );
-
                           if (success) {
                             scaffoldMessenger.showSnackBar(
                               const SnackBar(
@@ -346,28 +272,22 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
                                 content: Text(
-                                  provider.bookingsError ??
-                                      'Failed to submit cancellation request.',
+                                  provider.bookingsError ?? 'Failed to submit.',
                                 ),
                                 backgroundColor: AppColors.error,
                               ),
                             );
                           }
                         },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: AppColors.border),
-                            ),
-                          ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(reason, style: AppTextStyles.bodySmall),
                               const Icon(
                                 Icons.chevron_right,
-                                size: 16,
+                                size: 14,
                                 color: AppColors.textTertiary,
                               ),
                             ],
@@ -381,6 +301,107 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showDelayRequestDialog(BuildContext context, String bookingId) {
+    final timeController = TextEditingController();
+    final noteController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Request Delay'),
+          backgroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: timeController,
+                decoration: const InputDecoration(
+                  hintText: 'Delay Time (e.g. 30 minutes)',
+                  prefixIcon: Icon(Iconsax.clock),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: noteController,
+                maxLines: 3,
+                decoration: const InputDecoration(
+                  hintText: 'Reason for delay',
+                  prefixIcon: Icon(Iconsax.note),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.textTertiary,
+                ),
+              ),
+            ),
+            Consumer<ServiceBoyProvider>(
+              builder: (context, provider, child) {
+                return TextButton(
+                  onPressed:
+                      provider.isRequestingDelay
+                          ? null
+                          : () async {
+                            if (timeController.text.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please enter delay time'),
+                                ),
+                              );
+                              return;
+                            }
+                            final success = await provider.requestDelay(
+                              bookingId: bookingId,
+                              delayTime: timeController.text.trim(),
+                              delayNote: noteController.text.trim(),
+                            );
+
+                            if (mounted) {
+                              Navigator.pop(context);
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Delay request submitted'),
+                                    backgroundColor: AppColors.success,
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      provider.delayError ?? 'Failed to submit',
+                                    ),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                  child: Text(
+                    provider.isRequestingDelay ? 'Submitting...' : 'Submit',
+                    style: AppTextStyles.labelSmall.copyWith(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

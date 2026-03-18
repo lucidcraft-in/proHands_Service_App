@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../../home/providers/consumer_provider.dart';
 import 'package:intl/intl.dart';
 import '../../../core/services/storage_service.dart';
+import '../../home/screens/main_screen.dart';
 
 class BookingCheckoutScreen extends StatefulWidget {
   final String serviceName;
@@ -627,9 +628,14 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                     GradientButton(
                       text: 'View Booking',
                       onPressed: () {
-                        Navigator.of(context).pop(); // Pop dialog
-                        Navigator.of(context).pop(); // Pop checkout
-                        // Ideally navigate to bookings tab
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => const MainScreen(initialIndex: 1),
+                          ),
+                          (route) => false,
+                        );
                       },
                       width: double.infinity,
                     ),

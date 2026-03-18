@@ -7,6 +7,7 @@ import 'features/auth/providers/auth_provider.dart';
 
 import 'features/service_boy/providers/service_boy_provider.dart';
 import 'features/home/providers/consumer_provider.dart';
+import 'features/home/providers/notification_provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ServiceBoyProvider()),
         ChangeNotifierProvider(create: (_) => ConsumerProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MaterialApp(
         title: 'PRO HNADS',
