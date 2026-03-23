@@ -31,10 +31,6 @@ class _ServiceBoyTaskDetailsScreenState
   String _paymentMode = 'CASH';
   bool _isCompleting = false;
 
-  final _reviewCommentController = TextEditingController();
-  double _ratingByProvider = 0;
-  bool _reviewSubmitted = false;
-
   @override
   void initState() {
     super.initState();
@@ -50,7 +46,6 @@ class _ServiceBoyTaskDetailsScreenState
     _noteController.dispose();
     _amountController.dispose();
     _otpController.dispose();
-    _reviewCommentController.dispose();
     super.dispose();
   }
 
@@ -733,7 +728,7 @@ class _ServiceBoyTaskDetailsScreenState
 
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Request Delay'),
           backgroundColor: AppColors.white,
@@ -759,7 +754,7 @@ class _ServiceBoyTaskDetailsScreenState
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: Text(
                 'Cancel',
                 style: AppTextStyles.labelSmall.copyWith(
@@ -768,45 +763,50 @@ class _ServiceBoyTaskDetailsScreenState
               ),
             ),
             Consumer<ServiceBoyProvider>(
-              builder: (context, provider, child) {
+              builder: (consumerContext, provider, child) {
                 return TextButton(
                   onPressed:
                       provider.isRequestingDelay
                           ? null
                           : () async {
                             if (timeController.text.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              ScaffoldMessenger.of(
+                                consumerContext,
+                              ).showSnackBar(
                                 const SnackBar(
                                   content: Text('Please enter delay time'),
                                 ),
                               );
                               return;
                             }
+                            final messenger = ScaffoldMessenger.of(context);
                             final success = await provider.requestDelay(
                               bookingId: bookingId,
                               delayTime: timeController.text.trim(),
                               delayNote: noteController.text.trim(),
                             );
 
-                            if (mounted) {
-                              Navigator.pop(context);
-                              if (success) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Delay request submitted'),
-                                    backgroundColor: AppColors.success,
+                            if (!mounted) return;
+
+                            // Always use the dialog context to pop the dialog
+                            Navigator.of(dialogContext).pop();
+
+                            if (success) {
+                              messenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text('Delay request submitted'),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                            } else {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.delayError ?? 'Failed to submit',
                                   ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                      provider.delayError ?? 'Failed to submit',
-                                    ),
-                                    backgroundColor: AppColors.error,
-                                  ),
-                                );
-                              }
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
                             }
                           },
                   child: Text(
@@ -822,7 +822,10 @@ class _ServiceBoyTaskDetailsScreenState
           ],
         );
       },
-    );
+    ).then((_) {
+      timeController.dispose();
+      noteController.dispose();
+    });
   }
 
   Future<void> _pickImage() async {

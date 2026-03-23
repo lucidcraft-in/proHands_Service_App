@@ -458,11 +458,14 @@ class ServiceBoyProvider extends ChangeNotifier {
         delayTime,
         delayNote,
       );
-      if (success) {
-        await fetchBookings();
-      }
+
       _isRequestingDelay = false;
       notifyListeners();
+
+      if (success) {
+        // Refresh bookings in the background (don't block the caller if they already have success)
+        fetchBookings();
+      }
       return success;
     } catch (e) {
       _isRequestingDelay = false;
