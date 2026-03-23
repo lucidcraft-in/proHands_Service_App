@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../service_boy/models/service_category_model.dart';
+import '../../service_boy/models/service_subcategory_model.dart';
 import '../models/service_product_model.dart';
 import '../models/feed_model.dart';
 import '../../../core/models/booking_model.dart';
@@ -101,6 +102,52 @@ class ConsumerProvider extends ChangeNotifier {
   List<ServiceProductModel> get services => _services;
   bool get isLoadingServices => _isLoadingServices;
   String? get servicesError => _servicesError;
+
+  // Subcategories
+  List<ServiceSubcategoryModel> _subcategories = [];
+  bool _isLoadingSubcategories = false;
+  String? _subcategoriesError;
+
+  List<ServiceSubcategoryModel> get subcategories => _subcategories;
+  bool get isLoadingSubcategories => _isLoadingSubcategories;
+  String? get subcategoriesError => _subcategoriesError;
+
+  Future<void> fetchSubcategories(String categoryId) async {
+    _isLoadingSubcategories = true;
+    _subcategoriesError = null;
+    notifyListeners();
+
+    try {
+      _subcategories = await _service.getSubcategories(categoryId);
+    } catch (e) {
+      _subcategoriesError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingSubcategories = false;
+      notifyListeners();
+    }
+  }
+
+  void clearSubcategories() {
+    _subcategories = [];
+    _subcategoriesError = null;
+    notifyListeners();
+  }
+
+  Future<void> fetchServicesBySubcategory(String subcategoryId) async {
+    _isLoadingServices = true;
+    _servicesError = null;
+    _services = [];
+    notifyListeners();
+
+    try {
+      _services = await _service.getServicesBySubcategory(subcategoryId);
+    } catch (e) {
+      _servicesError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingServices = false;
+      notifyListeners();
+    }
+  }
 
   Future<void> fetchServicesByCategory(String categoryId) async {
     _isLoadingServices = true;

@@ -26,6 +26,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   final _descriptionController = TextEditingController();
 
   String? _selectedCategoryId;
+  String? _selectedSubcategoryId;
   bool _isTrending = false;
   File? _serviceImage;
   final _picker = ImagePicker();
@@ -94,6 +95,8 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
     final serviceData = {
       'categoryId': _selectedCategoryId,
+      if (_selectedSubcategoryId != null)
+        'subcategoryId': _selectedSubcategoryId,
       'name': _nameController.text.trim(),
       'description': _descriptionController.text.trim(),
       'price': 0,
@@ -298,11 +301,93 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                               );
                             }).toList(),
                         onChanged: (String? newValue) {
-                          setState(() => _selectedCategoryId = newValue);
+                          setState(() {
+                            _selectedCategoryId = newValue;
+                            _selectedSubcategoryId = null;
+                          });
+                          if (newValue != null) {
+                            provider.fetchSubcategories(newValue);
+                          } else {
+                            provider.clearSubcategories();
+                          }
                         },
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 20),
+
+                  // Subcategory Dropdown
+                  if (_selectedCategoryId != null) ...[
+                    Text('Subcategory', style: AppTextStyles.labelMedium),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedSubcategoryId,
+                          hint: Text(
+                            provider.isLoadingSubcategories
+                                ? 'Loading...'
+                                : 'Select Subcategory',
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.textTertiary,
+                            ),
+                          ),
+                          isExpanded: true,
+                          icon:
+                              provider.isLoadingSubcategories
+                                  ? const SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.primary,
+                                    ),
+                                  )
+                                  : const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: AppColors.textSecondary,
+                                  ),
+                          items:
+                              provider.subcategories.map((subcategory) {
+                                return DropdownMenuItem<String>(
+                                  value: subcategory.id,
+                                  child: Row(
+                                    children: [
+                                      if (subcategory.icon.isNotEmpty) ...[
+                                        Text(
+                                          subcategory.icon,
+                                          style: const TextStyle(fontSize: 16),
+                                        ),
+                                        const SizedBox(width: 12),
+                                      ],
+                                      Text(
+                                        subcategory.name,
+                                        style: AppTextStyles.bodyMedium,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                          onChanged:
+                              provider.isLoadingSubcategories
+                                  ? null
+                                  : (String? newValue) {
+                                    setState(
+                                      () => _selectedSubcategoryId = newValue,
+                                    );
+                                  },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
 
                   const SizedBox(height: 20),
 

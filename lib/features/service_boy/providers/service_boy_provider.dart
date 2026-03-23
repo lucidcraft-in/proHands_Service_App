@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/service_category_model.dart';
+import '../models/service_subcategory_model.dart';
 import '../models/service_model.dart';
 import '../models/gallery_image_model.dart';
 import '../models/overall_analytics_model.dart';
@@ -14,6 +15,10 @@ class ServiceBoyProvider extends ChangeNotifier {
   List<ServiceCategoryModel> _categories = [];
   bool _isLoadingCategories = false;
   String? _categoriesError;
+
+  List<ServiceSubcategoryModel> _subcategories = [];
+  bool _isLoadingSubcategories = false;
+  String? _subcategoriesError;
 
   List<ServiceModel> _myServices = [];
   bool _isLoadingServices = false;
@@ -36,6 +41,10 @@ class ServiceBoyProvider extends ChangeNotifier {
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
+
+  List<ServiceSubcategoryModel> get subcategories => _subcategories;
+  bool get isLoadingSubcategories => _isLoadingSubcategories;
+  String? get subcategoriesError => _subcategoriesError;
 
   List<ServiceModel> get myServices => _myServices;
   bool get isLoadingServices => _isLoadingServices;
@@ -68,6 +77,30 @@ class ServiceBoyProvider extends ChangeNotifier {
       _isLoadingCategories = false;
       notifyListeners();
     }
+  }
+
+  // Fetch Subcategories
+  Future<void> fetchSubcategories(String categoryId) async {
+    _isLoadingSubcategories = true;
+    _subcategoriesError = null;
+    _subcategories = []; // Reset subcategories when fetching new ones
+    notifyListeners();
+
+    try {
+      _subcategories = await _service.getSubcategories(categoryId);
+    } catch (e) {
+      _subcategoriesError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingSubcategories = false;
+      notifyListeners();
+    }
+  }
+
+  // Clear Subcategories
+  void clearSubcategories() {
+    _subcategories = [];
+    _subcategoriesError = null;
+    notifyListeners();
   }
 
   // Create Service

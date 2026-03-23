@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../../../core/services/auth_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../service_boy/models/service_category_model.dart';
+import '../../service_boy/models/service_subcategory_model.dart';
 import '../models/service_product_model.dart';
 import '../models/feed_model.dart';
 import '../../../core/models/booking_model.dart';
@@ -63,6 +64,62 @@ class ConsumerService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         print(data);
+        if (data['success'] == true) {
+          final List<dynamic> servicesJson = data['services'];
+          return servicesJson
+              .map((json) => ServiceProductModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load services');
+        }
+      } else {
+        throw Exception('Failed to load services: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching services: $e');
+    }
+  }
+
+  // Get Subcategories
+  Future<List<ServiceSubcategoryModel>> getSubcategories(
+    String categoryId,
+  ) async {
+    final url = Uri.parse(
+      '$baseUrl/services/subcategories?categoryId=$categoryId',
+    );
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> subcategoriesJson = data['subcategories'];
+          return subcategoriesJson
+              .map((json) => ServiceSubcategoryModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load subcategories');
+        }
+      } else {
+        throw Exception('Failed to load subcategories: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching subcategories: $e');
+    }
+  }
+
+  // Get Services by Subcategory
+  Future<List<ServiceProductModel>> getServicesBySubcategory(
+    String subcategoryId,
+  ) async {
+    final url = Uri.parse('$baseUrl/services/subcategory/$subcategoryId');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
           return servicesJson

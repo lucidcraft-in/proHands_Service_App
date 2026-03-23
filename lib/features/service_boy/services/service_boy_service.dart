@@ -7,6 +7,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/models/booking_log_model.dart';
 import '../models/service_category_model.dart';
 import '../models/service_model.dart';
+import '../models/service_subcategory_model.dart';
 import '../models/gallery_image_model.dart';
 
 class ServiceBoyService {
@@ -45,6 +46,35 @@ class ServiceBoyService {
       }
     } catch (e) {
       throw Exception('Error fetching categories: $e');
+    }
+  }
+
+  // Get Subcategories
+  Future<List<ServiceSubcategoryModel>> getSubcategories(
+    String categoryId,
+  ) async {
+    final url = Uri.parse(
+      '$baseUrl/services/subcategories?categoryId=$categoryId',
+    );
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> subcategoriesJson = data['subcategories'];
+          return subcategoriesJson
+              .map((json) => ServiceSubcategoryModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load subcategories');
+        }
+      } else {
+        throw Exception('Failed to load subcategories: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching subcategories: $e');
     }
   }
 
