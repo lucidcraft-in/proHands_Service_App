@@ -7,6 +7,7 @@ import '../../../core/models/user_model.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../home/models/service_product_model.dart';
 import '../../booking/screens/booking_checkout_screen.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import 'service_product_detail_screen.dart';
 
 class ServiceProviderDetailScreen extends StatefulWidget {
@@ -307,7 +308,13 @@ class _ServiceProviderDetailScreenState
                       Text('Services Offered', style: AppTextStyles.h4),
                       const SizedBox(height: 16),
                       if (consumerProvider.isLoadingAllServices)
-                        const Center(child: CircularProgressIndicator())
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: 3,
+                          itemBuilder:
+                              (context, index) => const ListCardShimmer(),
+                        )
                       else if (providerServices.isEmpty)
                         Center(
                           child: Padding(

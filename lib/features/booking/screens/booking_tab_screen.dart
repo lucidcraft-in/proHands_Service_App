@@ -9,6 +9,7 @@ import '../../home/screens/customer_booking_details_screen.dart';
 import 'package:provider/provider.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../../core/widgets/empty_state_widget.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class BookingTabScreen extends StatefulWidget {
   const BookingTabScreen({super.key});
@@ -85,7 +86,11 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
               child: Consumer<ConsumerProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoadingBookings) {
-                    return const Center(child: CircularProgressIndicator());
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const ListCardShimmer(),
+                    );
                   }
 
                   if (provider.bookingsError != null) {

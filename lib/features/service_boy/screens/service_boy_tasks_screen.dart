@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
 import 'widgets/service_boy_task_card.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ServiceBoyTasksScreen extends StatefulWidget {
   const ServiceBoyTasksScreen({super.key});
@@ -63,7 +64,11 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
         body: Consumer<ServiceBoyProvider>(
           builder: (context, provider, child) {
             if (provider.isLoadingBookings) {
-              return const Center(child: CircularProgressIndicator());
+              return ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: 5,
+                itemBuilder: (context, index) => const ListCardShimmer(),
+              );
             }
 
             if (provider.bookingsError != null) {

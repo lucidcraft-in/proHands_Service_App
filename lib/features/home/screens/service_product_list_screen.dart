@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/empty_state_widget.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../providers/consumer_provider.dart';
 import '../models/service_product_model.dart';
 import 'service_product_detail_screen.dart';
@@ -45,12 +46,16 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
         backgroundColor: AppColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Consumer<ConsumerProvider>(
         builder: (context, provider, child) {
+          if (provider.isLoadingSubcategories &&
+              provider.subcategories.isEmpty) {
+            return const _ShimmerLoadingState();
+          }
           return Column(
             children: [
               // Subcategory Chips
@@ -58,7 +63,9 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
                 height: 60,
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child:
-                    provider.subcategories.isNotEmpty
+                    provider.isLoadingSubcategories
+                        ? const ChipShimmer()
+                        : provider.subcategories.isNotEmpty
                         ? ListView.builder(
                           scrollDirection: Axis.horizontal,
                           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -161,7 +168,11 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
 
   Widget _buildBody(ConsumerProvider provider) {
     if (provider.isLoadingServices) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: 5,
+        itemBuilder: (context, index) => const ListCardShimmer(),
+      );
     }
 
     if (provider.servicesError != null) {
@@ -426,6 +437,32 @@ class _ServiceProductCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ShimmerLoadingState extends StatelessWidget {
+  const _ShimmerLoadingState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(
+          height: 60,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(children: [ChipShimmer(), ChipShimmer(), ChipShimmer()]),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: 5,
+            itemBuilder: (context, index) => const ListCardShimmer(),
+          ),
+        ),
+      ],
     );
   }
 }

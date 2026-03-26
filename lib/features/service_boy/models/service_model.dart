@@ -16,6 +16,8 @@ class ServiceModel {
   final String? imageUrl;
   final String? providerName;
   final String? providerPhone;
+  final String subcategoryId;
+  final String subcategoryName;
 
   ServiceModel({
     required this.id,
@@ -35,6 +37,8 @@ class ServiceModel {
     this.imageUrl,
     this.providerName,
     this.providerPhone,
+    this.subcategoryId = '',
+    this.subcategoryName = '',
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -51,6 +55,16 @@ class ServiceModel {
       catColor = cat['color'] ?? '';
     } else if (json['categoryId'] is String) {
       catId = json['categoryId'];
+    }
+
+    String subCatId = '';
+    String subCatName = '';
+    if (json['subcategoryId'] is Map) {
+      final subCat = json['subcategoryId'];
+      subCatId = subCat['_id'] ?? '';
+      subCatName = subCat['name'] ?? '';
+    } else if (json['subcategoryId'] is String) {
+      subCatId = json['subcategoryId'];
     }
 
     String? providerName;
@@ -79,6 +93,8 @@ class ServiceModel {
       imageUrl: json['image'],
       providerName: providerName,
       providerPhone: providerPhone,
+      subcategoryId: subCatId,
+      subcategoryName: subCatName,
     );
   }
 }

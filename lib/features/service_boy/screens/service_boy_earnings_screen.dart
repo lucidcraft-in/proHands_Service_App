@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
 import '../providers/service_boy_provider.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ServiceBoyEarningsScreen extends StatefulWidget {
   const ServiceBoyEarningsScreen({super.key});
@@ -37,7 +38,7 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingBookings) {
-            return const Center(child: CircularProgressIndicator());
+            return const _EarningsShimmer();
           }
 
           final completedBookings = provider.completedBookings;
@@ -309,6 +310,32 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.6),
         borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+}
+
+class _EarningsShimmer extends StatelessWidget {
+  const _EarningsShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CardShimmer(height: 180),
+          const SizedBox(height: 32),
+          const TextShimmer(width: 150, height: 20),
+          const SizedBox(height: 12),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 5,
+            itemBuilder: (context, index) => const ListCardShimmer(),
+          ),
+        ],
       ),
     );
   }

@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../providers/service_boy_provider.dart';
 import 'create_service_screen.dart';
 import 'service_boy_service_details_screen.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ServiceBoyServicesScreen extends StatefulWidget {
   const ServiceBoyServicesScreen({super.key});
@@ -58,7 +59,11 @@ class _ServiceBoyServicesScreenState extends State<ServiceBoyServicesScreen> {
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingServices) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListCardShimmer(),
+            );
           }
 
           if (provider.servicesError != null) {

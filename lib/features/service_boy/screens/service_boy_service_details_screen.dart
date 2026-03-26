@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/service_boy_provider.dart';
 import 'edit_service_screen.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ServiceBoyServiceDetailsScreen extends StatefulWidget {
   final String serviceId;
@@ -33,10 +34,7 @@ class _ServiceBoyServiceDetailsScreenState
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingServiceDetails) {
-            return const Scaffold(
-              backgroundColor: AppColors.background,
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const _ServiceDetailsShimmer();
           }
 
           if (provider.serviceDetailsError != null) {
@@ -190,32 +188,56 @@ class _ServiceBoyServiceDetailsScreenState
                         const SizedBox(height: 8),
 
                         // Category chip
-                        if (service.categoryName.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  service.categoryIcon,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  service.categoryName,
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.primary,
+                        if (service.categoryName.isNotEmpty ||
+                            service.subcategoryName.isNotEmpty)
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              if (service.categoryName.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        service.categoryIcon,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        service.categoryName,
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(color: AppColors.primary),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
+                              if (service.subcategoryName.isNotEmpty)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.success.withOpacity(0.08),
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  child: Text(
+                                    service.subcategoryName,
+                                    style: AppTextStyles.labelSmall.copyWith(
+                                      color: AppColors.success,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
 
                         const SizedBox(height: 20),
@@ -514,6 +536,40 @@ class _ServiceBoyServiceDetailsScreenState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ServiceDetailsShimmer extends StatelessWidget {
+  const _ServiceDetailsShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const CardShimmer(height: 240),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const TextShimmer(width: 200, height: 28),
+                const SizedBox(height: 12),
+                const ChipShimmer(),
+                const SizedBox(height: 24),
+                const TextShimmer(width: 100, height: 20),
+                const SizedBox(height: 12),
+                const CardShimmer(height: 80),
+                const SizedBox(height: 24),
+                const TextShimmer(width: 120, height: 20),
+                const SizedBox(height: 12),
+                const CardShimmer(height: 150),
               ],
             ),
           ),

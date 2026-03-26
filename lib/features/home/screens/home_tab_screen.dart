@@ -6,6 +6,7 @@ import '../providers/consumer_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../widgets/category_item.dart';
@@ -203,7 +204,22 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 child: Consumer<ConsumerProvider>(
                   builder: (context, provider, child) {
                     if (provider.isLoadingCategories) {
-                      return const Center(child: CircularProgressIndicator());
+                      return ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: 5,
+                        itemBuilder:
+                            (context, index) => const Padding(
+                              padding: EdgeInsets.only(right: 20),
+                              child: Column(
+                                children: [
+                                  CircularShimmer(size: 50),
+                                  SizedBox(height: 8),
+                                  TextShimmer(width: 50, height: 10),
+                                ],
+                              ),
+                            ),
+                      );
                     }
 
                     if (provider.categories.isEmpty) {
@@ -311,7 +327,19 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 child: Consumer<ConsumerProvider>(
                   builder: (context, provider, child) {
                     if (provider.isLoadingFeeds) {
-                      return const Center(child: CircularProgressIndicator());
+                      return StaggeredGrid.count(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 12,
+                        crossAxisSpacing: 12,
+                        children: List.generate(
+                          4,
+                          (index) => StaggeredGridTile.count(
+                            crossAxisCellCount: 1,
+                            mainAxisCellCount: (index % 3 == 0) ? 2 : 1,
+                            child: const CardShimmer(borderRadius: 16),
+                          ),
+                        ),
+                      );
                     }
 
                     if (provider.feedsError != null) {

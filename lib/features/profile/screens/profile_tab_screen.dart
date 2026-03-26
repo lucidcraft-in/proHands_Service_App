@@ -13,6 +13,7 @@ import '../../../core/services/location_service.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../home/widgets/location_selector_bottom_sheet.dart';
 import '../../../core/widgets/custom_button.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
@@ -77,7 +78,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               );
           print(user);
           if (provider.isLoadingProfile) {
-            return const Center(child: CircularProgressIndicator());
+            return const _ProfileShimmer();
           }
 
           return SingleChildScrollView(
@@ -1092,6 +1093,61 @@ class _SettingsMenuRow extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ProfileShimmer extends StatelessWidget {
+  const _ProfileShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            color: AppColors.white,
+            padding: const EdgeInsets.all(20),
+            child: const Column(
+              children: [
+                CircularShimmer(size: 100),
+                SizedBox(height: 16),
+                TextShimmer(width: 150, height: 20),
+                SizedBox(height: 8),
+                TextShimmer(width: 100, height: 14),
+                SizedBox(height: 8),
+                TextShimmer(width: 180, height: 14),
+                SizedBox(height: 20),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Mock some menu items
+          Container(
+            color: AppColors.white,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: List.generate(
+                4,
+                (index) => const Padding(
+                  padding: EdgeInsets.only(bottom: 20),
+                  child: Row(
+                    children: [
+                      CircularShimmer(size: 24),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: TextShimmer(width: double.infinity, height: 16),
+                      ),
+                      SizedBox(width: 16),
+                      Icon(Icons.chevron_right, size: 20, color: Colors.grey),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

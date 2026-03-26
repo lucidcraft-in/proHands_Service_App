@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/service_boy_provider.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ServiceBoyOverallAnalyticsScreen extends StatefulWidget {
   const ServiceBoyOverallAnalyticsScreen({super.key});
@@ -39,7 +40,7 @@ class _ServiceBoyOverallAnalyticsScreenState
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingAnalytics) {
-            return const Center(child: CircularProgressIndicator());
+            return const _AnalyticsShimmer();
           }
 
           if (provider.analyticsError != null) {
@@ -247,6 +248,39 @@ class _ServiceBoyOverallAnalyticsScreenState
           Text(
             value,
             style: AppTextStyles.h3.copyWith(color: AppColors.textPrimary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnalyticsShimmer extends StatelessWidget {
+  const _AnalyticsShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Expanded(child: CardShimmer(height: 120)),
+              SizedBox(width: 16),
+              Expanded(child: CardShimmer(height: 120)),
+            ],
+          ),
+          const SizedBox(height: 32),
+          const TextShimmer(width: 200, height: 24),
+          const SizedBox(height: 16),
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => const ListCardShimmer(),
           ),
         ],
       ),

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/notification_provider.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/models/notification_model.dart';
 import '../providers/consumer_provider.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
@@ -56,7 +57,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
       body: Consumer<NotificationProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.notifications.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 8,
+              itemBuilder: (context, index) => const ListCardShimmer(),
+            );
           }
 
           if (provider.error != null && provider.notifications.isEmpty) {

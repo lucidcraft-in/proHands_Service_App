@@ -12,6 +12,7 @@ class ServiceProductModel {
   final String profession;
   final String image;
   final List<String> gallery;
+  final String subcategoryName;
 
   ServiceProductModel({
     required this.id,
@@ -27,6 +28,7 @@ class ServiceProductModel {
     this.profession = '',
     this.image = '',
     this.gallery = const [],
+    this.subcategoryName = '',
   });
 
   // factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
@@ -115,6 +117,10 @@ class ServiceProductModel {
           (json['gallery'] as List? ?? [])
               .map((e) => e['imageUrl'] as String)
               .toList(),
+      subcategoryName:
+          json['subcategoryId'] != null && json['subcategoryId'] is Map
+              ? json['subcategoryId']['name'] ?? ''
+              : '',
     );
   }
 }

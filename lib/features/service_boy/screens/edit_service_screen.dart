@@ -22,6 +22,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   late TextEditingController _nameController;
   late TextEditingController _descriptionController;
   String? _selectedCategoryId;
+  String? _selectedSubcategoryId;
   late bool _isTrending;
 
   @override
@@ -33,10 +34,18 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     );
     _selectedCategoryId =
         widget.service.categoryId.isNotEmpty ? widget.service.categoryId : null;
+    _selectedSubcategoryId =
+        widget.service.subcategoryId.isNotEmpty
+            ? widget.service.subcategoryId
+            : null;
     _isTrending = widget.service.isTrending;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ServiceBoyProvider>().fetchCategories();
+      final provider = context.read<ServiceBoyProvider>();
+      provider.fetchCategories();
+      if (_selectedCategoryId != null) {
+        provider.fetchSubcategories(_selectedCategoryId!);
+      }
     });
   }
 
@@ -63,6 +72,10 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
     if (_selectedCategoryId != null &&
         _selectedCategoryId != widget.service.categoryId) {
       updatedFields['categoryId'] = _selectedCategoryId;
+    }
+    if (_selectedSubcategoryId != null &&
+        _selectedSubcategoryId != widget.service.subcategoryId) {
+      updatedFields['subcategoryId'] = _selectedSubcategoryId;
     }
     if (_isTrending != widget.service.isTrending) {
       updatedFields['isTrending'] = _isTrending;
@@ -194,9 +207,83 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
                                         ),
                                       );
                                     }).toList(),
-                                onChanged:
-                                    (v) =>
-                                        setState(() => _selectedCategoryId = v),
+                                onChanged: (v) {
+                                  if (v != _selectedCategoryId) {
+                                    setState(() {
+                                      _selectedCategoryId = v;
+                                      _selectedSubcategoryId = null;
+                                    });
+                                    if (v != null) {
+                                      provider.fetchSubcategories(v);
+                                    } else {
+                                      provider.clearSubcategories();
+                                    }
+                                  }
+                                },
+                              ),
+                            ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Subcategory Dropdown
+                  Text('Subcategory', style: AppTextStyles.labelMedium),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child:
+                        provider.isLoadingSubcategories
+                            ? const Padding(
+                              padding: EdgeInsets.all(14),
+                              child: Center(
+                                child: SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                            )
+                            : DropdownButtonHideUnderline(
+                              child: DropdownButton<String>(
+                                value:
+                                    provider.subcategories.any(
+                                          (s) => s.id == _selectedSubcategoryId,
+                                        )
+                                        ? _selectedSubcategoryId
+                                        : null,
+                                hint: Text(
+                                  widget.service.subcategoryName.isNotEmpty
+                                      ? widget.service.subcategoryName
+                                      : 'Select Subcategory',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                isExpanded: true,
+                                icon: const Icon(
+                                  Icons.keyboard_arrow_down,
+                                  color: AppColors.textSecondary,
+                                ),
+                                items:
+                                    provider.subcategories.map((subcategory) {
+                                      return DropdownMenuItem<String>(
+                                        value: subcategory.id,
+                                        child: Text(
+                                          subcategory.name,
+                                          style: AppTextStyles.bodyMedium,
+                                        ),
+                                      );
+                                    }).toList(),
+                                onChanged: (v) {
+                                  setState(() => _selectedSubcategoryId = v);
+                                },
                               ),
                             ),
                   ),

@@ -12,6 +12,7 @@ import '../../../core/widgets/empty_state_widget.dart';
 import 'service_product_list_screen.dart';
 import 'service_provider_detail_screen.dart';
 import '../../cart/screens/cart_screen.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ProfessionalScreen extends StatefulWidget {
   const ProfessionalScreen({super.key});
@@ -119,7 +120,19 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                   Consumer<ConsumerProvider>(
                     builder: (context, provider, child) {
                       if (provider.isLoadingCategories) {
-                        return const Center(child: CircularProgressIndicator());
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: 6,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 12,
+                                crossAxisSpacing: 12,
+                                childAspectRatio: 0.8,
+                              ),
+                          itemBuilder: (context, index) => const CardShimmer(),
+                        );
                       }
 
                       if (provider.categoriesError != null) {
@@ -226,7 +239,13 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                   Consumer<ConsumerProvider>(
                     builder: (context, provider, child) {
                       if (provider.isLoadingTrendingServices) {
-                        return const Center(child: CircularProgressIndicator());
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: 3,
+                          itemBuilder:
+                              (context, index) => const ListCardShimmer(),
+                        );
                       }
 
                       if (provider.trendingServicesError != null) {

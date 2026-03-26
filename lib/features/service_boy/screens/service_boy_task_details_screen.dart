@@ -10,6 +10,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/full_screen_image.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class ServiceBoyTaskDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -60,7 +61,7 @@ class _ServiceBoyTaskDetailsScreenState
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingBookingDetails) {
-            return const Center(child: CircularProgressIndicator());
+            return const _TaskDetailsShimmer();
           }
 
           if (provider.bookingDetailsError != null) {
@@ -610,11 +611,9 @@ class _ServiceBoyTaskDetailsScreenState
     return Consumer<ServiceBoyProvider>(
       builder: (context, provider, child) {
         if (provider.isLoadingBookingLogs) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: CircularProgressIndicator(),
-            ),
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: ListCardShimmer(),
           );
         }
 
@@ -1246,4 +1245,29 @@ class _ServiceBoyTaskDetailsScreenState
   // String _formatDate(DateTime date) {
   //   return '${date.day}/${date.month}/${date.year}';
   // }
+}
+
+class _TaskDetailsShimmer extends StatelessWidget {
+  const _TaskDetailsShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const CardShimmer(height: 120),
+          const SizedBox(height: 24),
+          const TextShimmer(width: 150, height: 24),
+          const SizedBox(height: 16),
+          const CardShimmer(height: 150),
+          const SizedBox(height: 24),
+          const TextShimmer(width: 180, height: 24),
+          const SizedBox(height: 16),
+          const CardShimmer(height: 200),
+        ],
+      ),
+    );
+  }
 }

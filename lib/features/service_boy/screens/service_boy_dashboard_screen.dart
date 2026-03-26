@@ -6,6 +6,7 @@ import 'package:service_app/features/service_boy/screens/edit_service_screen.dar
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/booking_model.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 import '../../../core/widgets/full_screen_image_viewer.dart';
 import 'service_boy_task_details_screen.dart';
@@ -75,7 +76,13 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       Consumer<ServiceBoyProvider>(
                         builder: (context, provider, _) {
                           if (provider.isLoadingServices) {
-                            return const CircularProgressIndicator();
+                            return const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: TextShimmer(
+                                width: double.infinity,
+                                height: 20,
+                              ),
+                            );
                           }
                           return DropdownButtonFormField<String>(
                             decoration: const InputDecoration(
@@ -728,11 +735,18 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       ),
                       const SizedBox(height: 12),
                       if (provider.isLoadingGallery)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20.0),
-                            child: CircularProgressIndicator(),
-                          ),
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 1,
+                              ),
+                          itemCount: 3,
+                          itemBuilder: (context, index) => const CardShimmer(),
                         )
                       else if (galleryImages.isEmpty)
                         Center(
@@ -857,7 +871,12 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
               Consumer<ServiceBoyProvider>(
                 builder: (context, provider, child) {
                   if (provider.isLoadingBookings) {
-                    return const Center(child: CircularProgressIndicator());
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: 3,
+                      itemBuilder: (context, index) => const ListCardShimmer(),
+                    );
                   }
 
                   if (provider.bookingsError != null) {

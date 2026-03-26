@@ -88,7 +88,19 @@ class ServiceProductDetailScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text(service.name, style: AppTextStyles.h3),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(service.name, style: AppTextStyles.h3),
+                            if (service.subcategoryName.isNotEmpty)
+                              Text(
+                                service.subcategoryName,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                       // Text(
                       //   '₹${service.price}',
