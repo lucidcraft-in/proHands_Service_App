@@ -39,23 +39,35 @@ class _ServiceBoyServicesScreenState extends State<ServiceBoyServicesScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const CreateServiceScreen(),
-            ),
-          ).then((value) {
-            // Refresh list if a service was created
-            if (value == true) {
-              context.read<ServiceBoyProvider>().fetchMyServices();
-            }
-          });
-        },
-        backgroundColor: AppColors.primary,
-        child: const Icon(Iconsax.add, color: Colors.white),
-      ),
+      floatingActionButton:
+          context.read<ServiceBoyProvider>().myServices.length >= 1
+              ? null
+              : FloatingActionButton(
+                onPressed: () {
+                  if (context.read<ServiceBoyProvider>().myServices.length >=
+                      1) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('You can only add 1 services'),
+                      ),
+                    );
+                    return;
+                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const CreateServiceScreen(),
+                    ),
+                  ).then((value) {
+                    // Refresh list if a service was created
+                    if (value == true) {
+                      context.read<ServiceBoyProvider>().fetchMyServices();
+                    }
+                  });
+                },
+                backgroundColor: AppColors.primary,
+                child: const Icon(Iconsax.add, color: Colors.white),
+              ),
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
           if (provider.isLoadingServices) {

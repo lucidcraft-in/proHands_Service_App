@@ -27,6 +27,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
+  List<String> _selectedAdditionalSkills = [];
   bool _isTrending = false;
   File? _serviceImage;
   final _picker = ImagePicker();
@@ -97,7 +98,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
       'categoryId': _selectedCategoryId,
       if (_selectedSubcategoryId != null)
         'subcategoryId': _selectedSubcategoryId,
-      'name': _nameController.text.trim(),
+      'additionalSkills': _selectedAdditionalSkills,
       'description': _descriptionController.text.trim(),
       'price': 0,
       'duration': 0,
@@ -304,6 +305,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                           setState(() {
                             _selectedCategoryId = newValue;
                             _selectedSubcategoryId = null;
+                            _selectedAdditionalSkills = [];
                           });
                           if (newValue != null) {
                             provider.fetchSubcategories(newValue);
@@ -379,14 +381,87 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                               provider.isLoadingSubcategories
                                   ? null
                                   : (String? newValue) {
-                                    setState(
-                                      () => _selectedSubcategoryId = newValue,
-                                    );
+                                    setState(() {
+                                      _selectedSubcategoryId = newValue;
+                                      if (newValue != null) {
+                                        final sub = provider.subcategories
+                                            .firstWhere(
+                                              (s) => s.id == newValue,
+                                            );
+                                        _nameController.text = sub.name;
+                                        // Automatically check the selected subcategory (using ID)
+                                        if (!_selectedAdditionalSkills.contains(
+                                          sub.id,
+                                        )) {
+                                          _selectedAdditionalSkills.add(sub.id);
+                                        }
+                                      }
+                                    });
                                   },
                         ),
                       ),
                     ),
                     const SizedBox(height: 20),
+                  ],
+
+                  if (_selectedCategoryId != null &&
+                      provider.subcategories.isNotEmpty) ...[
+                    // Subcategory section (already in dropdown, but user wants separate?)
+                    // The user said "dropdown select use for subcategory and checkbox use for Additional Skills"
+                    // So we already have the dropdown above.
+
+                    // Additional Skills checklist
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Additional Skills',
+                          style: AppTextStyles.labelMedium,
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Column(
+                            children: [
+                              ...provider.subcategories.map((sub) {
+                                final isSelected = _selectedAdditionalSkills
+                                    .contains(sub.id);
+                                return CheckboxListTile(
+                                  title: Text(
+                                    sub.name,
+                                    style: AppTextStyles.bodyMedium,
+                                  ),
+                                  value: isSelected,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        _selectedAdditionalSkills.add(sub.id);
+                                      } else {
+                                        _selectedAdditionalSkills.remove(
+                                          sub.id,
+                                        );
+                                      }
+                                    });
+                                  },
+                                  activeColor: AppColors.primary,
+                                  checkColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.trailing,
+                                );
+                              }).toList(),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ],
 
                   const SizedBox(height: 20),

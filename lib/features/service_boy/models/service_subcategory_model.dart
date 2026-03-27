@@ -4,6 +4,7 @@ class ServiceSubcategoryModel {
   final String categoryId;
   final String icon;
   final bool isActive;
+  final List<String> skills;
 
   ServiceSubcategoryModel({
     required this.id,
@@ -11,6 +12,7 @@ class ServiceSubcategoryModel {
     required this.categoryId,
     required this.icon,
     this.isActive = true,
+    this.skills = const [],
   });
 
   factory ServiceSubcategoryModel.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class ServiceSubcategoryModel {
               : (json['categoryId'] ?? ''),
       icon: json['icon'] ?? '',
       isActive: json['isActive'] ?? true,
+      skills: List<String>.from(json['additionalSkills'] ?? []),
     );
   }
 }
