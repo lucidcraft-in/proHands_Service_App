@@ -13,6 +13,9 @@ class ServiceProductModel {
   final String image;
   final List<String> gallery;
   final String subcategoryName;
+  final List<String> specialties;
+  final List<String> servicesOffered;
+  final List<String> additionalSkills;
 
   ServiceProductModel({
     required this.id,
@@ -29,6 +32,9 @@ class ServiceProductModel {
     this.image = '',
     this.gallery = const [],
     this.subcategoryName = '',
+    this.specialties = const [],
+    this.servicesOffered = const [],
+    this.additionalSkills = const [],
   });
 
   // factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
@@ -81,6 +87,9 @@ class ServiceProductModel {
     double rating = 0.0;
     int reviewsCount = 0;
     String profession = '';
+    List<String> specialties = [];
+    List<String> servicesOffered = [];
+    List<String> additionalSkills = [];
 
     if (json['providerId'] != null) {
       if (json['providerId'] is Map) {
@@ -90,6 +99,8 @@ class ServiceProductModel {
         rating = (provider['rating'] ?? 0).toDouble();
         reviewsCount = provider['reviewsCount'] ?? 0;
         profession = provider['profession'] ?? '';
+        specialties = List<String>.from(provider['specialties'] ?? []);
+        servicesOffered = List<String>.from(provider['servicesOffered'] ?? []);
 
         if (provider['portfolioImages'] != null &&
             (provider['portfolioImages'] as List).isNotEmpty) {
@@ -98,6 +109,13 @@ class ServiceProductModel {
       } else if (json['providerId'] is String) {
         providerId = json['providerId'];
       }
+    }
+
+    if (json['additionalSkills'] is List) {
+      additionalSkills =
+          (json['additionalSkills'] as List)
+              .map((e) => e['name'] as String)
+              .toList();
     }
 
     return ServiceProductModel(
@@ -121,6 +139,9 @@ class ServiceProductModel {
           json['subcategoryId'] != null && json['subcategoryId'] is Map
               ? json['subcategoryId']['name'] ?? ''
               : '',
+      specialties: specialties,
+      servicesOffered: servicesOffered,
+      additionalSkills: additionalSkills,
     );
   }
 }

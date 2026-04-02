@@ -1081,7 +1081,7 @@ class _CustomerBookingDetailsScreenState
   Widget _buildTimeline(BookingStatus currentStatus) {
     final steps = [
       {'status': BookingStatus.assigned, 'label': 'Assigned'},
-      {'status': BookingStatus.reached, 'label': 'Accepted'},
+      {'status': BookingStatus.reached, 'label': 'Ongoing'},
       {'status': BookingStatus.completed, 'label': 'Completed'},
     ];
 

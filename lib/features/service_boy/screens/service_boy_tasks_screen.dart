@@ -148,7 +148,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'No ${status.name} work found',
+                'No ${status.getDisplayStatus(true)} work found',
                 style: AppTextStyles.bodyMedium.copyWith(
                   color: AppColors.textTertiary,
                 ),

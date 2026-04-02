@@ -98,10 +98,16 @@ class _ServiceBoyTaskDetailsScreenState
               statusColor = AppColors.primary;
               break;
             case BookingStatus.completed:
+            case BookingStatus.closed:
+            case BookingStatus.closedByCustomer:
+            case BookingStatus.commissionPaymentPending:
               statusColor = AppColors.success;
               break;
             case BookingStatus.cancelled:
               statusColor = AppColors.error;
+              break;
+            case BookingStatus.delayRequested:
+              statusColor = AppColors.warning;
               break;
             default:
               statusColor = AppColors.textTertiary;
@@ -153,12 +159,7 @@ class _ServiceBoyTaskDetailsScreenState
                           borderRadius: BorderRadius.circular(30),
                         ),
                         child: Text(
-                          (booking.status == BookingStatus.reached
-                                  ? 'Ongoing'
-                                  : booking.status == BookingStatus.completed
-                                  ? 'Completed'
-                                  : booking.status.name)
-                              .toUpperCase(),
+                          booking.status.getDisplayStatus(true).toUpperCase(),
                           style: AppTextStyles.labelSmall.copyWith(
                             color: statusColor,
                             fontWeight: FontWeight.w700,

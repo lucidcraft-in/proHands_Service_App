@@ -65,6 +65,8 @@ class ConsumerProvider extends ChangeNotifier {
   String? get searchError => _searchError;
 
   Future<void> fetchCategories() async {
+    if (_isLoadingCategories) return;
+
     _isLoadingCategories = true;
     _categoriesError = null;
     notifyListeners();
@@ -263,6 +265,8 @@ class ConsumerProvider extends ChangeNotifier {
   String? get feedsError => _feedsError;
 
   Future<void> fetchFeeds() async {
+    if (_isLoadingFeeds) return;
+
     _isLoadingFeeds = true;
     _feedsError = null;
     notifyListeners();

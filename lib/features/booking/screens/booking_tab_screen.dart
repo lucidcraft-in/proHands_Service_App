@@ -162,8 +162,9 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
 
                       final booking = filteredBookings[index];
                       // Map status to color
+                      print(index);
                       print(booking.status);
-                      Color statusColor = AppColors.primary;
+                      Color statusColor = const Color.fromARGB(255, 47, 55, 83);
                       if (booking.status == BookingStatus.assigned) {
                         statusColor = AppColors.warning;
                       } else if (booking.status == BookingStatus.reached) {
@@ -181,9 +182,7 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
                         serviceName: booking.serviceName,
                         price: booking.price,
                         discount: 0,
-                        status:
-                            booking.status.name[0].toUpperCase() +
-                            booking.status.name.substring(1),
+                        status: booking.status.getDisplayStatus(false),
                         statusColor: statusColor,
                         paymentMode: booking.paymentMode,
                         date: booking.date,

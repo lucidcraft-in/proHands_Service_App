@@ -3,13 +3,48 @@ import 'review_model.dart';
 enum BookingStatus {
   open,
   assigned,
-  reached,
+  reached, // ongoing
   reassignRequested,
-  // closedByCustomer,
-  // closed,
+  closedByCustomer,
+  closed,
   completed,
+  commissionPaymentPending,
   cancelled,
+  cancelRequested,
   delayRequested,
+  delayRejected,
+}
+
+extension BookingStatusExtension on BookingStatus {
+  String getDisplayStatus(bool isTechnician) {
+    switch (this) {
+      case BookingStatus.open:
+        return "Open";
+      case BookingStatus.assigned:
+        return "Assigned";
+      case BookingStatus.reached:
+        return "Ongoing";
+      case BookingStatus.closedByCustomer:
+      case BookingStatus.commissionPaymentPending:
+        return isTechnician
+            ? "Work Complete & Commission Pending"
+            : "Completed";
+      case BookingStatus.closed:
+        return isTechnician ? "Work Closed" : "Completed";
+      case BookingStatus.completed:
+        return "Completed";
+      case BookingStatus.cancelled:
+        return "Cancelled";
+      case BookingStatus.cancelRequested:
+        return "Cancel Requested";
+      case BookingStatus.reassignRequested:
+        return "Reassign Requested";
+      case BookingStatus.delayRequested:
+        return "Delay Requested";
+      case BookingStatus.delayRejected:
+        return "Delay Rejected";
+    }
+  }
 }
 
 class BookingModel {
@@ -191,14 +226,21 @@ class BookingModel {
       case 'ONGOING':
         return BookingStatus.reached;
       case 'CLOSED_BY_CUSTOMER':
-        return BookingStatus.completed;
+        return BookingStatus.closedByCustomer;
+      case 'COMMISSION_PAYMENT_PENDING':
+        return BookingStatus.commissionPaymentPending;
       case 'CLOSED':
+        return BookingStatus.closed;
       case 'COMPLETED':
         return BookingStatus.completed;
       case 'CANCELLED':
         return BookingStatus.cancelled;
+      case 'CANCEL_REQUESTED':
+        return BookingStatus.cancelRequested;
       case 'DELAY_REQUESTED':
         return BookingStatus.delayRequested;
+      case 'DELAY_REJECTED':
+        return BookingStatus.delayRejected;
       default:
         return BookingStatus.open;
     }

@@ -31,8 +31,10 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/services/categories');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
-
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -59,7 +61,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/services/category/$categoryId');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -89,7 +93,9 @@ class ConsumerService {
     );
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -116,7 +122,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/services/subcategory/$subcategoryId');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -141,7 +149,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/services/trending');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -173,7 +183,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/services?page=$page&limit=$limit');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -198,7 +210,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/bookings/my-bookings');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
       print("=======================");
       print(response.body);
       if (response.statusCode == 200) {
@@ -224,7 +238,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/bookings/$id');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -248,7 +264,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/feeds?page=$page&limit=$limit');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -569,7 +587,9 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/users/me');
     try {
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
       print("-- ----- ---- -- - ");
       print(response.statusCode);
       print(response.body);

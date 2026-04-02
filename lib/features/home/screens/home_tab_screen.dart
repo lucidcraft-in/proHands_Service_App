@@ -9,6 +9,7 @@ import '../../../core/services/storage_service.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import '../../../core/widgets/empty_state_widget.dart';
 import '../widgets/category_item.dart';
 import 'full_image_screen.dart';
 import 'main_screen.dart';
@@ -39,11 +40,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       if (context.read<ConsumerProvider>().categories.isEmpty) {
         context.read<ConsumerProvider>().fetchCategories();
       }
+      if (context.read<ConsumerProvider>().feeds.isEmpty) {
+        context.read<ConsumerProvider>().fetchFeeds();
+      }
       context.read<NotificationProvider>().fetchNotifications();
     });
-    if (context.read<ConsumerProvider>().feeds.isEmpty) {
-      context.read<ConsumerProvider>().fetchFeeds();
-    }
   }
 
   Future<void> _loadLocation() async {
@@ -222,8 +223,32 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       );
                     }
 
+                    if (provider.categoriesError != null) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: AppColors.error),
+                            const SizedBox(height: 8),
+                            TextButton(
+                              onPressed: () => provider.fetchCategories(),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
                     if (provider.categories.isEmpty) {
-                      return const Center(child: Text('No categories'));
+                      return const Center(
+                        child: EmptyStateWidget(
+                          icon: Iconsax.category,
+                          title: 'No categories',
+                          subtitle: 'We couldn\'t find any categories.',
+                          iconSize: 40,
+                        ),
+                      );
                     }
 
                     return ListView.builder(
@@ -232,50 +257,25 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       itemCount: provider.categories.length,
                       itemBuilder: (context, index) {
                         final category = provider.categories[index];
-
-                        // Map icons and colors (same logic as ProfessionalScreen)
-                        // IconData iconData = Iconsax.category;
-                        IconData iconData = Iconsax.category;
-                        Color color = Colors.blue;
-
-                        if (category.name.toLowerCase().contains('clean')) {
-                          iconData =
-                              Icons.cleaning_services; // Or Iconsax.brush
+                        print(category);
+                        // Determine color based on category name for consistent branding
+                        Color color = AppColors.primary;
+                        final name = category.name.toLowerCase();
+                        if (name.contains('clean')) {
                           color = Colors.blue;
-                        } else if (category.name.toLowerCase().contains(
-                          'paint',
-                        )) {
-                          iconData = Icons.format_paint;
+                        } else if (name.contains('paint')) {
                           color = Colors.green;
-                        } else if (category.name.toLowerCase().contains(
-                          'plumb',
-                        )) {
-                          iconData = Icons.water_drop;
-                          color = Colors.cyan; // or blueAccent
-                        } else if (category.name.toLowerCase().contains(
-                          'electric',
-                        )) {
-                          iconData = Icons.electric_bolt;
+                        } else if (name.contains('plumb')) {
+                          color = Colors.cyan;
+                        } else if (name.contains('electric')) {
                           color = Colors.yellow.shade700;
-                        } else if (category.name.toLowerCase().contains(
-                          'repair',
-                        )) {
-                          iconData = Icons.build;
+                        } else if (name.contains('repair')) {
                           color = Colors.orange;
-                        } else if (category.name.toLowerCase().contains(
-                          'salon',
-                        )) {
-                          iconData = Icons.face;
+                        } else if (name.contains('salon')) {
                           color = Colors.pink;
-                        } else if (category.name.toLowerCase().contains(
-                          'carpenter',
-                        )) {
-                          iconData = Icons.handyman;
+                        } else if (name.contains('carpenter')) {
                           color = Colors.brown;
-                        } else if (category.name.toLowerCase().contains(
-                          'cook',
-                        )) {
-                          iconData = Icons.restaurant;
+                        } else if (name.contains('cook')) {
                           color = Colors.red;
                         }
 
@@ -285,7 +285,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                             width: 70,
                             child: CategoryItem(
                               name: category.name,
-                              icon: iconData,
+                              image: category.image,
                               color: color,
                               onTap: () {
                                 Navigator.push(
@@ -344,13 +344,36 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
                     if (provider.feedsError != null) {
                       return Center(
-                        child: Text('Error: ${provider.feedsError}'),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline,
+                                  color: AppColors.error, size: 40),
+                              const SizedBox(height: 12),
+                              Text(provider.feedsError!),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () => provider.fetchFeeds(),
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     }
 
                     if (provider.feeds.isEmpty) {
-                      return const Center(
-                        child: Text('No service highlights yet'),
+                      return const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 40),
+                        child: EmptyStateWidget(
+                          icon: Iconsax.gallery,
+                          title: 'No Highlights Yet',
+                          subtitle:
+                              'Our experts haven\'t shared any service highlights recently.',
+                          iconSize: 50,
+                        ),
                       );
                     }
 

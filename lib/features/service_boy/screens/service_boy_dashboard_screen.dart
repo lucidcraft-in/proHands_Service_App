@@ -931,6 +931,10 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                               statusColor = AppColors.error;
                               statusText = 'Cancelled';
                               break;
+                            case BookingStatus.delayRequested:
+                              statusColor = AppColors.error;
+                              statusText = 'Delay Requested';
+                              break;
                             default:
                               statusColor = AppColors.textSecondary;
                               statusText = 'Unknown';

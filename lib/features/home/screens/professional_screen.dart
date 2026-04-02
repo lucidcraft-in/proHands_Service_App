@@ -161,32 +161,25 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                             ),
                         itemBuilder: (context, index) {
                           final category = provider.categories[index];
-                          // Map emoji or text to IconData if possible, or use a default
-                          // For now, we'll maintain the existing UI structure but use category data
-                          // Since API returns "icon": "🎨", we might need a mapping or just display text/image
-                          // For this implementation, I will treat the iconString as text or use a default icon based on name
-
-                          IconData iconData = Iconsax.category;
-                          Color color = Colors.blue;
-
-                          if (category.name.toLowerCase().contains('clean')) {
-                            iconData = Iconsax.brush;
+                          // Determine color based on category name for consistent branding
+                          Color color = AppColors.primary;
+                          final name = category.name.toLowerCase();
+                          if (name.contains('clean')) {
                             color = Colors.blue;
-                          } else if (category.name.toLowerCase().contains(
-                            'paint',
-                          )) {
-                            iconData = Iconsax.colorfilter;
+                          } else if (name.contains('paint')) {
                             color = Colors.green;
-                          } else if (category.name.toLowerCase().contains(
-                            'plumb',
-                          )) {
-                            iconData = Iconsax.drop;
-                            color = Colors.blueAccent;
-                          } else if (category.name.toLowerCase().contains(
-                            'electric',
-                          )) {
-                            iconData = Iconsax.flash_1;
+                          } else if (name.contains('plumb')) {
+                            color = Colors.cyan;
+                          } else if (name.contains('electric')) {
                             color = Colors.yellow.shade700;
+                          } else if (name.contains('repair')) {
+                            color = Colors.orange;
+                          } else if (name.contains('salon')) {
+                            color = Colors.pink;
+                          } else if (name.contains('carpenter')) {
+                            color = Colors.brown;
+                          } else if (name.contains('cook')) {
+                            color = Colors.red;
                           }
 
                           return AnimatedBuilder(
@@ -211,8 +204,8 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                             },
                             child: _GridCategoryItem(
                               label: category.name,
-                              icon: iconData, // Using mapped icon
-                              color: color, // Using mapped color
+                              image: category.image,
+                              color: color,
                               onTap:
                                   () => _navigateToServiceSelection(
                                     context,
@@ -429,13 +422,13 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
 
 class _GridCategoryItem extends StatelessWidget {
   final String label;
-  final IconData icon;
+  final String image;
   final Color color;
   final VoidCallback onTap;
 
   const _GridCategoryItem({
     required this.label,
-    required this.icon,
+    required this.image,
     required this.color,
     required this.onTap,
   });
@@ -447,16 +440,32 @@ class _GridCategoryItem extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withOpacity(0.2)),
+            // child: Container(
+            //   width: double.infinity,
+            // decoration: BoxDecoration(
+            //   color: color.withValues(alpha: 0.1),
+            //   borderRadius: BorderRadius.circular(16),
+            //   border: Border.all(color: color.withValues(alpha: 0.2)),
+            // ),
+            child: Center(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child:
+                    image.isNotEmpty
+                        ? Image.network(
+                          image,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                                  Icon(Icons.category, color: color, size: 32),
+                        )
+                        : Icon(Icons.category, color: color, size: 32),
               ),
-              child: Center(child: Icon(icon, color: color, size: 32)),
             ),
           ),
+          // ),
           const SizedBox(height: 8),
           Text(
             label,

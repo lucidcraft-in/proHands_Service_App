@@ -174,7 +174,15 @@ class ServiceBoyProvider extends ChangeNotifier {
       _bookings.where((b) => b.status == BookingStatus.reached).toList();
 
   List<BookingModel> get completedBookings =>
-      _bookings.where((b) => b.status == BookingStatus.completed).toList();
+      _bookings
+          .where(
+            (b) =>
+                b.status == BookingStatus.completed ||
+                b.status == BookingStatus.closed ||
+                b.status == BookingStatus.closedByCustomer ||
+                b.status == BookingStatus.commissionPaymentPending,
+          )
+          .toList();
 
   List<BookingModel> get cancelledBookings =>
       _bookings.where((b) => b.status == BookingStatus.cancelled).toList();

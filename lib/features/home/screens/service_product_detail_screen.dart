@@ -137,13 +137,13 @@ class ServiceProductDetailScreen extends StatelessWidget {
                         size: 18,
                         color: AppColors.textSecondary,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${service.duration} mins',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
+                      // const SizedBox(width: 4),
+                      // Text(
+                      //   '${service.duration} mins',
+                      //   style: AppTextStyles.bodySmall.copyWith(
+                      //     color: AppColors.textSecondary,
+                      //   ),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -204,6 +204,48 @@ class ServiceProductDetailScreen extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  if (service.specialties.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text('Specialties', style: AppTextStyles.labelLarge),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          service.specialties
+                              .map((s) => _buildSkillChip(s, AppColors.primary))
+                              .toList(),
+                    ),
+                  ],
+
+                  if (service.servicesOffered.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text('Services Offered', style: AppTextStyles.labelLarge),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          service.servicesOffered
+                              .map((s) => _buildSkillChip(s, Colors.blue))
+                              .toList(),
+                    ),
+                  ],
+
+                  if (service.additionalSkills.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text('Additional Skills', style: AppTextStyles.labelLarge),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children:
+                          service.additionalSkills
+                              .map((s) => _buildSkillChip(s, Colors.teal))
+                              .toList(),
+                    ),
+                  ],
 
                   const SizedBox(height: 24),
 
@@ -304,6 +346,24 @@ class ServiceProductDetailScreen extends StatelessWidget {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkillChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Text(
+        label,
+        style: AppTextStyles.bodySmall.copyWith(
+          color: color,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
