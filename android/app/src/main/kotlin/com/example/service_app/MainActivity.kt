@@ -1,4 +1,4 @@
-package com.example.service_app
+package com.prohands.service_app
 
 import io.flutter.embedding.android.FlutterActivity
 
