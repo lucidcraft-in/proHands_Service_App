@@ -75,12 +75,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -109,7 +109,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   label: 'Full Name',
                   hint: 'Enter your full name',
                   controller: _nameController,
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.person_outlined,
                     color: AppColors.textTertiary,
                     size: 20,
@@ -125,7 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   hint: 'Enter your phone number',
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.phone_outlined,
                     color: AppColors.textTertiary,
                     size: 20,
@@ -149,7 +149,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   hint: 'Enter your password',
                   controller: _passwordController,
                   obscureText: true,
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.lock_outlined,
                     color: AppColors.textTertiary,
                     size: 20,

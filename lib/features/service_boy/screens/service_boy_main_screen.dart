@@ -43,9 +43,7 @@ class _ServiceBoyMainScreenState extends State<ServiceBoyMainScreen> {
             setState(() => _currentIndex = index);
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.white,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textTertiary,
+          // Colors are handled by theme 
           selectedLabelStyle: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

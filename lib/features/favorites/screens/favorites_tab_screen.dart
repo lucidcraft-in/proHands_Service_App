@@ -8,7 +8,7 @@ class FavoritesTabScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Offers', style: AppTextStyles.h4),
         centerTitle: true,

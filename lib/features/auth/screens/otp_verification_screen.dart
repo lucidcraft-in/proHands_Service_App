@@ -211,12 +211,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -242,7 +242,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                         ? Icons.person_outline
                         : Icons.work_outline,
                     size: 50,
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                   ),
                 ),
               ),
@@ -267,7 +267,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   child: Text(
                     widget.userType.displayName,
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -284,7 +284,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       color: AppColors.textSecondary,
                     ),
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text:
                             'Enter the verification code we sent to your phone\n',
                       ),
@@ -314,9 +314,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   borderRadius: BorderRadius.circular(12),
                   fieldHeight: 56,
                   fieldWidth: 48,
-                  activeFillColor: AppColors.white,
-                  inactiveFillColor: AppColors.white,
-                  selectedFillColor: AppColors.white,
+                  activeFillColor: Theme.of(context).colorScheme.surface,
+                  inactiveFillColor: Theme.of(context).colorScheme.surface,
+                  selectedFillColor: Theme.of(context).colorScheme.surface,
                   activeColor: AppColors.primary,
                   inactiveColor: AppColors.border,
                   selectedColor: AppColors.primary,

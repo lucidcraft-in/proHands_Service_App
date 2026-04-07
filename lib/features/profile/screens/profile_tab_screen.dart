@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/providers/theme_provider.dart';
 import 'edit_profile_screen.dart';
 import '../../service_boy/screens/service_boy_services_screen.dart';
 import '../../auth/screens/login_screen.dart';
@@ -25,7 +26,6 @@ class ProfileTabScreen extends StatefulWidget {
 class _ProfileTabScreenState extends State<ProfileTabScreen> {
   bool _notificationsEnabled = true;
   String _selectedLanguage = 'English';
-  String _selectedTheme = 'Light';
 
   // Expansion States
   bool _isFavoritesExpanded = false;
@@ -54,14 +54,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Profile & setting', style: AppTextStyles.h4),
         centerTitle: false,
         actions: [
           IconButton(
             onPressed: () => _handleLogout(context),
-            icon: const Icon(Iconsax.logout, color: AppColors.textPrimary),
+            icon: Icon(Iconsax.logout, color: Theme.of(context).colorScheme.onSurface),
           ),
           const SizedBox(width: 8),
         ],
@@ -86,7 +86,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               children: [
                 // Profile Header
                 Container(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
@@ -94,7 +94,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundColor: AppColors.background,
+                            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                             backgroundImage:
                                 (user.profilePhoto.isNotEmpty &&
                                         !user.profilePhoto.contains('default'))
@@ -103,7 +103,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                             child:
                                 (user.profilePhoto.isEmpty ||
                                         user.profilePhoto.contains('default'))
-                                    ? const Icon(
+                                    ? Icon(
                                       Icons.person,
                                       size: 50,
                                       color: AppColors.primary,
@@ -128,14 +128,14 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: AppColors.white,
+                                    color: Theme.of(context).colorScheme.surface,
                                     width: 2,
                                   ),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.edit,
                                   size: 16,
-                                  color: AppColors.white,
+                                  color: Theme.of(context).colorScheme.surface,
                                 ),
                               ),
                             ),
@@ -162,7 +162,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.email_outlined,
                             size: 16,
                             color: AppColors.textSecondary,
@@ -183,7 +183,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
                 // GENERAL Section
                 Container(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -202,10 +202,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       //         ),
                       //   ),
                       //   if (_isFavoritesExpanded) _buildFavoritesList(),
-                      //   const Divider(
+                      //   Divider(
                       //     height: 1,
                       //     indent: 70,
-                      //     color: AppColors.background,
+                      //     color: Theme.of(context).scaffoldBackgroundColor,
                       //   ),
                       // ],
                       if (user.userType == UserType.serviceBoy) ...[
@@ -236,10 +236,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                             );
                           },
                         ),
-                        const Divider(
+                        Divider(
                           height: 1,
                           indent: 70,
-                          color: AppColors.background,
+                          color: Theme.of(context).dividerColor,
                         ),
                       ],
                       _MenuItem(
@@ -253,10 +253,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                             ),
                       ),
                       if (_isLocationsExpanded) _buildLocationsList(),
-                      const Divider(
+                      Divider(
                         height: 1,
                         indent: 70,
-                        color: AppColors.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
@@ -290,7 +290,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
                 // ABOUT APP Section
                 Container(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -324,10 +324,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           ),
                         ),
 
-                      const Divider(
+                      Divider(
                         height: 1,
                         indent: 70,
-                        color: AppColors.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                       ),
 
                       _MenuItem(
@@ -369,7 +369,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                               ),
                               _SettingsMenuRow(
                                 title: 'Theme',
-                                value: _selectedTheme,
+                                value: context.watch<ThemeProvider>().themeName,
                                 onTap: () => _showThemeDialog(),
                               ),
                             ],
@@ -401,7 +401,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () async {
@@ -418,7 +418,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.error,
                 ),
-                child: const Text('Logout'),
+                child: Text('Logout'),
               ),
             ],
           ),
@@ -435,7 +435,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RadioListTile<String>(
-                  title: const Text('English'),
+                  title: Text('English'),
                   value: 'English',
                   groupValue: _selectedLanguage,
                   onChanged: (value) {
@@ -444,7 +444,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   },
                 ),
                 RadioListTile<String>(
-                  title: const Text('Spanish'),
+                  title: Text('Spanish'),
                   value: 'Spanish',
                   groupValue: _selectedLanguage,
                   onChanged: (value) {
@@ -468,20 +468,29 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RadioListTile<String>(
-                  title: const Text('Light'),
+                  title: Text('Light'),
                   value: 'Light',
-                  groupValue: _selectedTheme,
+                  groupValue: context.read<ThemeProvider>().themeName,
                   onChanged: (value) {
-                    setState(() => _selectedTheme = value!);
+                    context.read<ThemeProvider>().setTheme(value!);
                     Navigator.pop(context);
                   },
                 ),
                 RadioListTile<String>(
-                  title: const Text('Dark'),
+                  title: Text('Dark'),
                   value: 'Dark',
-                  groupValue: _selectedTheme,
+                  groupValue: context.read<ThemeProvider>().themeName,
                   onChanged: (value) {
-                    setState(() => _selectedTheme = value!);
+                    context.read<ThemeProvider>().setTheme(value!);
+                    Navigator.pop(context);
+                  },
+                ),
+                RadioListTile<String>(
+                  title: Text('System Default'),
+                  value: 'System',
+                  groupValue: context.read<ThemeProvider>().themeName,
+                  onChanged: (value) {
+                    context.read<ThemeProvider>().setTheme(value!);
                     Navigator.pop(context);
                   },
                 ),
@@ -494,7 +503,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   Widget _buildSectionHeader(String title) {
     return Container(
       width: double.infinity,
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
       child: Text(
         title,
@@ -516,7 +525,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
     return Container(
       height: 140,
-      color: AppColors.white,
+      color: Theme.of(context).colorScheme.surface,
       padding: const EdgeInsets.only(bottom: 8),
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -529,7 +538,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -556,7 +565,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 const SizedBox(height: 10),
                 Row(
                   children: [
-                    const Icon(Icons.star, size: 14, color: Color(0xFFFFA928)),
+                    Icon(Icons.star, size: 14, color: Color(0xFFFFA928)),
                     const SizedBox(width: 4),
                     Text(
                       item['rating']!,
@@ -578,12 +587,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     final user = context.watch<ConsumerProvider>().currentUser;
     if (user == null || (user.location == 'Unknown' && user.latitude == null)) {
       return Container(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
         child: Center(
           child: Column(
             children: [
-              const Icon(
+              Icon(
                 Iconsax.location_slash,
                 size: 40,
                 color: AppColors.textTertiary,
@@ -620,7 +629,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         }
 
         return Container(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(
             children: [
@@ -649,7 +658,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                       color: AppColors.primary.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Iconsax.location,
                       color: AppColors.primary,
                       size: 20,
@@ -669,7 +678,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  trailing: const Icon(
+                  trailing: Icon(
                     Icons.check_circle,
                     size: 20,
                     color: Colors.green,
@@ -734,7 +743,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             ),
             title: Row(
               children: [
-                const Icon(
+                Icon(
                   Iconsax.location,
                   color: AppColors.primary,
                   size: 22,
@@ -765,7 +774,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text('Cancel'),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
@@ -775,7 +784,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                child: const Text('Confirm'),
+                child: Text('Confirm'),
               ),
             ],
           ),
@@ -821,7 +830,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Invalid coordinates for this location'),
+            content: Text('Invalid coordinates for this location'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -868,7 +877,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         }
 
         return Container(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           padding: const EdgeInsets.only(bottom: 12),
           child: Column(
             children:
@@ -881,7 +890,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     ),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -932,7 +941,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.star,
                                     size: 12,
                                     color: Color(0xFFFFA928),
@@ -1042,7 +1051,7 @@ class _SubMenuItem extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               size: 16,
               color: AppColors.textTertiary,
@@ -1084,7 +1093,7 @@ class _SettingsMenuRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
                   size: 16,
                   color: AppColors.textTertiary,
@@ -1107,7 +1116,7 @@ class _ProfileShimmer extends StatelessWidget {
       child: Column(
         children: [
           Container(
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(20),
             child: const Column(
               children: [
@@ -1125,12 +1134,12 @@ class _ProfileShimmer extends StatelessWidget {
           const SizedBox(height: 16),
           // Mock some menu items
           Container(
-            color: AppColors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(20),
             child: Column(
               children: List.generate(
                 4,
-                (index) => const Padding(
+                (index) => Padding(
                   padding: EdgeInsets.only(bottom: 20),
                   child: Row(
                     children: [

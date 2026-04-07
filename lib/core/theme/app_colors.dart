@@ -21,11 +21,21 @@ class AppColors {
   static const Color cardBackground = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFFFFFFF);
 
+  // Dark Mode Neutral Colors
+  static const Color darkBackground = Color(0xFF0E1117);
+  static const Color darkSurface = Color(0xFF161B22);
+  static const Color darkCardBackground = Color(0xFF1F2937);
+
   // Text Colors
   static const Color textPrimary = Color(0xFF1A1D1F);
   static const Color textSecondary = Color(0xFF6F767E);
   static const Color textTertiary = Color(0xFF9A9FA5);
   static const Color textHint = Color(0xFFB8BCC3);
+
+  // Dark Mode Text Colors
+  static const Color darkTextPrimary = Color(0xFFF0F6FC);
+  static const Color darkTextSecondary = Color(0xFF8B949E);
+  static const Color darkTextTertiary = Color(0xFF6E7681);
 
   // Status Colors
   static const Color success = Color(0xFF2FCC71);
@@ -41,6 +51,10 @@ class AppColors {
   static const Color border = Color(0xFFE8ECF4);
   static const Color borderDark = Color(0xFFD1D5DB);
   static const Color divider = Color(0xFFEFEFF0);
+
+  // Dark Mode Border & Divider Colors
+  static const Color darkBorder = Color(0xFF30363D);
+  static const Color darkDivider = Color(0xFF21262D);
 
   // Gradient Colors
   static const LinearGradient primaryGradient = LinearGradient(
@@ -71,4 +85,5 @@ class AppColors {
   static const Color shadowLight = Color(0x1A000000);
   static const Color shadowMedium = Color(0x33000000);
   static const Color shadowDark = Color(0x4D000000);
+  static const Color darkShadow = Color(0x66000000);
 }

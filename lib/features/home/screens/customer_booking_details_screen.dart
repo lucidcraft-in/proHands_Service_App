@@ -94,13 +94,13 @@ class _CustomerBookingDetailsScreenState
   Widget build(BuildContext context) {
     debugPrint("Current Booking Status: ${_currentBooking.status}");
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Booking Details', style: AppTextStyles.h4),
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -131,7 +131,7 @@ class _CustomerBookingDetailsScreenState
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -161,7 +161,7 @@ class _CustomerBookingDetailsScreenState
                       ),
                     ],
                   ),
-                  const Divider(height: 24),
+                  Divider(height: 24),
                   Text(_currentBooking.serviceName, style: AppTextStyles.h4),
                   const SizedBox(height: 8),
                   Text(
@@ -176,7 +176,7 @@ class _CustomerBookingDetailsScreenState
                   _buildDetailRow(Iconsax.clock, _currentBooking.time),
                   const SizedBox(height: 8),
                   _buildDetailRow(Iconsax.location, _currentBooking.location),
-                  const Divider(height: 24),
+                  Divider(height: 24),
                   // Row(
                   //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   //   children: [
@@ -199,7 +199,7 @@ class _CustomerBookingDetailsScreenState
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -216,7 +216,7 @@ class _CustomerBookingDetailsScreenState
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        const CircleAvatar(
+                        CircleAvatar(
                           radius: 24,
                           child: Icon(Icons.person),
                         ),
@@ -249,8 +249,8 @@ class _CustomerBookingDetailsScreenState
                     //       onPressed: () {
                     //         // Call functionality
                     //       },
-                    //       icon: const Icon(Icons.call),
-                    //       label: const Text('Call Provider'),
+                    //       icon: Icon(Icons.call),
+                    //       label: Text('Call Provider'),
                     //       style: ElevatedButton.styleFrom(
                     //         backgroundColor: Colors.green,
                     //         foregroundColor: Colors.white,
@@ -266,7 +266,7 @@ class _CustomerBookingDetailsScreenState
                 margin: const EdgeInsets.only(top: 24),
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -280,7 +280,7 @@ class _CustomerBookingDetailsScreenState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('Payment Details', style: AppTextStyles.h4),
-                    const Divider(height: 24),
+                    Divider(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -401,7 +401,7 @@ class _CustomerBookingDetailsScreenState
                           Container(
                             width: 12,
                             height: 12,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.primary,
                               shape: BoxShape.circle,
                             ),
@@ -410,7 +410,7 @@ class _CustomerBookingDetailsScreenState
                             Expanded(
                               child: Container(
                                 width: 2,
-                                color: AppColors.border,
+                                color: Theme.of(context).dividerColor,
                               ),
                             ),
                         ],
@@ -500,7 +500,7 @@ class _CustomerBookingDetailsScreenState
                       provider.isRequestingCancellation
                           ? 'Resquesting...'
                           : 'Cancel Task',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.error,
                         fontWeight: FontWeight.bold,
                       ),
@@ -555,7 +555,7 @@ class _CustomerBookingDetailsScreenState
       margin: const EdgeInsets.only(top: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -606,11 +606,11 @@ class _CustomerBookingDetailsScreenState
                     width: 70,
                     height: 70,
                     decoration: BoxDecoration(
-                      color: AppColors.background,
+                      color: Theme.of(context).scaffoldBackgroundColor,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.add_a_photo,
                       color: AppColors.primary,
                     ),
@@ -640,11 +640,11 @@ class _CustomerBookingDetailsScreenState
                               });
                             },
                             child: Container(
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 color: AppColors.error,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.close,
                                 size: 16,
                                 color: Colors.white,
@@ -679,13 +679,13 @@ class _CustomerBookingDetailsScreenState
       padding: const EdgeInsets.all(20),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, style: BorderStyle.solid),
+        border: Border.all(color: Theme.of(context).dividerColor, style: BorderStyle.solid),
       ),
       child: Column(
         children: [
-          const Icon(Iconsax.image, color: AppColors.textTertiary, size: 32),
+          Icon(Iconsax.image, color: AppColors.textTertiary, size: 32),
           const SizedBox(height: 8),
           Text(message, style: AppTextStyles.caption),
         ],
@@ -757,7 +757,7 @@ class _CustomerBookingDetailsScreenState
         children: [
           Row(
             children: [
-              const Icon(Iconsax.clock, color: AppColors.warning),
+              Icon(Iconsax.clock, color: AppColors.warning),
               const SizedBox(width: 12),
               Text(
                 'Delay Requested',
@@ -966,7 +966,7 @@ class _CustomerBookingDetailsScreenState
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
         ),
@@ -1094,7 +1094,7 @@ class _CustomerBookingDetailsScreenState
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.red),
           ),
-          child: const Text(
+          child: Text(
             'Booking Cancelled',
             style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
           ),
@@ -1224,8 +1224,8 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.8,
-      decoration: const BoxDecoration(
-        color: AppColors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
@@ -1263,7 +1263,7 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: AppColors.primary.withOpacity(0.1),
-                          child: const Icon(
+                          child: Icon(
                             Iconsax.category,
                             color: AppColors.primary,
                             size: 20,
@@ -1273,7 +1273,7 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
                           category.name,
                           style: AppTextStyles.bodyLarge,
                         ),
-                        trailing: const Icon(Iconsax.arrow_right_3, size: 16),
+                        trailing: Icon(Iconsax.arrow_right_3, size: 16),
                         onTap: () {
                           setState(() {
                             _selectedCategoryId = category.id;
@@ -1295,7 +1295,7 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
                         TextButton(
                           onPressed:
                               () => setState(() => _selectedCategoryId = null),
-                          child: const Text('Back to Categories'),
+                          child: Text('Back to Categories'),
                         ),
                       ],
                     );
@@ -1307,13 +1307,13 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.arrow_back),
+                              icon: Icon(Icons.arrow_back),
                               onPressed:
                                   () => setState(
                                     () => _selectedCategoryId = null,
                                   ),
                             ),
-                            const Text('Service List'),
+                            Text('Service List'),
                           ],
                         ),
                       ),
@@ -1326,7 +1326,7 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
                             return Container(
                               margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
-                                color: AppColors.white,
+                                color: Theme.of(context).colorScheme.surface,
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: AppColors.border),
                               ),
@@ -1339,7 +1339,7 @@ class _ServicePickerSheetState extends State<_ServicePickerSheet> {
                                 //   '₹${service.price}',
                                 //   style: AppTextStyles.bodySmall,
                                 // ),
-                                trailing: const Icon(
+                                trailing: Icon(
                                   Iconsax.add_circle,
                                   color: AppColors.primary,
                                 ),

@@ -38,7 +38,7 @@ class BalanceCard extends StatelessWidget {
                   Text(
                     'Total available balance :',
                     style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.white.withOpacity(0.9),
+                      color: Colors.white.withOpacity(0.9),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -47,7 +47,7 @@ class BalanceCard extends StatelessWidget {
                       Text(
                         '\$${balance.toStringAsFixed(2)}',
                         style: AppTextStyles.h2.copyWith(
-                          color: AppColors.white,
+                          color: Colors.white,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -66,7 +66,7 @@ class BalanceCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.white.withOpacity(0.2),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(

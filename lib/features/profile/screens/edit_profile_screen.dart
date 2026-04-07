@@ -261,9 +261,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             height: 150,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.border),
+              border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child:
                 file != null
@@ -313,7 +313,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             : provider.isUpdatingProfile;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Edit Profile', style: AppTextStyles.h4),
         centerTitle: true,
@@ -333,7 +333,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     children: [
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: AppColors.surface,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         backgroundImage:
                             (user?.profilePhoto != null &&
                                     user!.profilePhoto.isNotEmpty &&
@@ -362,14 +362,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             gradient: AppColors.primaryGradient,
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.white,
+                              color: Theme.of(context).colorScheme.surface,
                               width: 3,
                             ),
                           ),
                           child: const Icon(
                             Iconsax.camera,
                             size: 20,
-                            color: AppColors.white,
+                            color: Colors.white,
                           ),
                         ),
                       ),
@@ -471,18 +471,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     value: _selectedWorkPreference,
                     decoration: InputDecoration(
                       filled: true,
-                      fillColor: AppColors.surface,
+                      fillColor: Theme.of(context).colorScheme.surface,
                       labelText: 'Work Preference',
                       labelStyle: const TextStyle(
                         color: AppColors.textSecondary,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.border),
+                        borderSide: BorderSide(color: Theme.of(context).dividerColor),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),

@@ -40,13 +40,13 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(widget.categoryName, style: AppTextStyles.h4),
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -89,7 +89,7 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
                                     color:
                                         isSelected
                                             ? Colors.white
-                                            : AppColors.textPrimary,
+                                            : Theme.of(context).colorScheme.onSurface,
                                     fontWeight:
                                         isSelected
                                             ? FontWeight.bold
@@ -119,7 +119,7 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
                                     }
                                   }
                                 },
-                                backgroundColor: Colors.white,
+                                backgroundColor: Theme.of(context).colorScheme.surface,
                                 selectedColor: AppColors.primary,
                                 checkmarkColor: Colors.white,
                                 shape: RoundedRectangleBorder(
@@ -242,7 +242,7 @@ class _ServiceProductCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
@@ -310,7 +310,7 @@ class _ServiceProductCard extends StatelessWidget {
                                 (context, error, stackTrace) => Container(
                                   width: 48,
                                   height: 48,
-                                  color: AppColors.background,
+                                  color: Theme.of(context).scaffoldBackgroundColor,
                                   child: const Icon(
                                     Icons.broken_image,
                                     size: 20,
@@ -320,7 +320,7 @@ class _ServiceProductCard extends StatelessWidget {
                           : Container(
                             width: 48,
                             height: 48,
-                            color: AppColors.background,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                             child: const Icon(Icons.image, size: 20),
                           ),
                 ),
@@ -392,7 +392,7 @@ class _ServiceProductCard extends StatelessWidget {
                                   errorBuilder:
                                       (context, error, stackTrace) => Container(
                                         height: 72,
-                                        color: AppColors.background,
+                                        color: Theme.of(context).scaffoldBackgroundColor,
                                         child: const Icon(
                                           Icons.broken_image,
                                           size: 20,
@@ -401,7 +401,7 @@ class _ServiceProductCard extends StatelessWidget {
                                 )
                                 : Container(
                                   height: 72,
-                                  color: AppColors.background,
+                                  color: Theme.of(context).scaffoldBackgroundColor,
                                   child: const Icon(
                                     Icons.image_outlined,
                                     size: 20,

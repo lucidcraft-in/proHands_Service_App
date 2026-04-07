@@ -34,7 +34,7 @@ class _ServiceProviderDetailScreenState
   Widget build(BuildContext context) {
     final provider = widget.provider;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<ConsumerProvider>(
         builder: (context, consumerProvider, child) {
           final providerServices =
@@ -117,7 +117,7 @@ class _ServiceProviderDetailScreenState
                   onPressed: () => Navigator.pop(context),
                 ),
               ),
-
+              //  for provider detail screen
               SliverToBoxAdapter(
                 child: Container(
                   padding: const EdgeInsets.all(24),
@@ -431,7 +431,7 @@ class _ServiceProviderDetailScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.background,
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primary.withOpacity(0.1)),
       ),
@@ -519,7 +519,7 @@ class _ServiceProviderDetailScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(

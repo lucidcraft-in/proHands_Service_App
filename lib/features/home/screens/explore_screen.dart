@@ -56,18 +56,18 @@ class _ExploreScreenState extends State<ExploreScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Explore',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
             fontFamily: 'Inter',
           ),
         ),
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         centerTitle: true,
         // actions: [
@@ -102,7 +102,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                     color: AppColors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppColors.border.withOpacity(0.5),
+                      color: Theme.of(context).dividerColor.withOpacity(0.5),
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -388,7 +388,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                           margin: const EdgeInsets.only(bottom: 16),
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: AppColors.border.withOpacity(0.3),
@@ -400,7 +400,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: AppColors.background,
+                                  color: Theme.of(context).scaffoldBackgroundColor,
                                   borderRadius: BorderRadius.circular(12),
                                   image: DecorationImage(
                                     image: AssetImage(item['image']),
@@ -466,7 +466,7 @@ class _SearchServiceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.border.withOpacity(0.3)),
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.3)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.02),

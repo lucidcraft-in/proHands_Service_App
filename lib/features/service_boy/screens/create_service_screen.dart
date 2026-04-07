@@ -134,7 +134,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Create Service', style: AppTextStyles.h4),
         centerTitle: true,
@@ -421,7 +421,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                         const SizedBox(height: 12),
                         Container(
                           decoration: BoxDecoration(
-                            color: AppColors.white,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.border),
                           ),
@@ -625,7 +625,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
             ),
             prefixIcon: Icon(icon, color: AppColors.textSecondary, size: 20),
             filled: true,
-            fillColor: AppColors.white,
+            fillColor: Theme.of(context).colorScheme.surface,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: AppColors.border),

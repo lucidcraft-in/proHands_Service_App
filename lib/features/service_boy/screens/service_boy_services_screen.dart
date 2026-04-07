@@ -28,7 +28,7 @@ class _ServiceBoyServicesScreenState extends State<ServiceBoyServicesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('My Services', style: AppTextStyles.h4),
         centerTitle: true,

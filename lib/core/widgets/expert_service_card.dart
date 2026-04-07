@@ -60,7 +60,7 @@ class ExpertServiceCard extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                color: AppColors.background,
+                color: Theme.of(context).scaffoldBackgroundColor,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),

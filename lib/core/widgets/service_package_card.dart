@@ -43,7 +43,7 @@ class ServicePackageCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.white.withOpacity(0.3),
+                  color: Colors.white.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -79,7 +79,7 @@ class ServicePackageCard extends StatelessWidget {
                     Text(
                       'See More',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: AppColors.white,
+                        color: Colors.white,
                         fontWeight: FontWeight.w500,
                       ),
                     ),

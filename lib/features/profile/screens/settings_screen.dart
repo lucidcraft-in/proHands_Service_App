@@ -18,7 +18,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           'Settings',
@@ -33,7 +33,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             
             // Notifications
             Container(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               child: SwitchListTile(
                 value: _notificationsEnabled,
                 onChanged: (value) {
@@ -52,10 +52,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 secondary: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Iconsax.notification,
                     color: AppColors.textPrimary,
                     size: 20,
@@ -65,19 +65,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             
-            const Divider(height: 1),
+            Divider(height: 1),
             
             // Language
             Container(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               child: ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Iconsax.language_square,
                     color: AppColors.textPrimary,
                     size: 20,
@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _selectedLanguage,
                   style: AppTextStyles.caption,
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right,
                   color: AppColors.textTertiary,
                 ),
@@ -103,19 +103,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             
-            const Divider(height: 1),
+            Divider(height: 1),
             
             // Theme
             Container(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               child: ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.background,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Iconsax.moon,
                     color: AppColors.textPrimary,
                     size: 20,
@@ -131,7 +131,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _selectedTheme,
                   style: AppTextStyles.caption,
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right,
                   color: AppColors.textTertiary,
                 ),
@@ -145,7 +145,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             
             // App Information
             Container(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,10 +164,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Iconsax.info_circle,
                         color: AppColors.textPrimary,
                         size: 20,
@@ -179,7 +179,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: const Icon(
+                    trailing: Icon(
                       Icons.chevron_right,
                       color: AppColors.textTertiary,
                     ),
@@ -189,10 +189,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Iconsax.document_text,
                         color: AppColors.textPrimary,
                         size: 20,
@@ -204,7 +204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: const Icon(
+                    trailing: Icon(
                       Icons.chevron_right,
                       color: AppColors.textTertiary,
                     ),
@@ -214,10 +214,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Iconsax.document,
                         color: AppColors.textPrimary,
                         size: 20,
@@ -229,7 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: const Icon(
+                    trailing: Icon(
                       Icons.chevron_right,
                       color: AppColors.textTertiary,
                     ),
@@ -239,10 +239,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.background,
+                        color: Theme.of(context).scaffoldBackgroundColor,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Iconsax.mobile,
                         color: AppColors.textPrimary,
                         size: 20,
@@ -279,7 +279,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<String>(
-              title: const Text('English'),
+              title: Text('English'),
               value: 'English',
               groupValue: _selectedLanguage,
               onChanged: (value) {
@@ -288,7 +288,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             RadioListTile<String>(
-              title: const Text('Spanish'),
+              title: Text('Spanish'),
               value: 'Spanish',
               groupValue: _selectedLanguage,
               onChanged: (value) {
@@ -311,7 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile<String>(
-              title: const Text('Light'),
+              title: Text('Light'),
               value: 'Light',
               groupValue: _selectedTheme,
               onChanged: (value) {
@@ -320,7 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
             RadioListTile<String>(
-              title: const Text('Dark'),
+              title: Text('Dark'),
               value: 'Dark',
               groupValue: _selectedTheme,
               onChanged: (value) {

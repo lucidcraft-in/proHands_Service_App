@@ -42,7 +42,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
@@ -88,7 +88,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                               style: AppTextStyles.h4.copyWith(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -143,8 +143,8 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                             });
                           },
                           isOutlined: true,
-                          backgroundColor: AppColors.white,
-                          textColor: AppColors.textPrimary,
+                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          textColor: Theme.of(context).colorScheme.onSurface,
                           height: 50,
                           fontSize: 13,
                         ),
@@ -195,7 +195,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                                 widget.booking.id,
                               ),
                           isOutlined: true,
-                          backgroundColor: AppColors.white,
+                          backgroundColor: Theme.of(context).colorScheme.surface,
                           textColor: AppColors.warning,
                           height: 50,
                           fontSize: 13,
@@ -231,7 +231,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                 margin: const EdgeInsets.only(top: 16),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.divider.withValues(alpha: 0.1),
@@ -313,7 +313,7 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Request Delay'),
-          backgroundColor: AppColors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),

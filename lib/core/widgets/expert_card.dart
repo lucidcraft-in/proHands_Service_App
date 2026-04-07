@@ -29,7 +29,7 @@ class ExpertCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 0),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: AppColors.border.withOpacity(0.5),
@@ -52,7 +52,7 @@ class ExpertCard extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                color: AppColors.background,
+                color: Theme.of(context).scaffoldBackgroundColor,
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),

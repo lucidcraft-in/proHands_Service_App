@@ -64,14 +64,14 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             // App Bar with location
             SliverToBoxAdapter(
               child: Container(
-                color: const Color.fromARGB(255, 255, 255, 255),
+                color: Theme.of(context).colorScheme.surface,
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                 child: Column(
                   children: [
@@ -87,7 +87,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         Text(
                           'PRO HANDS',
                           style: AppTextStyles.h4.copyWith(
-                            color: const Color.fromARGB(255, 62, 66, 83),
+                            color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
                           ),
@@ -113,9 +113,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                       provider.unreadCount.toString(),
                                     ),
                                     isLabelVisible: provider.unreadCount > 0,
-                                    child: const Icon(
+                                    child: Icon(
                                       Iconsax.notification,
-                                      color: AppColors.textPrimary,
+                                      color: Theme.of(context).colorScheme.onSurface,
                                     ),
                                   ),
                                 );

@@ -61,9 +61,7 @@ class MainScreenState extends State<MainScreen> {
             setIndex(index);
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: AppColors.white,
-          selectedItemColor: AppColors.primary,
-          unselectedItemColor: AppColors.textTertiary,
+          // Colors are handled by theme in main.dart
           selectedLabelStyle: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,

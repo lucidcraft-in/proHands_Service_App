@@ -119,7 +119,7 @@ class _EditServiceScreenState extends State<EditServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Edit Service', style: AppTextStyles.h4),
         centerTitle: true,

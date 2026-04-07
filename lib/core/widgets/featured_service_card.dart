@@ -100,7 +100,7 @@ class FeaturedServiceCard extends StatelessWidget {
                         (context, error, stackTrace) => Container(
                           width: double.infinity,
                           height: 160,
-                          color: AppColors.background,
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           child: const Icon(
                             Icons.image_not_supported,
                             color: AppColors.textTertiary,

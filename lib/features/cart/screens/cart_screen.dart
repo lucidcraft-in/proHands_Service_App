@@ -68,7 +68,7 @@ class _CartScreenState extends State<CartScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: AppColors.shadowLight,
@@ -147,17 +147,17 @@ class _CartItemCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border, width: 1),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 1),
       ),
       child: Column(
         children: [
           // Provider header
           Row(
             children: [
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 16,
-                backgroundColor: AppColors.background,
-                child: Icon(Icons.person, size: 20),
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                child: Icon(Icons.person, size: 20, color: Theme.of(context).colorScheme.onSurface),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -203,7 +203,7 @@ class _CartItemCard extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -272,7 +272,7 @@ class _CartItemCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(

@@ -30,7 +30,7 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
     final currencyFormat = NumberFormat.currency(symbol: '₹', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Earnings', style: AppTextStyles.h4),
         centerTitle: true,
@@ -101,14 +101,14 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
                         Text(
                           'Total Earnings',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.white.withOpacity(0.8),
+                            color: Colors.white.withOpacity(0.8),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           currencyFormat.format(totalEarnings),
                           style: AppTextStyles.h2.copyWith(
-                            color: AppColors.white,
+                            color: Colors.white,
                             fontSize: 28,
                           ),
                         ),
@@ -123,7 +123,7 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
                             Container(
                               width: 1,
                               height: 30,
-                              color: AppColors.white.withOpacity(0.3),
+                              color: Colors.white.withOpacity(0.3),
                             ),
                             _buildBalanceStat(
                               'Monthly',
@@ -188,9 +188,9 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
                     height: 150,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppColors.border),
+                      border: Border.all(color: Theme.of(context).dividerColor),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -230,7 +230,7 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
         Text(
           value,
           style: AppTextStyles.labelMedium.copyWith(
-            color: AppColors.white,
+            color: Colors.white,
             fontSize: 14,
           ),
         ),
@@ -248,9 +248,9 @@ class _ServiceBoyEarningsScreenState extends State<ServiceBoyEarningsScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

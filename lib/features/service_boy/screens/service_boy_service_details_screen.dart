@@ -39,7 +39,7 @@ class _ServiceBoyServiceDetailsScreenState
 
           if (provider.serviceDetailsError != null) {
             return Scaffold(
-              backgroundColor: AppColors.background,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
               appBar: AppBar(
                 title: Text('Service Details', style: AppTextStyles.h4),
                 centerTitle: true,
@@ -87,7 +87,7 @@ class _ServiceBoyServiceDetailsScreenState
           }
 
           return Scaffold(
-            backgroundColor: AppColors.background,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: CustomScrollView(
               slivers: [
                 // Sliver App Bar with service image
@@ -324,7 +324,7 @@ class _ServiceBoyServiceDetailsScreenState
                           Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: AppColors.white,
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(color: AppColors.border),
                             ),

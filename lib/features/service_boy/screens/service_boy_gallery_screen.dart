@@ -113,9 +113,9 @@ class _ServiceBoyGalleryScreenState extends State<ServiceBoyGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Iconsax.arrow_left, color: AppColors.textPrimary),
@@ -149,7 +149,7 @@ class _ServiceBoyGalleryScreenState extends State<ServiceBoyGalleryScreen> {
                       label: const Text('Add First Photo'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.white,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 12,
@@ -176,7 +176,7 @@ class _ServiceBoyGalleryScreenState extends State<ServiceBoyGalleryScreen> {
                       onTap: _pickImage,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.white,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                             color: AppColors.primary.withOpacity(0.3),

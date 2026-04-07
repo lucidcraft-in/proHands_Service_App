@@ -123,4 +123,14 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
   }
+
+  static Future<void> saveThemeMode(String theme) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme_mode', theme);
+  }
+
+  static Future<String> getThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('theme_mode') ?? 'Light';
+  }
 }

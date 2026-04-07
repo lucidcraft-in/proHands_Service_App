@@ -38,7 +38,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
     return DefaultTabController(
       length: 5,
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: Text('My Work', style: AppTextStyles.h4),
           centerTitle: true,

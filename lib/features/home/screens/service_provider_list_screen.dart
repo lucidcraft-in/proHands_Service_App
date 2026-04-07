@@ -18,7 +18,7 @@ class ServiceProviderListScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           category,
@@ -253,7 +253,7 @@ class ServiceProviderListScreen extends StatelessWidget {
                   height: 64,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    color: AppColors.background,
+                    color: Theme.of(context).scaffoldBackgroundColor,
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),

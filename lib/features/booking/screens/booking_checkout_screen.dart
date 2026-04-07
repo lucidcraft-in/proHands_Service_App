@@ -160,7 +160,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Booking Details', style: AppTextStyles.h4),
         centerTitle: true,
@@ -176,9 +176,9 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: _buildAddressField(
                   controller: _nameController,
@@ -194,13 +194,13 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Iconsax.user, color: AppColors.primary),
+                    Icon(Iconsax.user, color: AppColors.primary),
                     const SizedBox(width: 12),
                     Text(
                       _nameController.text,
@@ -220,7 +220,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
               ),
@@ -232,7 +232,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Iconsax.setting_5,
                       color: AppColors.primary,
                     ),
@@ -268,7 +268,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
                     color: AppColors.primary.withOpacity(0.5),
@@ -293,7 +293,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                         ), // Fixed withOpacity
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Iconsax.location,
                         color: AppColors.primary,
                         size: 24,
@@ -323,7 +323,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                         ],
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Iconsax.edit_2,
                       size: 20,
                       color: AppColors.primary,
@@ -341,7 +341,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
               ),
@@ -385,7 +385,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.border),
                       ),
@@ -427,7 +427,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.border),
                       ),
@@ -611,7 +611,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.check_circle,
                       color: AppColors.success,
                       size: 60,

@@ -53,7 +53,7 @@ class _ServiceBoyTaskDetailsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Work Details', style: AppTextStyles.h4),
         centerTitle: true,
@@ -80,7 +80,7 @@ class _ServiceBoyTaskDetailsScreenState
                     onPressed: () {
                       provider.fetchBookingDetails(widget.booking.id);
                     },
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -122,7 +122,7 @@ class _ServiceBoyTaskDetailsScreenState
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -260,7 +260,7 @@ class _ServiceBoyTaskDetailsScreenState
                     if (booking.status != BookingStatus.completed)
                       IconButton(
                         onPressed: _pickImage,
-                        icon: const Icon(
+                        icon: Icon(
                           Iconsax.add_circle,
                           color: AppColors.primary,
                           size: 28,
@@ -325,7 +325,7 @@ class _ServiceBoyTaskDetailsScreenState
                     onPressed:
                         () => _showDelayRequestDialog(context, booking.id),
                     isOutlined: true,
-                    backgroundColor: AppColors.white,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
                     textColor: AppColors.warning,
                     height: 50,
                     fontSize: 13,
@@ -343,7 +343,7 @@ class _ServiceBoyTaskDetailsScreenState
                               onPressed:
                                   () => _showDeclineDialog(context, booking.id),
                               isOutlined: true,
-                              backgroundColor: AppColors.white,
+                              backgroundColor: Theme.of(context).colorScheme.surface,
                               textColor: AppColors.textPrimary,
                               height: 50,
                               fontSize: 13,
@@ -405,7 +405,7 @@ class _ServiceBoyTaskDetailsScreenState
                           hint: '0.00',
                           controller: _amountController,
                           keyboardType: TextInputType.number,
-                          prefixIcon: const Icon(Icons.currency_rupee),
+                          prefixIcon: Icon(Icons.currency_rupee),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -435,7 +435,7 @@ class _ServiceBoyTaskDetailsScreenState
                         hint: 'Enter OTP from customer',
                         controller: _otpController,
                         keyboardType: TextInputType.number,
-                        prefixIcon: const Icon(Iconsax.lock),
+                        prefixIcon: Icon(Iconsax.lock),
                       ),
                       const SizedBox(height: 24),
                       CustomButton(
@@ -451,7 +451,7 @@ class _ServiceBoyTaskDetailsScreenState
                         onPressed:
                             () => _showDelayRequestDialog(context, booking.id),
                         isOutlined: true,
-                        backgroundColor: AppColors.white,
+                        backgroundColor: Theme.of(context).colorScheme.surface,
                         textColor: AppColors.warning,
                         height: 44,
                         fontSize: 13,
@@ -472,7 +472,7 @@ class _ServiceBoyTaskDetailsScreenState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -492,7 +492,7 @@ class _ServiceBoyTaskDetailsScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.white,
+          color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -502,7 +502,7 @@ class _ServiceBoyTaskDetailsScreenState
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: isSelected ? AppColors.white : AppColors.textPrimary,
+              color: isSelected ? Theme.of(context).colorScheme.surface : AppColors.textPrimary,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -519,15 +519,15 @@ class _ServiceBoyTaskDetailsScreenState
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Decline Work'),
-              backgroundColor: AppColors.white,
+              title: Text('Decline Work'),
+              backgroundColor: Theme.of(context).colorScheme.surface,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('Select a reason for declining this work:'),
+                  Text('Select a reason for declining this work:'),
                   const SizedBox(height: 16),
                   ...[
                     'Schedule Conflict',
@@ -612,7 +612,7 @@ class _ServiceBoyTaskDetailsScreenState
     return Consumer<ServiceBoyProvider>(
       builder: (context, provider, child) {
         if (provider.isLoadingBookingLogs) {
-          return const Padding(
+          return Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: ListCardShimmer(),
           );
@@ -653,7 +653,7 @@ class _ServiceBoyTaskDetailsScreenState
                           Container(
                             width: 12,
                             height: 12,
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               color: AppColors.primary,
                               shape: BoxShape.circle,
                             ),
@@ -730,8 +730,8 @@ class _ServiceBoyTaskDetailsScreenState
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Request Delay'),
-          backgroundColor: AppColors.white,
+          title: Text('Request Delay'),
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -741,14 +741,14 @@ class _ServiceBoyTaskDetailsScreenState
               CustomTextField(
                 hint: 'Delay Time (e.g. 30 minutes)',
                 controller: timeController,
-                prefixIcon: const Icon(Iconsax.clock),
+                prefixIcon: Icon(Iconsax.clock),
               ),
               const SizedBox(height: 16),
               CustomTextField(
                 hint: 'Reason for delay',
                 controller: noteController,
                 maxLines: 3,
-                prefixIcon: const Icon(Iconsax.note),
+                prefixIcon: Icon(Iconsax.note),
               ),
             ],
           ),
@@ -925,7 +925,7 @@ class _ServiceBoyTaskDetailsScreenState
       padding: const EdgeInsets.all(20),
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border, style: BorderStyle.solid),
       ),
@@ -995,14 +995,14 @@ class _ServiceBoyTaskDetailsScreenState
                     onTap: () => setState(() => _images.removeAt(index)),
                     child: Container(
                       padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: AppColors.error,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.close,
                         size: 12,
-                        color: AppColors.white,
+                        color: Theme.of(context).colorScheme.surface,
                       ),
                     ),
                   ),
@@ -1081,7 +1081,7 @@ class _ServiceBoyTaskDetailsScreenState
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.background,
+              color: Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(icon, size: 18, color: AppColors.textPrimary),
@@ -1155,7 +1155,7 @@ class _ServiceBoyTaskDetailsScreenState
   //   return Container(
   //     padding: const EdgeInsets.all(20),
   //     decoration: BoxDecoration(
-  //       color: AppColors.white,
+  //       color: Theme.of(context).colorScheme.surface,
   //       borderRadius: BorderRadius.circular(20),
   //       border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
   //       boxShadow: [
@@ -1260,11 +1260,11 @@ class _TaskDetailsShimmer extends StatelessWidget {
         children: [
           const CardShimmer(height: 120),
           const SizedBox(height: 24),
-          const TextShimmer(width: 150, height: 24),
+          TextShimmer(width: 150, height: 24),
           const SizedBox(height: 16),
           const CardShimmer(height: 150),
           const SizedBox(height: 24),
-          const TextShimmer(width: 180, height: 24),
+          TextShimmer(width: 180, height: 24),
           const SizedBox(height: 16),
           const CardShimmer(height: 200),
         ],

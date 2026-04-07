@@ -152,7 +152,7 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Service Provider Signup', style: AppTextStyles.h4),
         backgroundColor: Colors.transparent,
@@ -240,7 +240,7 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
                             color:
                                 isSelected
                                     ? AppColors.primary
-                                    : AppColors.border,
+                                    : Theme.of(context).dividerColor,
                           ),
                         ),
                       );
@@ -253,9 +253,9 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
+                  border: Border.all(color: Theme.of(context).dividerColor),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<String>(
@@ -348,7 +348,7 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
                             color:
                                 isSelected
                                     ? AppColors.orange
-                                    : AppColors.border,
+                                    : Theme.of(context).dividerColor,
                           ),
                         ),
                       );
@@ -377,7 +377,7 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: AppColors.primary.withOpacity(0.3),
+                            color: Theme.of(context).primaryColor.withOpacity(0.3),
                             width: 1.5,
                           ),
                         ),
@@ -431,7 +431,7 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
                                   child: const Icon(
                                     Icons.close,
                                     size: 12,
-                                    color: AppColors.white,
+                                    color: Colors.white,
                                   ),
                                 ),
                               ),
@@ -477,10 +477,10 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color:
-              isAttached ? AppColors.success.withOpacity(0.1) : AppColors.white,
+              isAttached ? AppColors.success.withOpacity(0.1) : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isAttached ? AppColors.success : AppColors.border,
+            color: isAttached ? AppColors.success : Theme.of(context).dividerColor,
           ),
         ),
         child: Column(

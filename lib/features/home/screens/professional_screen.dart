@@ -48,18 +48,18 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Professional',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).colorScheme.onSurface,
             fontFamily: 'Inter',
           ),
         ),
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         centerTitle: true,
         // actions: [
@@ -332,9 +332,9 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border.withOpacity(0.5)),
+        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowLight.withOpacity(0.05),
@@ -472,7 +472,7 @@ class _GridCategoryItem extends StatelessWidget {
             style: AppTextStyles.bodySmall.copyWith(
               fontWeight: FontWeight.w600,
               fontSize: 12,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

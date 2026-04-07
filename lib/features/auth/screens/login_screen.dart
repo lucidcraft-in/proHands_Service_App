@@ -79,12 +79,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       // appBar: AppBar(
-      //   backgroundColor: AppColors.background,
+      //   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       //   elevation: 0,
       //   leading: IconButton(
-      //     icon: const Icon(Icons.arrow_back, color: Colors.black),
+      //     icon: Icon(Icons.arrow_back, color: Colors.black),
       //     onPressed: () => Navigator.of(context).pop(),
       //   ),
       // ),
@@ -103,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppColors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
@@ -153,7 +153,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Expanded(
                       child: RadioListTile<UserType>(
-                        title: const Text('Customer'),
+                        title: Text('Customer'),
                         value: UserType.customer,
                         groupValue: _selectedUserType,
                         onChanged: (UserType? value) {
@@ -168,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     Expanded(
                       child: RadioListTile<UserType>(
-                        title: const Text('Technician'),
+                        title: Text('Technician'),
                         value: UserType.serviceBoy,
                         groupValue: _selectedUserType,
                         onChanged: (UserType? value) {
@@ -192,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   hint: 'Enter your phone number',
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.phone_outlined,
                     color: AppColors.textTertiary,
                     size: 20,

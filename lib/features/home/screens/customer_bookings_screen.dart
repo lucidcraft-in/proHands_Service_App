@@ -26,7 +26,7 @@ class _CustomerBookingsScreenState extends State<CustomerBookingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('My Bookings', style: AppTextStyles.h4),
         backgroundColor: AppColors.white,

@@ -33,13 +33,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text('Notifications', style: AppTextStyles.h4),
-        backgroundColor: AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -69,7 +69,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Iconsax.danger, size: 48, color: AppColors.error),
+                  Icon(Iconsax.danger, size: 48, color: AppColors.error),
                   const SizedBox(height: 16),
                   Text(
                     'Error: ${provider.error}',
@@ -78,7 +78,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => provider.fetchNotifications(),
-                    child: const Text('Retry'),
+                    child: Text('Retry'),
                   ),
                 ],
               ),
@@ -238,7 +238,7 @@ class _NotificationCard extends StatelessWidget {
         decoration: BoxDecoration(
           color:
               notification.isRead
-                  ? AppColors.white
+                  ? Theme.of(context).colorScheme.surface
                   : AppColors.primary.withOpacity(0.03),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -317,7 +317,7 @@ class _NotificationCard extends StatelessWidget {
                 margin: const EdgeInsets.only(left: 8, top: 4),
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: AppColors.primary,
                   shape: BoxShape.circle,
                 ),

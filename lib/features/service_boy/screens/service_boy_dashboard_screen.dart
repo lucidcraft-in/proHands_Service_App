@@ -76,7 +76,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       Consumer<ServiceBoyProvider>(
                         builder: (context, provider, _) {
                           if (provider.isLoadingServices) {
-                            return const Padding(
+                            return Padding(
                               padding: EdgeInsets.all(8.0),
                               child: TextShimmer(
                                 width: double.infinity,
@@ -131,9 +131,9 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           height: 150,
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: AppColors.background,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: AppColors.divider),
+                            border: Border.all(color: Theme.of(context).dividerColor),
                           ),
                           child:
                               selectedFile != null
@@ -147,7 +147,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                   : Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Iconsax.image,
                                         size: 40,
                                         color: AppColors.textTertiary,
@@ -167,7 +167,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text('Cancel'),
                   ),
                   ElevatedButton(
                     onPressed: () async {
@@ -247,7 +247,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         }
                       }
                     },
-                    child: const Text('Add'),
+                    child: Text('Add'),
                   ),
                 ],
               );
@@ -342,7 +342,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
     print("----------------------");
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -405,7 +405,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 icon: Badge(
                                   label: Text(provider.unreadCount.toString()),
                                   isLabelVisible: provider.unreadCount > 0,
-                                  child: const Icon(
+                                  child: Icon(
                                     Iconsax.notification,
                                     color: AppColors.textPrimary,
                                   ),
@@ -419,7 +419,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 radius: 28,
                                 backgroundColor:
                                     user.profilePhoto.isEmpty
-                                        ? AppColors.background
+                                        ? Theme.of(context).scaffoldBackgroundColor
                                         : AppColors.primary,
                                 backgroundImage:
                                     user.profilePhoto.isNotEmpty
@@ -428,7 +428,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 child:
                                     user.profilePhoto.isNotEmpty
                                         ? null
-                                        : const Icon(
+                                        : Icon(
                                           Icons.person,
                                           size: 28,
                                           color: Color.fromARGB(
@@ -454,8 +454,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.white,
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.surface,
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
@@ -465,7 +465,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                         ),
                                       ],
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Iconsax.camera,
                                       size: 14,
                                       color: AppColors.primary,
@@ -517,14 +517,14 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 Text(
                                   'Complete Your Profile',
                                   style: AppTextStyles.h4.copyWith(
-                                    color: AppColors.white,
+                                    color: Theme.of(context).colorScheme.surface,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   'Add your services and experience to get more tasks.',
                                   style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.white.withOpacity(0.9),
+                                    color: Colors.white.withOpacity(0.9),
                                   ),
                                 ),
                               ],
@@ -542,7 +542,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.white,
+                              backgroundColor: Theme.of(context).colorScheme.surface,
                               foregroundColor: AppColors.orange,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -584,7 +584,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -602,7 +602,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           color: AppColors.primary.withOpacity(0.1),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Iconsax.status_up,
                           color: AppColors.primary,
                           size: 24,
@@ -626,7 +626,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           ],
                         ),
                       ),
-                      const Icon(
+                      Icon(
                         Icons.arrow_forward_ios,
                         size: 16,
                         color: AppColors.textTertiary,
@@ -724,7 +724,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           ),
                           IconButton(
                             onPressed: _showAddGalleryImageDialog,
-                            icon: const Icon(
+                            icon: Icon(
                               Iconsax.add_circle,
                               color: AppColors.primary,
                               size: 28,
@@ -778,7 +778,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 onTap: _showAddGalleryImageDialog,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: AppColors.white,
+                                    color: Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: AppColors.primary.withOpacity(0.3),
@@ -792,7 +792,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Iconsax.add,
                                     color: AppColors.primary,
                                     size: 32,
@@ -1011,7 +1011,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -1052,7 +1052,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
   Widget _buildTaskCard(BookingModel booking, String status, Color color) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -1097,7 +1097,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
               ],
             ),
           ),
-          const Divider(height: 1, color: AppColors.background),
+          Divider(height: 1, color: Theme.of(context).dividerColor),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
@@ -1109,7 +1109,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                     color: AppColors.primary.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Iconsax.activity,
                     color: AppColors.primary,
                     size: 26,
@@ -1127,7 +1127,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Iconsax.calendar,
                             size: 14,
                             color: AppColors.textTertiary,
@@ -1135,7 +1135,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           const SizedBox(width: 6),
                           Text(booking.date, style: AppTextStyles.caption),
                           const SizedBox(width: 12),
-                          const Icon(
+                          Icon(
                             Iconsax.clock,
                             size: 14,
                             color: AppColors.textTertiary,
@@ -1147,7 +1147,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Iconsax.location,
                             size: 14,
                             color: AppColors.textTertiary,
@@ -1179,7 +1179,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -1221,7 +1221,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.star, color: Color(0xFFFFA928), size: 12),
+                    Icon(Icons.star, color: Color(0xFFFFA928), size: 12),
                     const SizedBox(width: 4),
                     Text(
                       rating.toString(),
