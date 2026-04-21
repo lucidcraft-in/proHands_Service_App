@@ -8,6 +8,7 @@ class FeedModel {
   final String description;
   final List<String> images;
   final bool isActive;
+  final bool isCommissionPending;
   final String createdAt;
   final String updatedAt;
 
@@ -18,6 +19,7 @@ class FeedModel {
     required this.description,
     required this.images,
     required this.isActive,
+    required this.isCommissionPending,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -30,6 +32,7 @@ class FeedModel {
       description: json['description'] ?? '',
       images: List<String>.from(json['images'] ?? []),
       isActive: json['isActive'] ?? false,
+      isCommissionPending: json['isCommissionPending'] ?? false,
       createdAt: json['createdAt'] ?? '',
       updatedAt: json['updatedAt'] ?? '',
     );
@@ -44,6 +47,7 @@ class FeedProvider {
   final double rating;
   final int reviewsCount;
   final List<String> portfolioImages;
+  final bool isCommissionPending;
 
   FeedProvider({
     required this.id,
@@ -53,6 +57,7 @@ class FeedProvider {
     required this.rating,
     required this.reviewsCount,
     required this.portfolioImages,
+    required this.isCommissionPending,
   });
 
   factory FeedProvider.fromJson(Map<String, dynamic> json) {
@@ -64,6 +69,7 @@ class FeedProvider {
       rating: (json['rating'] ?? 0).toDouble(),
       reviewsCount: json['reviewsCount'] ?? 0,
       portfolioImages: List<String>.from(json['portfolioImages'] ?? []),
+      isCommissionPending: json['isCommissionPending'] ?? false,
     );
   }
 
@@ -79,6 +85,7 @@ class FeedProvider {
       rating: rating,
       reviewsCount: reviewsCount,
       portfolioImages: portfolioImages,
+      isCommissionPending: isCommissionPending,
       // Default values for others
     );
   }

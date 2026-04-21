@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../core/services/locationTrack.dart';
 import '../providers/service_boy_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -11,6 +12,8 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../../../core/widgets/full_screen_image.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/services/location_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ServiceBoyTaskDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -31,15 +34,78 @@ class _ServiceBoyTaskDetailsScreenState
   final _picker = ImagePicker();
   String _paymentMode = 'CASH';
   bool _isCompleting = false;
+  String? _resolvedPlaceName;
+  bool _isResolvingPlace = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<ServiceBoyProvider>();
-      provider.fetchBookingDetails(widget.booking.id);
+      await provider.fetchBookingDetails(widget.booking.id);
       provider.fetchBookingLogs(widget.booking.id);
+      _resolvePlaceName();
     });
+  }
+
+  Future<void> _resolvePlaceName() async {
+    final provider = context.read<ServiceBoyProvider>();
+    final booking = provider.selectedBooking ?? widget.booking;
+
+    if (booking.coordinates != null && booking.coordinates!.length >= 2) {
+      if (mounted) setState(() => _isResolvingPlace = true);
+
+      try {
+        // [longitude, latitude] -> (latitude, longitude)
+        final result = await LocationService.getAddressFromLatLng(
+          booking.coordinates![1],
+          booking.coordinates![0],
+        );
+
+        if (mounted) {
+          setState(() {
+            _resolvedPlaceName = result?['address'];
+            _isResolvingPlace = false;
+          });
+        }
+      } catch (e) {
+        if (mounted) setState(() => _isResolvingPlace = false);
+      }
+    }
+  }
+
+  Future<void> _launchMaps() async {
+    final provider = context.read<ServiceBoyProvider>();
+    final booking = provider.selectedBooking ?? widget.booking;
+
+    if (booking.coordinates != null && booking.coordinates!.length >= 2) {
+      // final googleMapsUrl = Uri.parse(
+      //   "https://www.google.com/maps/search/?api=1&query=${booking.coordinates![1]},${booking.coordinates![0]}",
+      // );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MapScreen(booking: booking),
+        ),
+      );
+      // try {
+      //   if (await canLaunchUrl(googleMapsUrl)) {
+      //     await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
+      //   } else {
+      //     if (mounted) {
+      //       ScaffoldMessenger.of(context).showSnackBar(
+      //         const SnackBar(content: Text('Could not launch Google Maps')),
+      //       );
+      //     }
+      //   }
+      // } catch (e) {
+      //   if (mounted) {
+      //     ScaffoldMessenger.of(
+      //       context,
+      //     ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      //   }
+      // }
+    }
   }
 
   @override
@@ -88,7 +154,9 @@ class _ServiceBoyTaskDetailsScreenState
           }
 
           final booking = provider.selectedBooking ?? widget.booking;
-          print(booking);
+          print("booking");
+          print("--------------");
+          print(booking.coordinates);
           Color statusColor = AppColors.primary; // Default
           switch (booking.status) {
             case BookingStatus.assigned:
@@ -138,33 +206,40 @@ class _ServiceBoyTaskDetailsScreenState
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            booking.bookingId,
-                            style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                booking.bookingId,
+                                style: AppTextStyles.labelSmall.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Text(
+                                  booking.status
+                                      .getDisplayStatus(true)
+                                      .toUpperCase(),
+                                  style: AppTextStyles.labelSmall.copyWith(
+                                    color: statusColor,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 4),
                           Text(booking.serviceName, style: AppTextStyles.h4),
                         ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: Text(
-                          booking.status.getDisplayStatus(true).toUpperCase(),
-                          style: AppTextStyles.labelSmall.copyWith(
-                            color: statusColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -183,6 +258,42 @@ class _ServiceBoyTaskDetailsScreenState
                       Iconsax.location,
                       'Location',
                       booking.location,
+                    ),
+
+                    _buildDetailRow(
+                      Iconsax.location,
+                      'Place',
+                      '',
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "${booking.coordinates.toString()}",
+                              // _isResolvingPlace
+                              // ? 'Resolving...'
+                              // : _resolvedPlaceName ??
+                              //     (booking.location.isNotEmpty
+                              //         ? booking.location
+                              //         : 'Not available'),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                          if (booking.coordinates != null)
+                            IconButton(
+                              onPressed: _launchMaps,
+                              icon: Icon(
+                                Iconsax.direct_right,
+                                color: AppColors.primary,
+                                size: 20,
+                              ),
+                              constraints: const BoxConstraints(),
+                              padding: EdgeInsets.zero,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -343,7 +454,8 @@ class _ServiceBoyTaskDetailsScreenState
                               onPressed:
                                   () => _showDeclineDialog(context, booking.id),
                               isOutlined: true,
-                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
                               textColor: AppColors.textPrimary,
                               height: 50,
                               fontSize: 13,
@@ -492,7 +604,10 @@ class _ServiceBoyTaskDetailsScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.surface,
+          color:
+              isSelected
+                  ? AppColors.primary
+                  : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected ? AppColors.primary : AppColors.border,
@@ -502,7 +617,10 @@ class _ServiceBoyTaskDetailsScreenState
           child: Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: isSelected ? Theme.of(context).colorScheme.surface : AppColors.textPrimary,
+              color:
+                  isSelected
+                      ? Theme.of(context).colorScheme.surface
+                      : AppColors.textPrimary,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),

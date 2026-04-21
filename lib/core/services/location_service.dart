@@ -1,8 +1,57 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class LocationService {
+  static const String _googleApiKey = "AIzaSyA1v4mq57HE_83ptDaF12R9lWxqGn2xI1k";
+
+  /// Get directions between two points
+  static Future<Map<String, dynamic>?> getDirections(
+    LatLng origin,
+    LatLng destination,
+  ) async {
+    final String url =
+        "https://maps.googleapis.com/maps/api/directions/json?origin=${origin.latitude},${origin.longitude}&destination=${destination.latitude},${destination.longitude}&mode=driving&key=$_googleApiKey";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        if (data['status'] == 'OK') {
+          final route = data['routes'][0];
+          final leg = route['legs'][0];
+
+          // Decode polyline points
+          final polylineString = route['overview_polyline']['points'];
+          final List<PointLatLng> result =
+              PolylinePoints.decodePolyline(polylineString);
+
+          final List<LatLng> points =
+              result.map((p) => LatLng(p.latitude, p.longitude)).toList();
+
+          return {
+            'points': points,
+            'distance': leg['distance']['text'],
+            'duration': leg['duration']['text'],
+            'duration_seconds': leg['duration']['value'],
+            'distance_meters': leg['distance']['value'],
+          };
+        } else {
+          final String errMsg = data['error_message'] ?? 'No detailed error provided';
+          debugPrint('Directions API error: ${data['status']}');
+          debugPrint('Reason: $errMsg');
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching directions: $e');
+    }
+    return null;
+  }
   /// Check and request location permissions
   static Future<bool> checkPermission() async {
     bool serviceEnabled;
@@ -68,10 +117,17 @@ class LocationService {
   ) async {
     try {
       debugPrint('Fetching address for Lat: $lat, Lng: $lng...');
+      print("lat");
+      print(lat);
+      print("lng");
+      print(lng);
+      print("----------------");
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      print(placemarks);
+
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
-        debugPrint('Found address: ${place.street}');
+        debugPrint('Found address: ${place.name}');
         return {
           'address':
               '${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}, ${place.administrativeArea ?? ''}, ${place.postalCode ?? ''}'

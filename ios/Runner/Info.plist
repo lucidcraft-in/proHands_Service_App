@@ -53,5 +53,11 @@
 	<string>This app needs access to the photo library to let you upload images and files for your services.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>https</string>
+		<string>http</string>
+		<string>googlegmaps</string>
+	</array>
 </dict>
 </plist>

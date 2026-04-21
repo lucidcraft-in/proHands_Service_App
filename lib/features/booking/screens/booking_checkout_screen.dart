@@ -232,10 +232,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(
-                      Iconsax.setting_5,
-                      color: AppColors.primary,
-                    ),
+                    child: Icon(Iconsax.setting_5, color: AppColors.primary),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -323,11 +320,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                         ],
                       ),
                     ),
-                    Icon(
-                      Iconsax.edit_2,
-                      size: 20,
-                      color: AppColors.primary,
-                    ),
+                    Icon(Iconsax.edit_2, size: 20, color: AppColors.primary),
                   ],
                 ),
               ),

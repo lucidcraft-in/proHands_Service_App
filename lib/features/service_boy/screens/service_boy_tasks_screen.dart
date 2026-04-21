@@ -15,10 +15,19 @@ class ServiceBoyTasksScreen extends StatefulWidget {
   State<ServiceBoyTasksScreen> createState() => _ServiceBoyTasksScreenState();
 }
 
-class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
+class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 6, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {});
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceBoyProvider>().fetchBookings();
     });
@@ -26,6 +35,7 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -35,88 +45,187 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 5,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: Text('My Work', style: AppTextStyles.h4),
-          centerTitle: true,
-          bottom: TabBar(
-            isScrollable: false,
-            tabAlignment: TabAlignment.fill,
-            tabs: const [
-              Tab(text: 'Assigned'),
-              Tab(text: 'Ongoing'),
-              Tab(text: 'Delayed'),
-              Tab(text: 'Completed'),
-              Tab(text: 'Canceled'),
-            ],
-            labelStyle: AppTextStyles.labelSmall.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-            unselectedLabelStyle: AppTextStyles.labelSmall,
-            indicatorColor: AppColors.primary,
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textTertiary,
-          ),
-        ),
-        body: Consumer<ServiceBoyProvider>(
-          builder: (context, provider, child) {
-            if (provider.isLoadingBookings) {
-              return ListView.builder(
-                padding: const EdgeInsets.all(20),
-                itemCount: 5,
-                itemBuilder: (context, index) => const ListCardShimmer(),
-              );
-            }
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text('My Work', style: AppTextStyles.h4),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Consumer<ServiceBoyProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoadingBookings) {
+            return ListView.builder(
+              padding: const EdgeInsets.all(20),
+              itemCount: 5,
+              itemBuilder: (context, index) => const ListCardShimmer(),
+            );
+          }
 
-            if (provider.bookingsError != null) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Error loading work',
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: AppColors.error,
-                      ),
+          if (provider.bookingsError != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Error loading work',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.error,
                     ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: _refreshBookings,
-                      child: const Text('Retry'),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: _refreshBookings,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            children: [
+              _buildScrollableTabs(provider),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildRefreshableList(
+                      provider.assignedBookings,
+                      BookingStatus.assigned,
+                    ),
+                    _buildRefreshableList(
+                      provider.acceptedBookings,
+                      BookingStatus.accepted,
+                    ),
+                    _buildRefreshableList(
+                      provider.ongoingBookings,
+                      BookingStatus.reached,
+                    ),
+                    _buildRefreshableList(
+                      provider.delayRequestedBookings,
+                      BookingStatus.delayRequested,
+                    ),
+                    _buildRefreshableList(
+                      provider.completedBookings,
+                      BookingStatus.completed,
+                    ),
+                    _buildRefreshableList(
+                      provider.cancelledBookings,
+                      BookingStatus.cancelled,
                     ),
                   ],
                 ),
-              );
-            }
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
 
-            return TabBarView(
-              children: [
-                _buildRefreshableList(
-                  provider.assignedBookings,
-                  BookingStatus.assigned,
-                ),
-                _buildRefreshableList(
-                  provider.ongoingBookings,
-                  BookingStatus.reached,
-                ),
-                _buildRefreshableList(
-                  provider.delayRequestedBookings,
-                  BookingStatus.delayRequested,
-                ),
-                _buildRefreshableList(
-                  provider.completedBookings,
-                  BookingStatus.completed,
-                ),
-                _buildRefreshableList(
-                  provider.cancelledBookings,
-                  BookingStatus.cancelled,
-                ),
-              ],
-            );
-          },
+  Widget _buildScrollableTabs(ServiceBoyProvider provider) {
+    return Container(
+      height: 60,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Row(
+          children: [
+            _buildTabChip(
+              label: 'Assigned',
+              count: provider.assignedBookings.length,
+              index: 0,
+              color: AppColors.info,
+              lightColor: AppColors.infoLight,
+            ),
+            _buildTabChip(
+              label: 'Accepted',
+              count: provider.acceptedBookings.length,
+              index: 1,
+              color: AppColors.success,
+              lightColor: AppColors.successLight,
+            ),
+            _buildTabChip(
+              label: 'Ongoing',
+              count: provider.ongoingBookings.length,
+              index: 2,
+              color: AppColors.success,
+              lightColor: AppColors.successLight,
+            ),
+            _buildTabChip(
+              label: 'Delayed',
+              count: provider.delayRequestedBookings.length,
+              index: 3,
+              color: AppColors.warning,
+              lightColor: AppColors.warningLight,
+            ),
+            _buildTabChip(
+              label: 'Completed',
+              count: provider.completedBookings.length,
+              index: 4,
+              color: AppColors.primary,
+              lightColor: AppColors.primaryLight.withValues(alpha: 0.1),
+            ),
+            _buildTabChip(
+              label: 'Canceled',
+              count: provider.cancelledBookings.length,
+              index: 5,
+              color: AppColors.error,
+              lightColor: AppColors.errorLight,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabChip({
+    required String label,
+    required int count,
+    required int index,
+    required Color color,
+    required Color lightColor,
+  }) {
+    final bool isSelected = _tabController.index == index;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _tabController.animateTo(index);
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(right: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? lightColor : AppColors.background,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: isSelected ? color.withValues(alpha: 0.5) : Colors.transparent,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              '$count ',
+              style: AppTextStyles.labelMedium.copyWith(
+                fontWeight: FontWeight.bold,
+                color: isSelected ? color : AppColors.textTertiary,
+              ),
+            ),
+            Text(
+              label,
+              style: AppTextStyles.labelMedium.copyWith(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? color : AppColors.textTertiary,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -20,34 +20,50 @@ class ServiceProductDetailScreen extends StatelessWidget {
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  service.image.isNotEmpty
-                      ? Image.network(
-                        service.image,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) => Container(
-                              color: AppColors.primary.withOpacity(0.1),
-                              child: const Icon(
-                                Icons.broken_image,
-                                size: 50,
-                                color: AppColors.primary,
+                  GestureDetector(
+                    onTap:
+                        () =>
+                            service.image.isNotEmpty
+                                ? _openImageViewer(
+                                  context,
+                                  service.image,
+                                  'header_image',
+                                )
+                                : null,
+                    child: Hero(
+                      tag: 'header_image',
+                      child:
+                          service.image.isNotEmpty
+                              ? Image.network(
+                                service.image,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (context, error, stackTrace) => Container(
+                                      color: AppColors.primary.withOpacity(0.1),
+                                      child: const Icon(
+                                        Icons.broken_image,
+                                        size: 50,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                              )
+                              : Container(
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.primaryGradient,
+                                ),
+                                child: const Icon(
+                                  Icons.image,
+                                  size: 80,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                      )
-                      : Container(
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                        ),
-                        child: const Icon(
-                          Icons.image,
-                          size: 80,
-                          color: Colors.white,
-                        ),
-                      ),
+                    ),
+                  ),
                   // Gradient Overlay
                   Container(
                     decoration: BoxDecoration(
@@ -73,9 +89,9 @@ class ServiceProductDetailScreen extends StatelessWidget {
           SliverToBoxAdapter(
             child: Container(
               padding: const EdgeInsets.all(24),
-              decoration: const BoxDecoration(
-                color: AppColors.white,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
@@ -91,12 +107,19 @@ class ServiceProductDetailScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(service.name, style: AppTextStyles.h3),
+                            Text(
+                              service.name,
+                              style: AppTextStyles.h3.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
                             if (service.subcategoryName.isNotEmpty)
                               Text(
                                 service.subcategoryName,
                                 style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.6),
                                 ),
                               ),
                           ],
@@ -123,12 +146,15 @@ class ServiceProductDetailScreen extends StatelessWidget {
                             : 'New',
                         style: AppTextStyles.bodyMedium.copyWith(
                           fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       Text(
                         ' (${service.reviewsCount} reviews)',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.5),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -149,7 +175,12 @@ class ServiceProductDetailScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Provider Info Section
-                  Text('Service Professional', style: AppTextStyles.labelLarge),
+                  Text(
+                    'Service Professional',
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -185,12 +216,15 @@ class ServiceProductDetailScreen extends StatelessWidget {
                               service.providerName,
                               style: AppTextStyles.bodyMedium.copyWith(
                                 fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             Text(
                               service.profession,
                               style: AppTextStyles.caption.copyWith(
-                                color: AppColors.textSecondary,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.6),
                               ),
                             ),
                           ],
@@ -207,7 +241,12 @@ class ServiceProductDetailScreen extends StatelessWidget {
 
                   if (service.specialties.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text('Specialties', style: AppTextStyles.labelLarge),
+                    Text(
+                      'Specialties',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -221,7 +260,12 @@ class ServiceProductDetailScreen extends StatelessWidget {
 
                   if (service.servicesOffered.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text('Services Offered', style: AppTextStyles.labelLarge),
+                    Text(
+                      'Services Offered',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -235,7 +279,12 @@ class ServiceProductDetailScreen extends StatelessWidget {
 
                   if (service.additionalSkills.isNotEmpty) ...[
                     const SizedBox(height: 16),
-                    Text('Additional Skills', style: AppTextStyles.labelLarge),
+                    Text(
+                      'Additional Skills',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
@@ -250,12 +299,19 @@ class ServiceProductDetailScreen extends StatelessWidget {
                   const SizedBox(height: 24),
 
                   // Description
-                  Text('Description', style: AppTextStyles.labelLarge),
+                  Text(
+                    'Description',
+                    style: AppTextStyles.labelLarge.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   Text(
                     service.description,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.7),
                       height: 1.5,
                     ),
                   ),
@@ -264,7 +320,12 @@ class ServiceProductDetailScreen extends StatelessWidget {
 
                   // Gallery
                   if (service.gallery.isNotEmpty) ...[
-                    Text('Service Gallery', style: AppTextStyles.labelLarge),
+                    Text(
+                      'Service Gallery',
+                      style: AppTextStyles.labelLarge.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     SizedBox(
                       height: 100,
@@ -272,21 +333,29 @@ class ServiceProductDetailScreen extends StatelessWidget {
                         scrollDirection: Axis.horizontal,
                         itemCount: service.gallery.length,
                         itemBuilder: (context, index) {
+                          final imageUrl = service.gallery[index];
+                          final heroTag = 'gallery_image_$index';
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                service.gallery[index],
-                                width: 140,
-                                height: 100,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (context, error, stackTrace) => Container(
-                                      width: 140,
-                                      color: AppColors.surface,
-                                      child: const Icon(Icons.broken_image),
-                                    ),
+                            child: GestureDetector(
+                              onTap: () => _openImageViewer(context, imageUrl, heroTag),
+                              child: Hero(
+                                tag: heroTag,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    imageUrl,
+                                    width: 140,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder:
+                                        (context, error, stackTrace) => Container(
+                                          width: 140,
+                                          color: AppColors.surface,
+                                          child: const Icon(Icons.broken_image),
+                                        ),
+                                  ),
+                                ),
                               ),
                             ),
                           );
@@ -305,7 +374,7 @@ class ServiceProductDetailScreen extends StatelessWidget {
       bottomSheet: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: AppColors.shadowLight,
@@ -351,6 +420,27 @@ class ServiceProductDetailScreen extends StatelessWidget {
     );
   }
 
+  void _openImageViewer(
+    BuildContext context,
+    String imageUrl,
+    String heroTag,
+  ) {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        opaque: false,
+        barrierColor: Colors.black.withOpacity(0.9),
+        pageBuilder: (context, _, __) => _FullScreenImageViewer(
+          imageUrl: imageUrl,
+          heroTag: heroTag,
+        ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+  }
+
   Widget _buildSkillChip(String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -365,6 +455,59 @@ class ServiceProductDetailScreen extends StatelessWidget {
           color: color,
           fontWeight: FontWeight.w600,
         ),
+      ),
+    );
+  }
+}
+
+class _FullScreenImageViewer extends StatelessWidget {
+  final String imageUrl;
+  final String heroTag;
+
+  const _FullScreenImageViewer({required this.imageUrl, required this.heroTag});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          // Background dismiss area
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(color: Colors.transparent),
+          ),
+          Center(
+            child: Hero(
+              tag: heroTag,
+              child: InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder:
+                      (context, error, stackTrace) => const Icon(
+                        Icons.broken_image,
+                        size: 100,
+                        color: Colors.white,
+                      ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            right: 20,
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.black.withOpacity(0.3),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

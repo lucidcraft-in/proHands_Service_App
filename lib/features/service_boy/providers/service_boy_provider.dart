@@ -169,6 +169,8 @@ class ServiceBoyProvider extends ChangeNotifier {
   // Filtered Bookings
   List<BookingModel> get assignedBookings =>
       _bookings.where((b) => b.status == BookingStatus.assigned).toList();
+  List<BookingModel> get acceptedBookings =>
+      _bookings.where((b) => b.status == BookingStatus.accepted).toList();
 
   List<BookingModel> get ongoingBookings =>
       _bookings.where((b) => b.status == BookingStatus.reached).toList();
@@ -207,6 +209,22 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   // Accept Booking
   Future<bool> acceptBooking(String bookingId) async {
+    try {
+      final success = await _service.updateBookingStatus(bookingId, 'ACCEPTED');
+      if (success) {
+        // Refresh bookings to update the UI
+        await fetchBookings();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      // Handle error gracefully or rethrow if needed
+      return false;
+    }
+  }
+
+  Future<bool> reachedBooking(String bookingId) async {
     try {
       final success = await _service.updateBookingStatus(bookingId, 'REACHED');
       if (success) {

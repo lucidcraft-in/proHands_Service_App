@@ -31,6 +31,7 @@ class UserModel {
   final String? license;
   final double? latitude;
   final double? longitude;
+  final bool? isCommissionPending;
 
   const UserModel({
     required this.id,
@@ -61,6 +62,7 @@ class UserModel {
     this.license,
     this.latitude,
     this.longitude,
+    this.isCommissionPending,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -129,6 +131,7 @@ class UserModel {
       license: json['license'],
       latitude: lat,
       longitude: lng,
+      isCommissionPending: json['isCommissionPending'] ?? false,
     );
   }
 
@@ -162,6 +165,7 @@ class UserModel {
       'license': license,
       'latitude': latitude,
       'longitude': longitude,
+      'isCommissionPending': isCommissionPending,
     };
   }
 

@@ -18,6 +18,7 @@ class ServiceModel {
   final String? providerPhone;
   final String subcategoryId;
   final String subcategoryName;
+  final bool isCommissionPending;
 
   ServiceModel({
     required this.id,
@@ -39,6 +40,7 @@ class ServiceModel {
     this.providerPhone,
     this.subcategoryId = '',
     this.subcategoryName = '',
+    this.isCommissionPending = false,
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -95,6 +97,7 @@ class ServiceModel {
       providerPhone: providerPhone,
       subcategoryId: subCatId,
       subcategoryName: subCatName,
+      isCommissionPending: json['isCommissionPending'] ?? false,
     );
   }
 }

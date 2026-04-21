@@ -61,7 +61,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         actions: [
           IconButton(
             onPressed: () => _handleLogout(context),
-            icon: Icon(Iconsax.logout, color: Theme.of(context).colorScheme.onSurface),
+            icon: Icon(
+              Iconsax.logout,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -94,7 +97,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                         children: [
                           CircleAvatar(
                             radius: 50,
-                            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                            backgroundColor:
+                                Theme.of(context).scaffoldBackgroundColor,
                             backgroundImage:
                                 (user.profilePhoto.isNotEmpty &&
                                         !user.profilePhoto.contains('default'))
@@ -128,7 +132,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                                   color: AppColors.primary,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Theme.of(context).colorScheme.surface,
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
                                     width: 2,
                                   ),
                                 ),
@@ -236,11 +241,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                             );
                           },
                         ),
-                        Divider(
-                          height: 1,
-                          indent: 70,
-                          color: Theme.of(context).dividerColor,
-                        ),
+                        // Divider(
+                        //   height: 1,
+                        //   indent: 70,
+                        //   color: Theme.of(context).dividerColor,
+                        // ),
                       ],
                       _MenuItem(
                         icon: Iconsax.location,
@@ -743,11 +748,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             ),
             title: Row(
               children: [
-                Icon(
-                  Iconsax.location,
-                  color: AppColors.primary,
-                  size: 22,
-                ),
+                Icon(Iconsax.location, color: AppColors.primary, size: 22),
                 const SizedBox(width: 10),
                 Text('Set as Current Location', style: AppTextStyles.h4),
               ],
@@ -1051,11 +1052,7 @@ class _SubMenuItem extends StatelessWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-            Icon(
-              Icons.chevron_right,
-              size: 16,
-              color: AppColors.textTertiary,
-            ),
+            Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
           ],
         ),
       ),

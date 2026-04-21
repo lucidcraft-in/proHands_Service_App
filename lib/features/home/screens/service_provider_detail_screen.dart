@@ -48,6 +48,7 @@ class _ServiceProviderDetailScreenState
               SliverAppBar(
                 expandedHeight: 250,
                 pinned: true,
+                backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,
@@ -121,9 +122,9 @@ class _ServiceProviderDetailScreenState
               SliverToBoxAdapter(
                 child: Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: const BoxDecoration(
-                    color: AppColors.white,
-                    borderRadius: BorderRadius.only(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(30),
                       topRight: Radius.circular(30),
                     ),
@@ -140,13 +141,16 @@ class _ServiceProviderDetailScreenState
                             children: [
                               Text(
                                 provider.name ?? 'Provider',
-                                style: AppTextStyles.h3,
+                                style: AppTextStyles.h3.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurface,
+                                ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 provider.profession,
                                 style: AppTextStyles.bodyMedium.copyWith(
                                   color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
@@ -205,12 +209,17 @@ class _ServiceProviderDetailScreenState
                       const SizedBox(height: 32),
 
                       // Bio
-                      Text('About me', style: AppTextStyles.labelLarge),
+                      Text(
+                        'About me',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       Text(
                         provider.bio,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                           height: 1.5,
                         ),
                       ),
@@ -221,7 +230,9 @@ class _ServiceProviderDetailScreenState
                       if (provider.servicesOffered.isNotEmpty) ...[
                         Text(
                           'Services Offered',
-                          style: AppTextStyles.labelLarge,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -239,7 +250,9 @@ class _ServiceProviderDetailScreenState
                       if (provider.workPreference.isNotEmpty) ...[
                         Text(
                           'Work Preference',
-                          style: AppTextStyles.labelLarge,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -257,7 +270,9 @@ class _ServiceProviderDetailScreenState
                       if (provider.workLocationPreferred.isNotEmpty) ...[
                         Text(
                           'Preferred Work Locations',
-                          style: AppTextStyles.labelLarge,
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Wrap(
@@ -291,7 +306,12 @@ class _ServiceProviderDetailScreenState
                       // const SizedBox(height: 32),
 
                       // Specialties
-                      Text('Specialties', style: AppTextStyles.labelLarge),
+                      Text(
+                        'Specialties',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       Wrap(
                         spacing: 8,
@@ -305,7 +325,12 @@ class _ServiceProviderDetailScreenState
                       const SizedBox(height: 32),
 
                       // Services Provided by this Professional
-                      Text('Services Offered', style: AppTextStyles.h4),
+                      Text(
+                        'Services Offered',
+                        style: AppTextStyles.h4.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                       const SizedBox(height: 16),
                       if (consumerProvider.isLoadingAllServices)
                         ListView.builder(
@@ -322,7 +347,7 @@ class _ServiceProviderDetailScreenState
                             child: Text(
                               'No specific services listed yet.',
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: AppColors.textTertiary,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ),
@@ -351,7 +376,7 @@ class _ServiceProviderDetailScreenState
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     boxShadow: [
                       BoxShadow(
                         color: AppColors.shadowLight,
@@ -431,7 +456,7 @@ class _ServiceProviderDetailScreenState
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.primary.withOpacity(0.1)),
       ),
@@ -470,13 +495,14 @@ class _ServiceProviderDetailScreenState
                       service.name,
                       style: AppTextStyles.labelMedium.copyWith(
                         fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       service.description,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -519,20 +545,29 @@ class _ServiceProviderDetailScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color:
+              Theme.of(context).brightness == Brightness.dark
+                  ? const Color(0xFF2C2C2E)
+                  : Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           children: [
             Icon(icon, size: 24, color: AppColors.primary),
             const SizedBox(height: 8),
-            Text(
-              value,
-              style: AppTextStyles.labelSmall.copyWith(
-                fontWeight: FontWeight.bold,
+              Text(
+                value,
+                style: AppTextStyles.labelSmall.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-            ),
-            Text(label, style: AppTextStyles.caption),
+              Text(
+                label,
+                style: AppTextStyles.caption.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
           ],
         ),
       ),

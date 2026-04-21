@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:service_app/features/service_boy/models/service_subcategory_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/service_boy_provider.dart';
@@ -247,159 +249,177 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Category Dropdown
-                  Text('Category', style: AppTextStyles.labelMedium),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppColors.border),
+                  DropdownSearch<ServiceCategoryModel>(
+                    items: provider.categories,
+                    itemAsString: (ServiceCategoryModel c) => c.name,
+                    selectedItem:
+                        _selectedCategoryId == null
+                            ? null
+                            : provider.categories
+                                .cast<ServiceCategoryModel?>()
+                                .firstWhere(
+                                  (e) => e?.id == _selectedCategoryId,
+                                  orElse: () => null,
+                                ),
+                    popupProps: const PopupProps.menu(showSearchBox: true),
+                    dropdownDecoratorProps: DropDownDecoratorProps(
+                      dropdownSearchDecoration: InputDecoration(
+                        hintText: "Select Category",
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 2,
+                          ),
+                        ),
+                      ),
                     ),
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<String>(
-                        value: _selectedCategoryId,
-                        hint: Text(
-                          'Select Category',
+                    onChanged: (ServiceCategoryModel? selected) {
+                      setState(() {
+                        _selectedCategoryId = selected?.id;
+                        _selectedSubcategoryId = null;
+                        _selectedAdditionalSkills = [];
+                      });
+
+                      if (selected != null) {
+                        provider.fetchSubcategories(selected.id);
+                      } else {
+                        provider.clearSubcategories();
+                      }
+                    },
+                    dropdownBuilder: (context, selectedItem) {
+                      if (selectedItem == null) {
+                        return Text(
+                          "Select Category",
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textTertiary,
                           ),
-                        ),
-                        isExpanded: true,
-                        icon: const Icon(
-                          Icons.keyboard_arrow_down,
-                          color: AppColors.textSecondary,
-                        ),
-                        items:
-                            provider.categories.map((
-                              ServiceCategoryModel category,
-                            ) {
-                              return DropdownMenuItem<String>(
-                                value: category.id,
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: _getColor(
-                                          category.color,
-                                        ).withOpacity(0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Text(
-                                        category.icon,
-                                        style: const TextStyle(fontSize: 16),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      category.name,
-                                      style: AppTextStyles.bodyMedium,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            _selectedCategoryId = newValue;
-                            _selectedSubcategoryId = null;
-                            _selectedAdditionalSkills = [];
-                          });
-                          if (newValue != null) {
-                            provider.fetchSubcategories(newValue);
-                          } else {
-                            provider.clearSubcategories();
-                          }
-                        },
-                      ),
-                    ),
+                        );
+                      }
+
+                      return Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: _getColor(
+                                selectedItem.color,
+                              ).withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(selectedItem.icon),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            selectedItem.name,
+                            style: AppTextStyles.bodyMedium,
+                          ),
+                        ],
+                      );
+                    },
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Subcategory Dropdown
+                  // Subcategory Selector
                   if (_selectedCategoryId != null) ...[
                     Text('Subcategory', style: AppTextStyles.labelMedium),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.border),
+                    DropdownSearch<ServiceSubcategoryModel>(
+                      items: provider.subcategories,
+                      itemAsString: (ServiceSubcategoryModel s) => s.name,
+                      selectedItem:
+                          _selectedSubcategoryId == null
+                              ? null
+                              : provider.subcategories
+                                  .cast<ServiceSubcategoryModel?>()
+                                  .firstWhere(
+                                    (e) => e?.id == _selectedSubcategoryId,
+                                    orElse: () => null,
+                                  ),
+                      popupProps: const PopupProps.menu(showSearchBox: true),
+                      dropdownDecoratorProps: DropDownDecoratorProps(
+                        dropdownSearchDecoration: InputDecoration(
+                          hintText:
+                              provider.isLoadingSubcategories
+                                  ? 'Loading...'
+                                  : 'Select Subcategory',
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.border,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: AppColors.border,
+                            ),
+                          ),
+                        ),
                       ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedSubcategoryId,
-                          hint: Text(
+                      onChanged:
+                          provider.isLoadingSubcategories
+                              ? null
+                              : (ServiceSubcategoryModel? selected) {
+                                setState(() {
+                                  _selectedSubcategoryId = selected?.id;
+                                  if (selected != null) {
+                                    _nameController.text = selected.name;
+                                    if (!_selectedAdditionalSkills.contains(
+                                      selected.id,
+                                    )) {
+                                      _selectedAdditionalSkills.add(
+                                        selected.id,
+                                      );
+                                    }
+                                  }
+                                });
+                              },
+                      dropdownBuilder: (context, selectedItem) {
+                        if (selectedItem == null) {
+                          return Text(
                             provider.isLoadingSubcategories
                                 ? 'Loading...'
                                 : 'Select Subcategory',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textTertiary,
                             ),
-                          ),
-                          isExpanded: true,
-                          icon:
-                              provider.isLoadingSubcategories
-                                  ? const SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColors.primary,
-                                    ),
-                                  )
-                                  : const Icon(
-                                    Icons.keyboard_arrow_down,
-                                    color: AppColors.textSecondary,
-                                  ),
-                          items:
-                              provider.subcategories.map((subcategory) {
-                                return DropdownMenuItem<String>(
-                                  value: subcategory.id,
-                                  child: Row(
-                                    children: [
-                                      if (subcategory.icon.isNotEmpty) ...[
-                                        Text(
-                                          subcategory.icon,
-                                          style: const TextStyle(fontSize: 16),
-                                        ),
-                                        const SizedBox(width: 12),
-                                      ],
-                                      Text(
-                                        subcategory.name,
-                                        style: AppTextStyles.bodyMedium,
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }).toList(),
-                          onChanged:
-                              provider.isLoadingSubcategories
-                                  ? null
-                                  : (String? newValue) {
-                                    setState(() {
-                                      _selectedSubcategoryId = newValue;
-                                      if (newValue != null) {
-                                        final sub = provider.subcategories
-                                            .firstWhere(
-                                              (s) => s.id == newValue,
-                                            );
-                                        _nameController.text = sub.name;
-                                        // Automatically check the selected subcategory (using ID)
-                                        if (!_selectedAdditionalSkills.contains(
-                                          sub.id,
-                                        )) {
-                                          _selectedAdditionalSkills.add(sub.id);
-                                        }
-                                      }
-                                    });
-                                  },
-                        ),
-                      ),
+                          );
+                        }
+
+                        return Row(
+                          children: [
+                            if (selectedItem.icon.isNotEmpty) ...[
+                              Text(
+                                selectedItem.icon,
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                              const SizedBox(width: 12),
+                            ],
+                            Text(
+                              selectedItem.name,
+                              style: AppTextStyles.bodyMedium,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 20),
                   ],

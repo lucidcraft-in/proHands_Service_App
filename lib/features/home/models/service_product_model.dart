@@ -16,6 +16,7 @@ class ServiceProductModel {
   final List<String> specialties;
   final List<String> servicesOffered;
   final List<String> additionalSkills;
+  final bool isCommissionPending;
 
   ServiceProductModel({
     required this.id,
@@ -35,6 +36,7 @@ class ServiceProductModel {
     this.specialties = const [],
     this.servicesOffered = const [],
     this.additionalSkills = const [],
+    this.isCommissionPending = false,
   });
 
   // factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
@@ -142,6 +144,7 @@ class ServiceProductModel {
       specialties: specialties,
       servicesOffered: servicesOffered,
       additionalSkills: additionalSkills,
+      isCommissionPending: json['isCommissionPending'] ?? false,
     );
   }
 }

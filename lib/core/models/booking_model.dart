@@ -3,6 +3,7 @@ import 'review_model.dart';
 enum BookingStatus {
   open,
   assigned,
+  accepted,
   reached, // ongoing
   reassignRequested,
   closedByCustomer,
@@ -22,6 +23,8 @@ extension BookingStatusExtension on BookingStatus {
         return "Open";
       case BookingStatus.assigned:
         return "Assigned";
+      case BookingStatus.accepted:
+        return "Accepted";
       case BookingStatus.reached:
         return "Ongoing";
       case BookingStatus.closedByCustomer:
@@ -55,6 +58,7 @@ class BookingModel {
   final String date;
   final String time;
   final String location;
+  final List<double>? coordinates;
   final String? providerName;
   final String? providerPhone;
   final String? providerProfession;
@@ -87,6 +91,7 @@ class BookingModel {
     required this.date,
     required this.time,
     required this.location,
+    this.coordinates,
     required this.customerName,
     required this.customerPhone,
     required this.price,
@@ -155,9 +160,17 @@ class BookingModel {
     }
 
     String address = 'Unknown Location';
+    List<double>? coordinates;
+
     if (locationIdx is Map) {
-      if (locationIdx.containsKey('address')) {
-        address = locationIdx['address'] ?? 'Unknown Location';
+      address = locationIdx['address'] ?? 'Unknown Location';
+      if (locationIdx.containsKey('coordinates') &&
+          locationIdx['coordinates'] is List) {
+        coordinates = List<double>.from(
+          (locationIdx['coordinates'] as List).map(
+            (e) => (e as num).toDouble(),
+          ),
+        );
       }
     } else if (locationIdx is String) {
       address = locationIdx;
@@ -184,6 +197,7 @@ class BookingModel {
       date: dateStr,
       time: timeStr,
       location: address,
+      coordinates: coordinates,
       customerName: customerName,
       customerPhone: customerPhone,
       price: (json['price'] ?? 0).toDouble(),
@@ -221,8 +235,9 @@ class BookingModel {
         return BookingStatus.assigned;
       case 'REASSIGN_REQUESTED':
         return BookingStatus.reassignRequested;
-      case 'REACHED':
       case 'ACCEPTED':
+        return BookingStatus.accepted;
+      case 'REACHED':
       case 'ONGOING':
         return BookingStatus.reached;
       case 'CLOSED_BY_CUSTOMER':
@@ -254,6 +269,7 @@ class BookingModel {
     String? date,
     String? time,
     String? location,
+    List<double>? coordinates,
     String? customerName,
     String? customerPhone,
     double? price,
@@ -284,6 +300,7 @@ class BookingModel {
       date: date ?? this.date,
       time: time ?? this.time,
       location: location ?? this.location,
+      coordinates: coordinates ?? this.coordinates,
       customerName: customerName ?? this.customerName,
       customerPhone: customerPhone ?? this.customerPhone,
       price: price ?? this.price,

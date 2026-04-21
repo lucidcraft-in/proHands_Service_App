@@ -27,6 +27,30 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
 
   @override
   Widget build(BuildContext context) {
+    Color statusColor = AppColors.primary; // Default
+    switch (widget.booking.status) {
+      case BookingStatus.assigned:
+        statusColor = AppColors.warning;
+        break;
+      case BookingStatus.reached:
+        statusColor = AppColors.primary;
+        break;
+      case BookingStatus.completed:
+      case BookingStatus.closed:
+      case BookingStatus.closedByCustomer:
+      case BookingStatus.commissionPaymentPending:
+        statusColor = AppColors.success;
+        break;
+      case BookingStatus.cancelled:
+        statusColor = AppColors.error;
+        break;
+      case BookingStatus.delayRequested:
+        statusColor = AppColors.warning;
+        break;
+      default:
+        statusColor = AppColors.textTertiary;
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -113,6 +137,26 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Text(
+                          widget.booking.status
+                              .getDisplayStatus(true)
+                              .toUpperCase(),
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: statusColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -143,7 +187,8 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                             });
                           },
                           isOutlined: true,
-                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.surface,
                           textColor: Theme.of(context).colorScheme.onSurface,
                           height: 50,
                           fontSize: 13,
@@ -195,7 +240,8 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                                 widget.booking.id,
                               ),
                           isOutlined: true,
-                          backgroundColor: Theme.of(context).colorScheme.surface,
+                          backgroundColor:
+                              Theme.of(context).colorScheme.surface,
                           textColor: AppColors.warning,
                           height: 50,
                           fontSize: 13,

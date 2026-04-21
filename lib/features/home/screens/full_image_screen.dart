@@ -166,7 +166,7 @@ class FullImageScreen extends StatelessWidget {
         Navigator.of(context).pop(); // Pop loading dialog
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to load profile: $e')));
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }

@@ -47,6 +47,10 @@ dependencies:
   geolocator: ^14.0.2
   geocoding: ^4.0.0
   shimmer: ^3.0.0
+  dropdown_search: ^5.0.6
+  url_launcher: ^6.3.0
+  google_maps_flutter: ^2.14.0
+  flutter_polyline_points: ^3.1.0
 
 dev_dependencies:
   flutter_test:

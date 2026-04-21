@@ -70,8 +70,10 @@ class ConsumerService {
         print(data);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
+
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
+              .where((service) => service.isCommissionPending == false)
               .toList();
         } else {
           throw Exception(data['message'] ?? 'Failed to load services');
@@ -132,6 +134,7 @@ class ConsumerService {
           final List<dynamic> servicesJson = data['services'];
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
+              .where((service) => service.isCommissionPending == false)
               .toList();
         } else {
           throw Exception(data['message'] ?? 'Failed to load services');
@@ -159,6 +162,7 @@ class ConsumerService {
           final List<dynamic> servicesJson = data['services'];
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
+              .where((service) => service.isCommissionPending == false)
               .toList();
         } else {
           throw Exception(
@@ -193,6 +197,7 @@ class ConsumerService {
           final List<dynamic> servicesJson = data['services'];
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
+              .where((service) => service.isCommissionPending == false)
               .toList();
         } else {
           throw Exception(data['message'] ?? 'Failed to load services');
@@ -272,7 +277,10 @@ class ConsumerService {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> feedsJson = data['feeds'];
-          return feedsJson.map((json) => FeedModel.fromJson(json)).toList();
+          return feedsJson
+              .map((json) => FeedModel.fromJson(json))
+              .where((feed) => !feed.isCommissionPending)
+              .toList();
         } else {
           throw Exception(data['message'] ?? 'Failed to load feeds');
         }
@@ -613,7 +621,8 @@ class ConsumerService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-
+      print("provider details");
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -622,12 +631,13 @@ class ConsumerService {
           throw Exception(data['message'] ?? 'Failed to load provider details');
         }
       } else {
-        throw Exception(
-          'Failed to load provider details: ${response.statusCode}',
-        );
+        final msg = jsonDecode(response.body)['message'];
+        print(msg);
+        print("--------------------------------------------------");
+        throw Exception(msg);
       }
     } catch (e) {
-      throw Exception('Error fetching provider details: $e');
+      throw Exception(e);
     }
   }
 
@@ -832,8 +842,10 @@ class ConsumerService {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
+          print(servicesJson);
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
+              .where((service) => service.isCommissionPending == false)
               .toList();
         } else {
           throw Exception(data['message'] ?? 'Failed to search services');

@@ -133,7 +133,9 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           decoration: BoxDecoration(
                             color: Theme.of(context).scaffoldBackgroundColor,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Theme.of(context).dividerColor),
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor,
+                            ),
                           ),
                           child:
                               selectedFile != null
@@ -368,6 +370,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       );
                   print("----------------------");
                   print(user.profilePhoto);
+
                   final hasName = user.name != null && user.name!.isNotEmpty;
                   return Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -419,7 +422,9 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 radius: 28,
                                 backgroundColor:
                                     user.profilePhoto.isEmpty
-                                        ? Theme.of(context).scaffoldBackgroundColor
+                                        ? Theme.of(
+                                          context,
+                                        ).scaffoldBackgroundColor
                                         : AppColors.primary,
                                 backgroundImage:
                                     user.profilePhoto.isNotEmpty
@@ -455,7 +460,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: Theme.of(context).colorScheme.surface,
+                                      color:
+                                          Theme.of(context).colorScheme.surface,
                                       shape: BoxShape.circle,
                                       boxShadow: [
                                         BoxShadow(
@@ -517,7 +523,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 Text(
                                   'Complete Your Profile',
                                   style: AppTextStyles.h4.copyWith(
-                                    color: Theme.of(context).colorScheme.surface,
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -542,7 +549,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Theme.of(context).colorScheme.surface,
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
                               foregroundColor: AppColors.orange,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -568,6 +576,90 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                 },
               ),
 
+              Consumer<ConsumerProvider>(
+                builder: (context, consumerProvider, _) {
+                  final user = consumerProvider.currentUser;
+                  if (user == null) return const SizedBox.shrink();
+                  // final hasName = user.name != null && user.name!.isNotEmpty;
+                  // final isGuest = user.name == 'Guest';
+                  final isIncomplete = user.isCommissionPending;
+
+                  if (isIncomplete == true) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 24),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: AppColors.orangeGradient,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.orange.withOpacity(0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Commission Pending',
+                                  style: AppTextStyles.h4.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Your commission is pending',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'connect to admin to pay commission',
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.surface,
+                              foregroundColor: AppColors.orange,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Pay Now',
+                              style: AppTextStyles.labelMedium.copyWith(
+                                color: AppColors.orange,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+              ),
               const SizedBox(height: 24),
 
               // Overall Analytics Card
@@ -778,7 +870,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 onTap: _showAddGalleryImageDialog,
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.surface,
+                                    color:
+                                        Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
                                       color: AppColors.primary.withOpacity(0.3),
@@ -1082,7 +1175,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Text(
