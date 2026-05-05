@@ -744,7 +744,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   //  +
                   // (bookingsByStatus?['ONGOING'] ?? 0);
                   final completed =
-                      bookingsByStatus?['CLOSED_BY_CUSTOMER'] +
+                      (bookingsByStatus?['CLOSED_BY_CUSTOMER'] ?? 0) +
                       (bookingsByStatus?['CLOSED'] ?? 0);
                   final cancelled = bookingsByStatus?['CANCELLED'] ?? 0;
 
@@ -1006,6 +1006,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         recentTasks.map((booking) {
                           Color statusColor;
                           String statusText;
+                          print("=======");
                           print(booking.status);
                           switch (booking.status) {
                             case BookingStatus.assigned:
@@ -1016,9 +1017,21 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                               statusColor = AppColors.primary;
                               statusText = 'Ongoing';
                               break;
+                            case BookingStatus.commissionPaymentPending:
+                              statusColor = AppColors.warning;
+                              statusText = 'Commission Pending';
+                              break;
                             case BookingStatus.completed:
                               statusColor = AppColors.success;
                               statusText = 'Completed';
+                              break;
+                            case BookingStatus.closed:
+                              statusColor = AppColors.success;
+                              statusText = 'Closed';
+                              break;
+                            case BookingStatus.closedByCustomer:
+                              statusColor = AppColors.success;
+                              statusText = 'Closed by Customer';
                               break;
                             case BookingStatus.cancelled:
                               statusColor = AppColors.error;

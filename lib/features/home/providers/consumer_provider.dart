@@ -10,6 +10,7 @@ import '../../../core/models/review_model.dart';
 import '../../../core/models/booking_log_model.dart';
 import '../services/consumer_service.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../core/services/location_service.dart';
 
 class ConsumerProvider extends ChangeNotifier {
   final ConsumerService _service = ConsumerService();
@@ -39,6 +40,13 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isSearching = false;
   String? _searchError;
 
+  List<Map<String, dynamic>> _locationSuggestions = [];
+  bool _isFetchingSuggestions = false;
+
+  List<ServiceProductModel> _nearLocationResults = [];
+  bool _isFetchingNearLocation = false;
+  String? _nearLocationError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
@@ -63,6 +71,13 @@ class ConsumerProvider extends ChangeNotifier {
   List<ServiceProductModel> get searchResults => _searchResults;
   bool get isSearching => _isSearching;
   String? get searchError => _searchError;
+
+  List<Map<String, dynamic>> get locationSuggestions => _locationSuggestions;
+  bool get isFetchingSuggestions => _isFetchingSuggestions;
+
+  List<ServiceProductModel> get nearLocationResults => _nearLocationResults;
+  bool get isFetchingNearLocation => _isFetchingNearLocation;
+  String? get nearLocationError => _nearLocationError;
 
   Future<void> fetchCategories() async {
     if (_isLoadingCategories) return;
@@ -158,6 +173,10 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      print("======== =========");
+      print(categoryId);
+      print(await _service.getServicesByCategory(categoryId));
+
       _services = await _service.getServicesByCategory(categoryId);
     } catch (e) {
       _servicesError = e.toString().replaceAll('Exception: ', '');
@@ -219,6 +238,51 @@ class ConsumerProvider extends ChangeNotifier {
     _searchResults = [];
     _isSearching = false;
     _searchError = null;
+    notifyListeners();
+  }
+
+  // Fetch Location Suggestions
+  Future<void> fetchLocationSuggestions(String query) async {
+    if (query.isEmpty) {
+      _locationSuggestions = [];
+      notifyListeners();
+      return;
+    }
+
+    _isFetchingSuggestions = true;
+    notifyListeners();
+
+    try {
+      _locationSuggestions = await LocationService.getPlaceSuggestions(query);
+    } catch (e) {
+      debugPrint('Error fetching suggestions: $e');
+    } finally {
+      _isFetchingSuggestions = false;
+      notifyListeners();
+    }
+  }
+
+  // Fetch Services Near Location
+  Future<void> fetchServicesNearLocation(double lat, double lng) async {
+    _isFetchingNearLocation = true;
+    _nearLocationError = null;
+    _locationSuggestions = []; // Clear suggestions once selected
+    notifyListeners();
+
+    try {
+      _nearLocationResults = await _service.getServicesNearLocation(lat, lng);
+    } catch (e) {
+      _nearLocationError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isFetchingNearLocation = false;
+      notifyListeners();
+    }
+  }
+
+  void clearLocationSearch() {
+    _nearLocationResults = [];
+    _locationSuggestions = [];
+    _nearLocationError = null;
     notifyListeners();
   }
 
@@ -370,6 +434,24 @@ class ConsumerProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfileName({required String name}) async {
+    _isUpdatingProfile = true;
+    _updateProfileError = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _service.updateProfileName(name: name);
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _updateProfileError = e.toString().replaceAll('Exception: ', '');
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> updateProfilePhoto(File photo) async {
     _isUpdatingPhoto = true;
     _updatePhotoError = null;
@@ -399,7 +481,7 @@ class ConsumerProvider extends ChangeNotifier {
     List<String>? servicesOffered,
     List<String>? specialties,
     List<String>? workPreference,
-    List<String>? workLocationPreferred,
+    List<dynamic>? workLocationPreferred,
     double? latitude,
     double? longitude,
     String? profilePhotoPath,
@@ -413,6 +495,8 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      print("==================================================");
+      print(workLocationPreferred);
       _currentUser = await _service.updateFullProfile(
         name: name,
         email: email,

@@ -356,7 +356,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                   const SizedBox(height: 16),
                   _buildAddressField(
                     controller: _zipcodeController,
-                    label: 'Zip Code',
+                    label: 'Pin Code',
                     hint: 'e.g. 560001',
                     icon: Iconsax.code,
                     keyboardType: TextInputType.number,
@@ -539,10 +539,10 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
         }
 
         final currentUser = consumerProvider.currentUser;
-        final success = await consumerProvider.updateProfile(
-          name: name,
-          email: currentUser?.email ?? '',
-          address: currentUser?.location ?? '',
+        final success = await consumerProvider.updateProfileName(
+          name: name.isEmpty ? currentUser?.name ?? '' : name,
+          // email: currentUser?.email ?? '',
+          // address: currentUser?.location ?? '',
         );
 
         if (!success) {

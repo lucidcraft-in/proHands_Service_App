@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'user_type.dart';
 
@@ -10,6 +12,7 @@ class UserModel {
   final bool isProfileComplete;
   final bool isActive;
   final bool isApproved;
+  final String? address;
   final String?
   otp; // Keep if needed, but usually not stored in client model for long
   final String profession;
@@ -25,13 +28,22 @@ class UserModel {
   final int followersCount;
   final List<String> servicesOffered;
   final List<String> workPreference;
-  final List<String> workLocationPreferred;
+  final List<dynamic> workLocationPreferred;
   final String experience;
   final String? adharCard;
   final String? license;
   final double? latitude;
   final double? longitude;
   final bool? isCommissionPending;
+  final int jobsCompleted;
+  final double earnings;
+  final double completionRate;
+  final bool isProfilePhotoApproved;
+  final String? proofOfIdentity;
+  final int points;
+  final int totalRedeemedPoints;
+  final List<String> additionalDocuments;
+  final String? updatedBy;
 
   const UserModel({
     required this.id,
@@ -42,6 +54,7 @@ class UserModel {
     this.isProfileComplete = false,
     this.isActive = true,
     this.otp,
+    this.address,
     this.isApproved = false,
     this.profession = 'Technician',
     this.rating = 4.5,
@@ -63,6 +76,15 @@ class UserModel {
     this.latitude,
     this.longitude,
     this.isCommissionPending,
+    this.jobsCompleted = 0,
+    this.earnings = 0.0,
+    this.completionRate = 0.0,
+    this.isProfilePhotoApproved = false,
+    this.proofOfIdentity,
+    this.points = 0,
+    this.totalRedeemedPoints = 0,
+    this.additionalDocuments = const [],
+    this.updatedBy,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -73,7 +95,11 @@ class UserModel {
 
     if (json['location'] is Map) {
       final locMap = json['location'] as Map<String, dynamic>;
-      parsedLocation = locMap['address'] ?? json['address'] ?? 'Unknown';
+      parsedLocation =
+          locMap['location_name'] ??
+          locMap['city'] ??
+          json['location_name'] ??
+          'Unknown';
 
       if (locMap['type'] == 'Point' && locMap['coordinates'] is List) {
         final coords = locMap['coordinates'] as List;
@@ -103,6 +129,7 @@ class UserModel {
               : 'Guest',
       email: json['email'],
       phone: json['phone'] ?? '',
+      address: json['address'],
       isApproved: json['isApproved'] ?? false,
       userType: _parseUserType(json['userType']),
       isProfileComplete: json['isProfileComplete'] ?? false,
@@ -123,15 +150,29 @@ class UserModel {
       followersCount: json['followersCount'] ?? 0,
       servicesOffered: List<String>.from(json['servicesOffered'] ?? []),
       workPreference: List<String>.from(json['workPreference'] ?? []),
-      workLocationPreferred: List<String>.from(
-        json['workLocationPreferred'] ?? [],
-      ),
+      workLocationPreferred:
+          (json['workLocationPreferred'] as List?)?.map((e) {
+            if (e is Map) {
+              return jsonEncode(e);
+            }
+            return e.toString();
+          }).toList() ??
+          [],
       experience: json['experience']?.toString() ?? '0',
       adharCard: json['adharCard'],
       license: json['license'],
       latitude: lat,
       longitude: lng,
       isCommissionPending: json['isCommissionPending'] ?? false,
+      jobsCompleted: json['jobsCompleted'] ?? 0,
+      earnings: (json['earnings'] ?? 0.0).toDouble(),
+      completionRate: (json['completionRate'] ?? 0.0).toDouble(),
+      isProfilePhotoApproved: json['isProfilePhotoApproved'] ?? false,
+      proofOfIdentity: json['proofOfIdentity'],
+      points: json['points'] ?? 0,
+      totalRedeemedPoints: json['totalRedeemedPoints'] ?? 0,
+      additionalDocuments: List<String>.from(json['additionalDocuments'] ?? []),
+      updatedBy: json['updatedBy'],
     );
   }
 
@@ -166,6 +207,15 @@ class UserModel {
       'latitude': latitude,
       'longitude': longitude,
       'isCommissionPending': isCommissionPending,
+      'jobsCompleted': jobsCompleted,
+      'earnings': earnings,
+      'completionRate': completionRate,
+      'isProfilePhotoApproved': isProfilePhotoApproved,
+      'proofOfIdentity': proofOfIdentity,
+      'points': points,
+      'totalRedeemedPoints': totalRedeemedPoints,
+      'additionalDocuments': additionalDocuments,
+      'updatedBy': updatedBy,
     };
   }
 

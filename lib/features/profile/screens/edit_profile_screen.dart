@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +12,8 @@ import '../../../core/widgets/custom_button.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../../core/models/user_type.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/services/location_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -44,6 +48,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _license;
   File? _serviceImage;
   List<File> _portfolioImages = [];
+  bool _isSaving = false;
+
+  // Preferred Locations state
+  List<Map<String, dynamic>> _selectedPreferredLocations = [];
+  List<Map<String, dynamic>> _locationSuggestions = [];
+  bool _isFetchingSuggestions = false;
+  Timer? _locationDebounce;
 
   final ImagePicker _picker = ImagePicker();
 
@@ -75,16 +86,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     _nameController.text = user.name ?? '';
     _emailController.text = user.email ?? '';
-    _addressController.text = user.location;
+    _addressController.text = user.address.toString();
 
     // Technician Specifics
     _professionController.text = user.profession;
     _experienceController.text = user.experience;
     _servicesOfferedController.text = user.servicesOffered.join(', ');
     _specialtiesController.text = user.specialties.join(', ');
-    _workLocationPreferredController.text = user.workLocationPreferred.join(
-      ', ',
-    );
+    _workLocationPreferredController.text =
+        ''; // We use _selectedPreferredLocations instead
+    print("==================================================");
+    print(user.workLocationPreferred);
+    _selectedPreferredLocations = [];
+    for (var loc in user.workLocationPreferred) {
+      try {
+        final decoded = jsonDecode(loc);
+        if (decoded is Map<String, dynamic>) {
+          _selectedPreferredLocations.add(decoded);
+        }
+      } catch (e) {
+        // Fallback for plain strings if any
+        _selectedPreferredLocations.add({
+          'location_name': loc,
+          'coordinates': [0.0, 0.0],
+        });
+      }
+    }
 
     if (user.workPreference.isNotEmpty == true) {
       _selectedWorkPreference = user.workPreference.first;
@@ -105,7 +132,71 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _servicesOfferedController.dispose();
     _specialtiesController.dispose();
     _workLocationPreferredController.dispose();
+    _locationDebounce?.cancel();
     super.dispose();
+  }
+
+  void _onLocationChanged(String query) {
+    if (_locationDebounce?.isActive ?? false) _locationDebounce!.cancel();
+    _locationDebounce = Timer(const Duration(milliseconds: 500), () async {
+      if (query.isEmpty) {
+        setState(() {
+          _locationSuggestions = [];
+        });
+        return;
+      }
+
+      setState(() {
+        _isFetchingSuggestions = true;
+      });
+
+      try {
+        final suggestions = await LocationService.getPlaceSuggestions(query);
+        setState(() {
+          _locationSuggestions = suggestions;
+        });
+      } finally {
+        setState(() {
+          _isFetchingSuggestions = false;
+        });
+      }
+    });
+  }
+
+  Future<void> _addLocation(Map<String, dynamic> suggestion) async {
+    final placeId = suggestion['place_id'];
+    final description = suggestion['description'];
+    try {
+      // Check if already added
+      if (_selectedPreferredLocations.any(
+        (loc) => (loc['location_name'] ?? loc['location name']) == description,
+      )) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Location already added')));
+        return;
+      }
+
+      final latLng = await LocationService.getLatLngFromPlaceId(placeId);
+      if (latLng != null) {
+        setState(() {
+          _selectedPreferredLocations.add({
+            'location name': description,
+            'coordinates': [latLng.longitude, latLng.latitude], // ⚠️ lng, lat
+          });
+          _locationSuggestions = [];
+          _workLocationPreferredController.clear();
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  void _removeLocation(int index) {
+    setState(() {
+      _selectedPreferredLocations.removeAt(index);
+    });
   }
 
   Future<void> _pickImage(String type) async {
@@ -172,56 +263,67 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _handleSave() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSaving = true;
+      });
+
       final provider = context.read<ConsumerProvider>();
       final user = provider.currentUser;
       final isServiceBoy = user?.userType == UserType.serviceBoy;
-      bool success = false;
 
-      success = await provider.updateFullProfile(
-        name: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        address: _addressController.text.trim(),
-        profession: isServiceBoy ? _professionController.text.trim() : null,
-        experience: isServiceBoy ? _experienceController.text.trim() : null,
-        servicesOffered:
-            isServiceBoy
-                ? _servicesOfferedController.text
-                    .split(',')
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList()
-                : null,
-        specialties:
-            isServiceBoy
-                ? _specialtiesController.text
-                    .split(',')
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList()
-                : null,
-        workPreference:
-            isServiceBoy
-                ? (_selectedWorkPreference != null
-                    ? [_selectedWorkPreference!]
-                    : [])
-                : null,
-        workLocationPreferred:
-            isServiceBoy
-                ? _workLocationPreferredController.text
-                    .split(',')
-                    .map((e) => e.trim())
-                    .where((e) => e.isNotEmpty)
-                    .toList()
-                : null,
-        latitude: user?.latitude ?? 0.0,
-        longitude: user?.longitude ?? 0.0,
-        adharCardPath: _adharCard?.path,
-        licensePath: _license?.path,
-        serviceImagePath: _serviceImage?.path,
-        portfolioImagePaths: _portfolioImages.map((e) => e.path).toList(),
-      );
+      // Show loader artificially for at least 2 seconds
+      // We can use a Future.wait to run the update and the delay in parallel,
+      // or just wait for the delay before or after.
+      // The user likely wants to see the loader for 2 seconds.
+      print(_selectedPreferredLocations);
+      final results = await Future.wait([
+        provider.updateFullProfile(
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          address: _addressController.text.trim(),
+          profession: isServiceBoy ? _professionController.text.trim() : null,
+          experience: isServiceBoy ? _experienceController.text.trim() : null,
+          servicesOffered:
+              isServiceBoy
+                  ? _servicesOfferedController.text
+                      .split(',')
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList()
+                  : null,
+          specialties:
+              isServiceBoy
+                  ? _specialtiesController.text
+                      .split(',')
+                      .map((e) => e.trim())
+                      .where((e) => e.isNotEmpty)
+                      .toList()
+                  : null,
+          workPreference:
+              isServiceBoy
+                  ? (_selectedWorkPreference != null
+                      ? [_selectedWorkPreference!]
+                      : [])
+                  : null,
+          workLocationPreferred:
+              isServiceBoy ? _selectedPreferredLocations : null,
+          latitude: user?.latitude ?? 0.0,
+          longitude: user?.longitude ?? 0.0,
+          adharCardPath: _adharCard?.path,
+          licensePath: _license?.path,
+          serviceImagePath: _serviceImage?.path,
+          portfolioImagePaths: _portfolioImages.map((e) => e.path).toList(),
+        ),
+        Future.delayed(const Duration(seconds: 2)),
+      ]);
+
+      bool success = results[0] as bool;
 
       if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -308,9 +410,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     // Watch for loading state
     final isLoading =
-        isServiceBoy
+        _isSaving ||
+        (isServiceBoy
             ? provider.isCompletingProfile
-            : provider.isUpdatingProfile;
+            : provider.isUpdatingProfile);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -478,11 +581,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                        ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -536,20 +643,84 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     maxLines: 2,
                   ),
                   const SizedBox(height: 20),
-                  CustomTextField(
-                    label: 'Preferred Work Locations',
-                    hint: 'e.g. North Delhi, CP (comma separated)',
-                    controller: _workLocationPreferredController,
-                    prefixIcon: const Icon(
-                      Iconsax.map,
-                      color: AppColors.textTertiary,
-                      size: 20,
-                    ),
-                    validator:
-                        (value) =>
-                            (value == null || value.isEmpty)
-                                ? 'Locations are required'
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomTextField(
+                        label: 'Preferred Work Locations',
+                        hint: 'Search and add locations',
+                        controller: _workLocationPreferredController,
+                        onChanged: _onLocationChanged,
+                        prefixIcon: const Icon(
+                          Iconsax.map,
+                          color: AppColors.textTertiary,
+                          size: 20,
+                        ),
+                        suffixIcon:
+                            _isFetchingSuggestions
+                                ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
                                 : null,
+                      ),
+                      if (_locationSuggestions.isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).dividerColor,
+                            ),
+                          ),
+                          child: ListView.builder(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            itemCount: _locationSuggestions.length,
+                            itemBuilder: (context, index) {
+                              final suggestion = _locationSuggestions[index];
+                              return ListTile(
+                                leading: const Icon(Iconsax.location),
+                                title: Text(suggestion['description']),
+                                onTap: () => _addLocation(suggestion),
+                              );
+                            },
+                          ),
+                        ),
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children:
+                            _selectedPreferredLocations.asMap().entries.map((
+                              entry,
+                            ) {
+                              final index = entry.key;
+                              final loc = entry.value;
+                              return Chip(
+                                label: Text(
+                                  loc['location_name'] ??
+                                      loc['location name'] ??
+                                      'Unknown location',
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                onDeleted: () => _removeLocation(index),
+                                deleteIcon: const Icon(Icons.close, size: 16),
+                                backgroundColor: AppColors.primary.withOpacity(
+                                  0.1,
+                                ),
+                                side: BorderSide.none,
+                              );
+                            }).toList(),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 30),
 
@@ -669,12 +840,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ],
 
                 // Save button
-                GradientButton(
-                  text: 'Save Changes',
-                  onPressed: isLoading ? () {} : _handleSave,
-                  isLoading: isLoading,
-                  width: double.infinity,
-                ),
+                if (isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else
+                  GradientButton(
+                    text: 'Save Changes',
+                    onPressed: _handleSave,
+                    width: double.infinity,
+                  ),
               ],
             ),
           ),

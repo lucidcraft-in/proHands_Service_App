@@ -29,7 +29,11 @@ class _ServiceBoyTaskDetailsScreenState
     extends State<ServiceBoyTaskDetailsScreen> {
   final _noteController = TextEditingController();
   final _amountController = TextEditingController();
+  final _additionalAmountController = TextEditingController();
+  final _additionalNoteController = TextEditingController();
   final _otpController = TextEditingController();
+  bool _isRedeemingPoints = false;
+  int _pointsToRedeem = 0;
   final List<File> _images = [];
   final _picker = ImagePicker();
   String _paymentMode = 'CASH';
@@ -45,6 +49,14 @@ class _ServiceBoyTaskDetailsScreenState
       await provider.fetchBookingDetails(widget.booking.id);
       provider.fetchBookingLogs(widget.booking.id);
       _resolvePlaceName();
+
+      // Initialize amount with the total from the booking
+      if (provider.selectedBooking != null) {
+        _amountController.text = provider.selectedBooking!.totalAmount
+            .toStringAsFixed(0);
+      } else {
+        _amountController.text = widget.booking.totalAmount.toStringAsFixed(0);
+      }
     });
   }
 
@@ -84,9 +96,7 @@ class _ServiceBoyTaskDetailsScreenState
       // );
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (_) => MapScreen(booking: booking),
-        ),
+        MaterialPageRoute(builder: (_) => MapScreen(booking: booking)),
       );
       // try {
       //   if (await canLaunchUrl(googleMapsUrl)) {
@@ -112,6 +122,8 @@ class _ServiceBoyTaskDetailsScreenState
   void dispose() {
     _noteController.dispose();
     _amountController.dispose();
+    _additionalAmountController.dispose();
+    _additionalNoteController.dispose();
     _otpController.dispose();
     super.dispose();
   }
@@ -156,7 +168,7 @@ class _ServiceBoyTaskDetailsScreenState
           final booking = provider.selectedBooking ?? widget.booking;
           print("booking");
           print("--------------");
-          print(booking.coordinates);
+          print(booking.status);
           Color statusColor = AppColors.primary; // Default
           switch (booking.status) {
             case BookingStatus.assigned:
@@ -180,6 +192,12 @@ class _ServiceBoyTaskDetailsScreenState
             default:
               statusColor = AppColors.textTertiary;
           }
+
+          final isCompletedState =
+              booking.status == BookingStatus.completed ||
+              booking.status == BookingStatus.closed ||
+              booking.status == BookingStatus.closedByCustomer ||
+              booking.status == BookingStatus.commissionPaymentPending;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -330,7 +348,7 @@ class _ServiceBoyTaskDetailsScreenState
                 const SizedBox(height: 24),
 
                 // Note Section (Only for non-completed)
-                if (booking.status != BookingStatus.completed) ...[
+                if (!isCompletedState) ...[
                   Text('Add Note', style: AppTextStyles.labelLarge),
                   const SizedBox(height: 12),
                   CustomTextField(
@@ -342,7 +360,7 @@ class _ServiceBoyTaskDetailsScreenState
                 ],
 
                 // Completion Notes (Only for completed)
-                if (booking.status == BookingStatus.completed &&
+                if (isCompletedState &&
                     booking.completionNotes != null &&
                     booking.completionNotes!.isNotEmpty) ...[
                   Text('Completion Notes', style: AppTextStyles.labelLarge),
@@ -363,12 +381,10 @@ class _ServiceBoyTaskDetailsScreenState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      booking.status == BookingStatus.completed
-                          ? 'Job Proof Photos'
-                          : 'Work Photos',
+                      isCompletedState ? 'Job Proof Photos' : 'Work Photos',
                       style: AppTextStyles.labelLarge,
                     ),
-                    if (booking.status != BookingStatus.completed)
+                    if (!isCompletedState)
                       IconButton(
                         onPressed: _pickImage,
                         icon: Icon(
@@ -380,7 +396,7 @@ class _ServiceBoyTaskDetailsScreenState
                   ],
                 ),
                 const SizedBox(height: 12),
-                if (booking.status == BookingStatus.completed)
+                if (isCompletedState)
                   booking.jobProofImages.isEmpty
                       ? _buildEmptyPhotoPlaceholder('No proof photos available')
                       : _buildNetworkImageGallery(booking.jobProofImages)
@@ -392,7 +408,7 @@ class _ServiceBoyTaskDetailsScreenState
                 const SizedBox(height: 24),
 
                 // Payment Details (Only for completed)
-                if (booking.status == BookingStatus.completed) ...[
+                if (isCompletedState) ...[
                   Text('Payment Details', style: AppTextStyles.labelLarge),
                   const SizedBox(height: 16),
                   _buildDetailSection(
@@ -402,13 +418,29 @@ class _ServiceBoyTaskDetailsScreenState
                         'Payment Mode',
                         booking.paymentMode,
                       ),
-                      _buildDetailRow(
-                        Iconsax.money_send,
-                        'Total Amount',
-                        '₹${booking.totalAmount.toStringAsFixed(2)}',
-                        valueStyle: AppTextStyles.h4.copyWith(
-                          color: AppColors.primary,
+                      const Divider(height: 24),
+                      _buildPriceLine(
+                        'Base Amount',
+                        booking.totalAmount -
+                            booking.additionalAmount +
+                            booking.pointsValue,
+                      ),
+                      // if (booking.additionalAmount > 0)
+                      _buildPriceLine(
+                        'Additional Amount',
+                        booking.additionalAmount,
+                      ),
+                      if (booking.pointsValue > 0)
+                        _buildPriceLine(
+                          'Points Discount',
+                          -booking.pointsValue,
+                          isDiscount: true,
                         ),
+                      const SizedBox(height: 8),
+                      _buildPriceLine(
+                        'Final Total',
+                        booking.totalAmount,
+                        isTotal: true,
                       ),
                     ],
                   ),
@@ -511,16 +543,187 @@ class _ServiceBoyTaskDetailsScreenState
                     children: [
                       _buildDetailRow(
                         Iconsax.money_3,
-                        'Enter Total Amount',
+                        'Base Amount',
                         '',
                         child: CustomTextField(
                           hint: '0.00',
+                          readOnly: true,
                           controller: _amountController,
                           keyboardType: TextInputType.number,
-                          prefixIcon: Icon(Icons.currency_rupee),
+                          prefixIcon: const Icon(Icons.currency_rupee),
+                          onChanged: (_) => setState(() {}),
                         ),
                       ),
                       const SizedBox(height: 16),
+                      _buildDetailRow(
+                        Iconsax.add_circle,
+                        'Additional Amount',
+                        '',
+                        child: CustomTextField(
+                          hint: '0.00',
+                          controller: _additionalAmountController,
+                          keyboardType: TextInputType.number,
+                          prefixIcon: const Icon(Icons.add),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDetailRow(
+                        Iconsax.note,
+                        'Additional Note',
+                        '',
+                        child: CustomTextField(
+                          hint: 'Reason for extra charge...',
+                          controller: _additionalNoteController,
+                          maxLines: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Points Redemption
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.amber.withOpacity(0.2),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: _isRedeemingPoints,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _isRedeemingPoints = val ?? false;
+                                      if (_isRedeemingPoints) {
+                                        _pointsToRedeem =
+                                            booking.redeemedPoints > 0
+                                                ? booking.redeemedPoints
+                                                : 0;
+                                      }
+                                    });
+                                  },
+                                  activeColor: Colors.amber,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Redeem Points',
+                                            style: AppTextStyles.labelMedium,
+                                          ),
+                                          Text(
+                                            'Available: ${booking.customerPoints} pts',
+                                            style: AppTextStyles.bodySmall
+                                                .copyWith(
+                                                  color: AppColors.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        '1 point = ₹40',
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: Colors.amber.shade700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_isRedeemingPoints) ...[
+                              const Divider(),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text('Points to use:'),
+                                  SizedBox(
+                                    width: 100,
+                                    child: TextField(
+                                      keyboardType: TextInputType.number,
+                                      decoration: const InputDecoration(
+                                        isDense: true,
+                                        hintText: 'Qty',
+                                      ),
+                                      onChanged: (val) {
+                                        setState(() {
+                                          _pointsToRedeem =
+                                              int.tryParse(val) ?? 0;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Discount:',
+                                    style: AppTextStyles.bodySmall,
+                                  ),
+                                  Text(
+                                    '- ₹${(_pointsToRedeem * 40).toStringAsFixed(2)}',
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Final Amount Calculation Display
+                      Column(
+                        children: [
+                          _buildPriceLine(
+                            'Work Amount',
+                            double.tryParse(_amountController.text) ?? 0,
+                          ),
+                          _buildPriceLine(
+                            'Additional',
+                            double.tryParse(_additionalAmountController.text) ??
+                                0,
+                          ),
+                          if (_isRedeemingPoints)
+                            _buildPriceLine(
+                              'Points Discount',
+                              -(_pointsToRedeem * 40.0),
+                              isDiscount: true,
+                            ),
+                          const Divider(),
+                          _buildPriceLine(
+                            'Final Total',
+                            (double.tryParse(_amountController.text) ?? 0) +
+                                (double.tryParse(
+                                      _additionalAmountController.text,
+                                    ) ??
+                                    0) -
+                                (_isRedeemingPoints
+                                    ? (_pointsToRedeem * 40.0)
+                                    : 0),
+                            isTotal: true,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
                       Text('Payment Mode', style: AppTextStyles.labelMedium),
                       const SizedBox(height: 8),
                       Row(
@@ -998,7 +1201,15 @@ class _ServiceBoyTaskDetailsScreenState
         'otp': _otpController.text.trim(),
         'completionNotes': _noteController.text.trim(),
         'jobProofImages': imageUrls,
-        'totalAmount': double.tryParse(_amountController.text) ?? 0,
+        // 'totalAmount':
+        //     (double.tryParse(_amountController.text) ?? 0) +
+        //     (double.tryParse(_additionalAmountController.text) ?? 0) -
+        //     (_isRedeemingPoints ? (_pointsToRedeem * 40.0) : 0),
+        'additionalAmount':
+            double.tryParse(_additionalAmountController.text) ?? 0,
+        'additionalNote': _additionalNoteController.text.trim(),
+        'redeemedPoints': _isRedeemingPoints ? _pointsToRedeem : 0,
+        'pointsValue': _isRedeemingPoints ? (_pointsToRedeem * 40.0) : 0,
         'paymentMode': _paymentMode,
       };
 
@@ -1364,6 +1575,40 @@ class _ServiceBoyTaskDetailsScreenState
   // String _formatDate(DateTime date) {
   //   return '${date.day}/${date.month}/${date.year}';
   // }
+
+  Widget _buildPriceLine(
+    String label,
+    double amount, {
+    bool isDiscount = false,
+    bool isTotal = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: isTotal ? AppTextStyles.h4 : AppTextStyles.bodyMedium,
+          ),
+          Text(
+            isDiscount
+                ? '- ₹${amount.abs().toStringAsFixed(2)}'
+                : '₹${amount.toStringAsFixed(2)}',
+            style: (isTotal ? AppTextStyles.h4 : AppTextStyles.bodyMedium)
+                .copyWith(
+                  color:
+                      isDiscount
+                          ? Colors.green
+                          : (isTotal
+                              ? AppColors.primary
+                              : AppColors.textPrimary),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _TaskDetailsShimmer extends StatelessWidget {

@@ -351,6 +351,7 @@ class _MapScreenState extends State<MapScreen> {
             minChildSize: 0.25,
             maxChildSize: 0.6,
             builder: (context, scrollController) {
+              print(widget.booking.status);
               return Container(
                 decoration: const BoxDecoration(
                   color: Colors.white,
@@ -489,7 +490,10 @@ class _MapScreenState extends State<MapScreen> {
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor:
-                                      isTrackingStarted
+                                      widget.booking.status ==
+                                              BookingStatus.reached
+                                          ? AppColors.primary
+                                          : isTrackingStarted
                                           ? AppColors.error
                                           : AppColors.primary,
                                   foregroundColor: Colors.white,
@@ -506,9 +510,14 @@ class _MapScreenState extends State<MapScreen> {
                                         ? widget.booking.status == "arrived"
                                             ? null
                                             : _markAsArrived
+                                        : widget.booking.status ==
+                                            BookingStatus.reached
+                                        ? null
                                         : _startRide,
                                 child: Text(
-                                  isTrackingStarted
+                                  widget.booking.status == BookingStatus.reached
+                                      ? "ARRIVED"
+                                      : isTrackingStarted
                                       ? widget.booking.status == "arrived"
                                           ? "ARRIVED"
                                           : "MARK AS ARRIVED"

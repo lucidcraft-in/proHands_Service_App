@@ -143,13 +143,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               // Ideally we should update UserModel to hold coordinates too, but for this task: share preference replacement.
               // I will save the address to shared prefs.
 
-              await StorageService.saveUserLocation(
-                address: fullProfile.location,
-                coordinates: [
-                  0.0,
-                  0.0,
-                ], // Default/Placeholder for now as UserModel doesn't expose it yet
-              );
+              // await StorageService.saveUserLocation(
+              //   address: fullProfile.location,
+              //   coordinates: [
+              //     0.0,
+              //     0.0,
+              //   ], // Default/Placeholder for now as UserModel doesn't expose it yet
+              // );
             } catch (e) {
               debugPrint('Error fetching/saving profile during login: $e');
               // Continue login even if profile fetch fails
@@ -160,7 +160,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             );
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => const LocationFetchScreen(),
+                builder:
+                    (context) => const LocationFetchScreen(isServiceBoy: false),
               ),
               (route) => false,
             );
@@ -170,7 +171,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             );
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
-                builder: (context) => const ServiceBoyMainScreen(),
+                builder:
+                    (context) => const LocationFetchScreen(isServiceBoy: true),
               ),
               (route) => false,
             );

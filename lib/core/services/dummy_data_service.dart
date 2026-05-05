@@ -10,6 +10,10 @@ class DummyDataService {
   // Dummy Bookings
   static final List<BookingModel> _dummyBookings = [
     BookingModel(
+      providerName: 'Amal',
+      providerPhone: '9876543210',
+      providerProfession: 'Cleaning Expert',
+      customerPoints: 0,
       id: '1',
       bookingId: '#58961',
       serviceId: 'dummy_service_1',
@@ -24,6 +28,7 @@ class DummyDataService {
       status: BookingStatus.assigned,
     ),
     BookingModel(
+      customerPoints: 0,
       id: '2',
       bookingId: '#25636',
       serviceId: 'dummy_service_2',
@@ -38,6 +43,7 @@ class DummyDataService {
       status: BookingStatus.assigned,
     ),
     BookingModel(
+      customerPoints: 0,
       id: '3',
       bookingId: '#12548',
       serviceId: 'dummy_service_3',

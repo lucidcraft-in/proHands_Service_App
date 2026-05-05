@@ -66,6 +66,7 @@ class BookingModel {
 
   final String customerName;
   final String customerPhone;
+  final int customerPoints;
   final double price;
   final double totalAmount;
   final String paymentStatus;
@@ -82,6 +83,16 @@ class BookingModel {
 
   final String? delayTime;
   final String? delayNote;
+  final double additionalAmount;
+  final String? additionalNote;
+  final String? reassignReason;
+  final String? assignedBy;
+  final int redeemedPoints;
+  final double pointsValue;
+  final double adminCommission;
+  final bool isAdminCommissionCollected;
+  final String commissionPaymentMode;
+  final bool isPointsIncremented;
 
   BookingModel({
     required this.id,
@@ -94,6 +105,7 @@ class BookingModel {
     this.coordinates,
     required this.customerName,
     required this.customerPhone,
+    required this.customerPoints,
     required this.price,
     this.totalAmount = 0,
     this.paymentStatus = 'PENDING',
@@ -113,6 +125,16 @@ class BookingModel {
     this.delayTime,
     this.delayNote,
     this.categoryId,
+    this.additionalAmount = 0,
+    this.additionalNote,
+    this.reassignReason,
+    this.assignedBy,
+    this.redeemedPoints = 0,
+    this.pointsValue = 0,
+    this.adminCommission = 0.0,
+    this.isAdminCommissionCollected = false,
+    this.commissionPaymentMode = 'CASH',
+    this.isPointsIncremented = false,
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
@@ -144,9 +166,11 @@ class BookingModel {
 
     String customerName = 'Unknown';
     String customerPhone = '';
+    int customerPoints = 0;
     if (customerIdx is Map) {
       customerName = customerIdx['name'] ?? 'Unknown';
       customerPhone = customerIdx['phone'] ?? '';
+      customerPoints = customerIdx['points'] ?? 0;
     }
 
     String? providerName;
@@ -163,7 +187,10 @@ class BookingModel {
     List<double>? coordinates;
 
     if (locationIdx is Map) {
-      address = locationIdx['address'] ?? 'Unknown Location';
+      address =
+          locationIdx['location_name'] ??
+          locationIdx['address'] ??
+          'Unknown Location';
       if (locationIdx.containsKey('coordinates') &&
           locationIdx['coordinates'] is List) {
         coordinates = List<double>.from(
@@ -215,11 +242,22 @@ class BookingModel {
       providerName: providerName,
       providerPhone: providerPhone,
       providerProfession: providerProfession,
+      customerPoints: customerPoints,
       review:
           json['review'] != null ? ReviewModel.fromJson(json['review']) : null,
       delayTime: json['delayTime'],
       delayNote: json['delayNote'],
       categoryId: categoryId,
+      additionalAmount: (json['additionalAmount'] ?? 0).toDouble(),
+      additionalNote: json['additionalNote'],
+      reassignReason: json['reassignReason'],
+      assignedBy: json['assignedBy'],
+      redeemedPoints: json['redeemedPoints'] ?? 0,
+      pointsValue: (json['pointsValue'] ?? 0).toDouble(),
+      adminCommission: (json['adminCommission'] ?? 0).toDouble(),
+      isAdminCommissionCollected: json['isAdminCommissionCollected'] ?? false,
+      commissionPaymentMode: json['commissionPaymentMode'] ?? 'CASH',
+      isPointsIncremented: json['isPointsIncremented'] ?? false,
     );
   }
 
@@ -291,6 +329,17 @@ class BookingModel {
     String? delayTime,
     String? delayNote,
     String? categoryId,
+    double? additionalAmount,
+    String? additionalNote,
+    String? reassignReason,
+    String? assignedBy,
+    int? redeemedPoints,
+    double? pointsValue,
+    double? adminCommission,
+    bool? isAdminCommissionCollected,
+    String? commissionPaymentMode,
+    bool? isPointsIncremented,
+    int? customerPoints,
   }) {
     return BookingModel(
       id: id ?? this.id,
@@ -322,6 +371,19 @@ class BookingModel {
       delayTime: delayTime ?? this.delayTime,
       delayNote: delayNote ?? this.delayNote,
       categoryId: categoryId ?? this.categoryId,
+      additionalAmount: additionalAmount ?? this.additionalAmount,
+      additionalNote: additionalNote ?? this.additionalNote,
+      reassignReason: reassignReason ?? this.reassignReason,
+      assignedBy: assignedBy ?? this.assignedBy,
+      redeemedPoints: redeemedPoints ?? this.redeemedPoints,
+      pointsValue: pointsValue ?? this.pointsValue,
+      adminCommission: adminCommission ?? this.adminCommission,
+      isAdminCommissionCollected:
+          isAdminCommissionCollected ?? this.isAdminCommissionCollected,
+      commissionPaymentMode:
+          commissionPaymentMode ?? this.commissionPaymentMode,
+      isPointsIncremented: isPointsIncremented ?? this.isPointsIncremented,
+      customerPoints: customerPoints ?? this.customerPoints,
     );
   }
 }

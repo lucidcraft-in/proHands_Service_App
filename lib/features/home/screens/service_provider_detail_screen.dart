@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +42,7 @@ class _ServiceProviderDetailScreenState
               consumerProvider.allServices
                   .where((s) => s.providerId == provider.id)
                   .toList();
-
+          print(provider.workLocationPreferred);
           return CustomScrollView(
             slivers: [
               // Header with Image/Avatar
@@ -142,7 +143,8 @@ class _ServiceProviderDetailScreenState
                               Text(
                                 provider.name ?? 'Provider',
                                 style: AppTextStyles.h3.copyWith(
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -219,7 +221,9 @@ class _ServiceProviderDetailScreenState
                       Text(
                         provider.bio,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                           height: 1.5,
                         ),
                       ),
@@ -279,9 +283,20 @@ class _ServiceProviderDetailScreenState
                           spacing: 8,
                           runSpacing: 8,
                           children:
-                              provider.workLocationPreferred
-                                  .map((s) => _buildChip(s, Colors.green))
-                                  .toList(),
+                              provider.workLocationPreferred.map((s) {
+                                String displayText = s.toString();
+                                try {
+                                  if (displayText.startsWith('{')) {
+                                    final Map<String, dynamic> parsed =
+                                        jsonDecode(displayText);
+                                    displayText =
+                                        parsed['location name']?.toString() ??
+                                        parsed['location_name']?.toString() ??
+                                        displayText;
+                                  }
+                                } catch (_) {}
+                                return _buildChip(displayText, Colors.green);
+                              }).toList(),
                         ),
                         const SizedBox(height: 24),
                       ],
@@ -347,7 +362,9 @@ class _ServiceProviderDetailScreenState
                             child: Text(
                               'No specific services listed yet.',
                               style: AppTextStyles.bodyMedium.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.5),
                               ),
                             ),
                           ),
@@ -502,7 +519,9 @@ class _ServiceProviderDetailScreenState
                     Text(
                       service.description,
                       style: AppTextStyles.caption.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.6),
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -555,19 +574,19 @@ class _ServiceProviderDetailScreenState
           children: [
             Icon(icon, size: 24, color: AppColors.primary),
             const SizedBox(height: 8),
-              Text(
-                value,
-                style: AppTextStyles.labelSmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+            Text(
+              value,
+              style: AppTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              Text(
-                label,
-                style: AppTextStyles.caption.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                ),
+            ),
+            Text(
+              label,
+              style: AppTextStyles.caption.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
+            ),
           ],
         ),
       ),

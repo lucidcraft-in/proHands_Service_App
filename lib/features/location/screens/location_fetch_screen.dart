@@ -6,9 +6,11 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/services/location_service.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../home/screens/main_screen.dart';
+import '../../service_boy/screens/service_boy_main_screen.dart';
 
 class LocationFetchScreen extends StatefulWidget {
-  const LocationFetchScreen({super.key});
+  final bool isServiceBoy;
+  const LocationFetchScreen({super.key, this.isServiceBoy = false});
 
   @override
   State<LocationFetchScreen> createState() => _LocationFetchScreenState();
@@ -91,9 +93,17 @@ class _LocationFetchScreenState extends State<LocationFetchScreen>
       );
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainScreen()),
-        );
+        if (widget.isServiceBoy) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const ServiceBoyMainScreen(),
+            ),
+          );
+        } else {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const MainScreen()),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {

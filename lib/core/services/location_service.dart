@@ -28,8 +28,9 @@ class LocationService {
 
           // Decode polyline points
           final polylineString = route['overview_polyline']['points'];
-          final List<PointLatLng> result =
-              PolylinePoints.decodePolyline(polylineString);
+          final List<PointLatLng> result = PolylinePoints.decodePolyline(
+            polylineString,
+          );
 
           final List<LatLng> points =
               result.map((p) => LatLng(p.latitude, p.longitude)).toList();
@@ -42,7 +43,8 @@ class LocationService {
             'distance_meters': leg['distance']['value'],
           };
         } else {
-          final String errMsg = data['error_message'] ?? 'No detailed error provided';
+          final String errMsg =
+              data['error_message'] ?? 'No detailed error provided';
           debugPrint('Directions API error: ${data['status']}');
           debugPrint('Reason: $errMsg');
         }
@@ -52,6 +54,7 @@ class LocationService {
     }
     return null;
   }
+
   /// Check and request location permissions
   static Future<bool> checkPermission() async {
     bool serviceEnabled;
@@ -117,13 +120,8 @@ class LocationService {
   ) async {
     try {
       debugPrint('Fetching address for Lat: $lat, Lng: $lng...');
-      print("lat");
-      print(lat);
-      print("lng");
-      print(lng);
-      print("----------------");
+
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-      print(placemarks);
 
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
@@ -141,6 +139,50 @@ class LocationService {
     } catch (e) {
       debugPrint('Error during geocoding: $e');
       return null;
+    }
+    return null;
+  }
+
+  /// Get place suggestions from Google Places API
+  static Future<List<Map<String, dynamic>>> getPlaceSuggestions(
+    String input,
+  ) async {
+    if (input.isEmpty) return [];
+
+    final String url =
+        "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=$input&key=$_googleApiKey&types=geocode";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          return List<Map<String, dynamic>>.from(data['predictions']);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching place suggestions: $e');
+    }
+    return [];
+  }
+
+  /// Get Lat/Lng from Google Place Details API
+  static Future<LatLng?> getLatLngFromPlaceId(String placeId) async {
+    final String url =
+        "https://maps.googleapis.com/maps/api/place/details/json?place_id=$placeId&fields=geometry&key=$_googleApiKey";
+
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'OK') {
+          final lat = data['result']['geometry']['location']['lat'];
+          final lng = data['result']['geometry']['location']['lng'];
+          return LatLng(lat, lng);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching place details: $e');
     }
     return null;
   }

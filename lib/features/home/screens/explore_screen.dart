@@ -8,6 +8,8 @@ import '../../cart/screens/cart_screen.dart';
 import '../providers/consumer_provider.dart';
 import '../models/service_product_model.dart';
 import 'service_product_detail_screen.dart';
+import '../../../core/services/location_service.dart';
+import '../../../core/services/getCurrentLocation.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -20,8 +22,12 @@ class _ExploreScreenState extends State<ExploreScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   Timer? _debounce;
+  Timer? _locationDebounce;
   bool _isSearchActive = false;
+  bool _isLocationActive = false;
+  bool _isLocationSearchDropdownVisible = false;
 
   @override
   void initState() {
@@ -31,13 +37,20 @@ class _ExploreScreenState extends State<ExploreScreen>
       duration: const Duration(milliseconds: 800),
     );
     _controller.forward();
+
+    // Auto-fetch current location results on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _useCurrentLocation();
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
     _searchController.dispose();
+    _locationController.dispose();
     _debounce?.cancel();
+    _locationDebounce?.cancel();
     super.dispose();
   }
 
@@ -51,6 +64,57 @@ class _ExploreScreenState extends State<ExploreScreen>
         context.read<ConsumerProvider>().searchServices(query);
       }
     });
+  }
+
+  void _onLocationChanged(String query) {
+    if (_locationDebounce?.isActive ?? false) _locationDebounce!.cancel();
+    _locationDebounce = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _isLocationSearchDropdownVisible = query.isNotEmpty;
+          _isLocationActive = query.isNotEmpty;
+        });
+        context.read<ConsumerProvider>().fetchLocationSuggestions(query);
+      }
+    });
+  }
+
+  void _selectLocation(String description, String placeId) async {
+    setState(() {
+      _locationController.text = description;
+      _isLocationSearchDropdownVisible = false;
+    });
+
+    final latLng = await LocationService.getLatLngFromPlaceId(placeId);
+    if (latLng != null && mounted) {
+      context.read<ConsumerProvider>().fetchServicesNearLocation(
+        latLng.latitude,
+        latLng.longitude,
+      );
+    }
+  }
+
+  Future<void> _useCurrentLocation() async {
+    try {
+      final latLng = await getCurrentLocation();
+      if (mounted) {
+        setState(() {
+          _locationController.text = "Current Location";
+          _isLocationSearchDropdownVisible = false;
+          _isLocationActive = true;
+        });
+        context.read<ConsumerProvider>().fetchServicesNearLocation(
+          latLng.latitude,
+          latLng.longitude,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   @override
@@ -112,46 +176,146 @@ class _ExploreScreenState extends State<ExploreScreen>
                       ),
                     ],
                   ),
-                  child: TextField(
-                    controller: _searchController,
-                    onChanged: _onSearchChanged,
-                    decoration: InputDecoration(
-                      hintText: 'Search for services...',
-                      prefixIcon: const Icon(
-                        Iconsax.search_normal,
-                        color: AppColors.textTertiary,
-                        size: 20,
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _searchController,
+                        onChanged: _onSearchChanged,
+                        decoration: InputDecoration(
+                          hintText: 'Search for services...',
+                          prefixIcon: const Icon(
+                            Iconsax.search_normal,
+                            color: AppColors.textTertiary,
+                            size: 20,
+                          ),
+                          suffixIcon:
+                              _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                    icon: const Icon(
+                                      Icons.close,
+                                      color: AppColors.textTertiary,
+                                      size: 20,
+                                    ),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      _onSearchChanged('');
+                                    },
+                                  )
+                                  : null,
+                          border: InputBorder.none,
+                          hintStyle: const TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                      suffixIcon:
-                          _searchController.text.isNotEmpty
-                              ? IconButton(
-                                icon: const Icon(
-                                  Icons.close,
-                                  color: AppColors.textTertiary,
-                                  size: 20,
+                      Divider(
+                        height: 1,
+                        color: Theme.of(context).dividerColor.withOpacity(0.3),
+                      ),
+                      TextField(
+                        controller: _locationController,
+                        onChanged: _onLocationChanged,
+                        decoration: InputDecoration(
+                          hintText: 'Near Location...',
+                          prefixIcon: const Icon(
+                            Iconsax.location,
+                            color: AppColors.primary,
+                            size: 20,
+                          ),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_locationController.text.isNotEmpty)
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: AppColors.textTertiary,
+                                    size: 18,
+                                  ),
+                                  onPressed: () {
+                                    _locationController.clear();
+                                    _onLocationChanged('');
+                                    provider.clearLocationSearch();
+                                  },
                                 ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _onSearchChanged('');
-                                },
-                              )
-                              : null,
-                      border: InputBorder.none,
-                      hintStyle: const TextStyle(
-                        color: AppColors.textTertiary,
-                        fontSize: 14,
+                              IconButton(
+                                icon: const Icon(
+                                  Iconsax.gps,
+                                  color: AppColors.primary,
+                                  size: 18,
+                                ),
+                                onPressed: _useCurrentLocation,
+                              ),
+                            ],
+                          ),
+                          border: InputBorder.none,
+                          hintStyle: const TextStyle(
+                            color: AppColors.textTertiary,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
+
+                // Location suggestions dropdown
+                if (_isLocationSearchDropdownVisible &&
+                    provider.locationSuggestions.isNotEmpty)
+                  Container(
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      padding: EdgeInsets.zero,
+                      itemCount: provider.locationSuggestions.length,
+                      itemBuilder: (context, index) {
+                        final suggestion = provider.locationSuggestions[index];
+                        return ListTile(
+                          leading: const Icon(
+                            Iconsax.location,
+                            size: 18,
+                            color: AppColors.textTertiary,
+                          ),
+                          title: Text(
+                            suggestion['description'],
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                          onTap: () {
+                            _selectLocation(
+                              suggestion['description'],
+                              suggestion['place_id'],
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
                 const SizedBox(height: 24),
 
-                if (_isSearchActive) ...[
+                if (_isSearchActive || _isLocationActive) ...[
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Suggested', style: AppTextStyles.h4),
-                      if (provider.isSearching)
+                      Text(
+                        _isLocationActive
+                            ? 'Services Near Location'
+                            : 'Suggested',
+                        style: AppTextStyles.h4,
+                      ),
+                      if (provider.isSearching ||
+                          provider.isFetchingNearLocation)
                         const SizedBox(
                           width: 16,
                           height: 16,
@@ -163,14 +327,28 @@ class _ExploreScreenState extends State<ExploreScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  if (provider.isSearching && provider.searchResults.isEmpty)
+                  if ((provider.isSearching &&
+                          provider.searchResults.isEmpty) ||
+                      (provider.isFetchingNearLocation &&
+                          provider.nearLocationResults.isEmpty))
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(32.0),
                         child: Text('Searching...'),
                       ),
                     )
-                  else if (provider.searchResults.isEmpty)
+                  else if (_isLocationActive &&
+                      provider.nearLocationResults.isEmpty &&
+                      !provider.isFetchingNearLocation)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: Text('No services found in this location'),
+                      ),
+                    )
+                  else if (_isSearchActive &&
+                      provider.searchResults.isEmpty &&
+                      !provider.isSearching)
                     const Center(
                       child: Padding(
                         padding: EdgeInsets.all(32.0),
@@ -181,9 +359,15 @@ class _ExploreScreenState extends State<ExploreScreen>
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: provider.searchResults.length,
+                      itemCount:
+                          _isLocationActive
+                              ? provider.nearLocationResults.length
+                              : provider.searchResults.length,
                       itemBuilder: (context, index) {
-                        final service = provider.searchResults[index];
+                        final service =
+                            _isLocationActive
+                                ? provider.nearLocationResults[index]
+                                : provider.searchResults[index];
                         return _SearchServiceCard(service: service);
                       },
                     ),
@@ -400,7 +584,8 @@ class _ExploreScreenState extends State<ExploreScreen>
                                 width: 80,
                                 height: 80,
                                 decoration: BoxDecoration(
-                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                   borderRadius: BorderRadius.circular(12),
                                   image: DecorationImage(
                                     image: AssetImage(item['image']),
@@ -466,7 +651,9 @@ class _SearchServiceCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.3)),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withOpacity(0.3),
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.02),

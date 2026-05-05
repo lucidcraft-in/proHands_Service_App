@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:service_app/features/service_boy/models/service_subcategory_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/widgets/custom_button.dart';
 import '../providers/service_boy_provider.dart';
 import '../models/service_category_model.dart';
 import '../../../core/services/storage_service.dart';
@@ -26,10 +27,12 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   // Form Controllers
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _customSkillController = TextEditingController();
 
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
   List<String> _selectedAdditionalSkills = [];
+  List<String> _customSkills = [];
   bool _isTrending = false;
   File? _serviceImage;
   final _picker = ImagePicker();
@@ -59,7 +62,25 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _customSkillController.dispose();
     super.dispose();
+  }
+
+  void _addCustomSkill() {
+    final skill = _customSkillController.text.trim();
+    if (skill.isNotEmpty) {
+      if (!_customSkills.contains(skill)) {
+        setState(() {
+          _customSkills.add(skill);
+          _selectedAdditionalSkills.add(skill);
+          _customSkillController.clear();
+        });
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Skill already added')));
+      }
+    }
   }
 
   Future<void> _submitFormat() async {
@@ -75,6 +96,14 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     }
 
     FocusScope.of(context).unfocus();
+    print(_selectedCategoryId);
+    print(_selectedSubcategoryId);
+    print(_selectedAdditionalSkills);
+    print(_customSkills);
+    print(_descriptionController.text.trim());
+    print(_isTrending);
+    print(_serviceImage);
+    print(" ===========");
 
     final provider = context.read<ServiceBoyProvider>();
     String? imageUrl;
@@ -383,10 +412,10 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                   if (selected != null) {
                                     _nameController.text = selected.name;
                                     if (!_selectedAdditionalSkills.contains(
-                                      selected.id,
+                                      selected.name,
                                     )) {
                                       _selectedAdditionalSkills.add(
-                                        selected.id,
+                                        selected.name,
                                       );
                                     }
                                   }
@@ -424,12 +453,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                     const SizedBox(height: 20),
                   ],
 
-                  if (_selectedCategoryId != null &&
-                      provider.subcategories.isNotEmpty) ...[
-                    // Subcategory section (already in dropdown, but user wants separate?)
-                    // The user said "dropdown select use for subcategory and checkbox use for Additional Skills"
-                    // So we already have the dropdown above.
-
+                  if (_selectedCategoryId != null) ...[
                     // Additional Skills checklist
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -447,9 +471,10 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                           ),
                           child: Column(
                             children: [
+                              // Predefined Subcategories
                               ...provider.subcategories.map((sub) {
                                 final isSelected = _selectedAdditionalSkills
-                                    .contains(sub.id);
+                                    .contains(sub.name);
                                 return CheckboxListTile(
                                   title: Text(
                                     sub.name,
@@ -459,10 +484,16 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                   onChanged: (bool? value) {
                                     setState(() {
                                       if (value == true) {
-                                        _selectedAdditionalSkills.add(sub.id);
+                                        if (!_selectedAdditionalSkills.contains(
+                                          sub.name,
+                                        )) {
+                                          _selectedAdditionalSkills.add(
+                                            sub.name,
+                                          );
+                                        }
                                       } else {
                                         _selectedAdditionalSkills.remove(
-                                          sub.id,
+                                          sub.name,
                                         );
                                       }
                                     });
@@ -476,6 +507,84 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                       ListTileControlAffinity.trailing,
                                 );
                               }).toList(),
+
+                              // Custom Added Skills
+                              ..._customSkills.map((skill) {
+                                final isSelected = _selectedAdditionalSkills
+                                    .contains(skill);
+                                return CheckboxListTile(
+                                  title: Text(
+                                    skill,
+                                    style: AppTextStyles.bodyMedium,
+                                  ),
+                                  value: isSelected,
+                                  onChanged: (bool? value) {
+                                    print(value);
+                                    print(skill);
+                                    print("===");
+                                    setState(() {
+                                      if (value == true) {
+                                        if (!_selectedAdditionalSkills.contains(
+                                          skill,
+                                        )) {
+                                          _selectedAdditionalSkills.add(skill);
+                                        }
+                                      } else {
+                                        _selectedAdditionalSkills.remove(skill);
+                                      }
+                                    });
+                                  },
+                                  activeColor: AppColors.primary,
+                                  checkColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.trailing,
+                                );
+                              }).toList(),
+
+                              const Divider(height: 1),
+
+                              // Input for new custom skill
+                              Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _customSkillController,
+                                        decoration: InputDecoration(
+                                          hintText: 'Add custom skill...',
+                                          hintStyle: AppTextStyles.bodySmall,
+                                          isDense: true,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                horizontal: 12,
+                                                vertical: 8,
+                                              ),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            borderSide: const BorderSide(
+                                              color: AppColors.border,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      onPressed: _addCustomSkill,
+                                      icon: const Icon(
+                                        Iconsax.add_circle,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -567,33 +676,42 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Submit Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed:
-                          provider.isCreatingService ? null : _submitFormat,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child:
-                          provider.isCreatingService
-                              ? const CircularProgressIndicator(
-                                color: Colors.white,
-                              )
-                              : Text(
-                                'Create Service',
-                                style: AppTextStyles.labelLarge.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
+                  if (provider.isCreatingService)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    GradientButton(
+                      text: 'Create Service',
+                      onPressed: _submitFormat,
+                      width: double.infinity,
                     ),
-                  ),
+
+                  // Submit Button
+                  // SizedBox(
+                  //   width: double.infinity,
+                  //   height: 56,
+                  //   child: ElevatedButton(
+                  //     onPressed:
+                  //         provider.isCreatingService ? null : _submitFormat,
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: AppColors.primary,
+                  //       shape: RoundedRectangleBorder(
+                  //         borderRadius: BorderRadius.circular(16),
+                  //       ),
+                  //       elevation: 0,
+                  //     ),
+                  //     child:
+                  //         provider.isCreatingService
+                  //             ? const CircularProgressIndicator(
+                  //               color: Colors.white,
+                  //             )
+                  //             : Text(
+                  //               'Create Service',
+                  //               style: AppTextStyles.labelLarge.copyWith(
+                  //                 color: Colors.white,
+                  //               ),
+                  //             ),
+                  //   ),
+                  // ),
                   const SizedBox(height: 20),
                 ],
               ),

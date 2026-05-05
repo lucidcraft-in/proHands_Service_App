@@ -17,6 +17,7 @@ class CustomTextField extends StatefulWidget {
   final bool enabled;
   final List<TextInputFormatter>? inputFormatters;
   final FocusNode? focusNode;
+  final bool readOnly;
 
   const CustomTextField({
     super.key,
@@ -33,6 +34,7 @@ class CustomTextField extends StatefulWidget {
     this.enabled = true,
     this.inputFormatters,
     this.focusNode,
+    this.readOnly = false,
   });
 
   @override
@@ -54,13 +56,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.label != null) ...[
-          Text(
-            widget.label!,
-            style: AppTextStyles.labelMedium,
-          ),
+          Text(widget.label!, style: AppTextStyles.labelMedium),
           const SizedBox(height: 8),
         ],
         TextFormField(
+          readOnly: widget.readOnly,
           controller: widget.controller,
           obscureText: _obscureText,
           keyboardType: widget.keyboardType,
@@ -73,30 +73,32 @@ class _CustomTextFieldState extends State<CustomTextField> {
           style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
             hintText: widget.hint,
-            prefixIcon: widget.prefixIcon != null
-                ? Padding(
-                    padding: const EdgeInsets.only(left: 16, right: 12),
-                    child: widget.prefixIcon,
-                  )
-                : null,
+            prefixIcon:
+                widget.prefixIcon != null
+                    ? Padding(
+                      padding: const EdgeInsets.only(left: 16, right: 12),
+                      child: widget.prefixIcon,
+                    )
+                    : null,
             prefixIconConstraints: const BoxConstraints(
               minWidth: 48,
               minHeight: 24,
             ),
-            suffixIcon: widget.obscureText
-                ? IconButton(
-                    icon: Icon(
-                      _obscureText ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.textTertiary,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscureText = !_obscureText;
-                      });
-                    },
-                  )
-                : widget.suffixIcon,
+            suffixIcon:
+                widget.obscureText
+                    ? IconButton(
+                      icon: Icon(
+                        _obscureText ? Icons.visibility_off : Icons.visibility,
+                        color: AppColors.textTertiary,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
+                    )
+                    : widget.suffixIcon,
           ),
         ),
       ],
@@ -140,30 +142,30 @@ class SearchTextField extends StatelessWidget {
           hintText: hint ?? 'Search here',
           prefixIcon: const Padding(
             padding: EdgeInsets.only(left: 16, right: 12),
-            child: Icon(
-              Icons.search,
-              color: AppColors.textTertiary,
-              size: 20,
-            ),
+            child: Icon(Icons.search, color: AppColors.textTertiary, size: 20),
           ),
           prefixIconConstraints: const BoxConstraints(
             minWidth: 48,
             minHeight: 24,
           ),
-          suffixIcon: onFilterTap != null
-              ? IconButton(
-                  icon: const Icon(
-                    Icons.tune,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  onPressed: onFilterTap,
-                )
-              : null,
+          suffixIcon:
+              onFilterTap != null
+                  ? IconButton(
+                    icon: const Icon(
+                      Icons.tune,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
+                    onPressed: onFilterTap,
+                  )
+                  : null,
           border: InputBorder.none,
           enabledBorder: InputBorder.none,
           focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );

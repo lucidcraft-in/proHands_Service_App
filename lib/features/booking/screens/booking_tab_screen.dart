@@ -163,7 +163,7 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
                       final booking = filteredBookings[index];
                       // Map status to color
                       print(index);
-                      print(booking.status);
+                      print(booking.location);
                       Color statusColor = const Color.fromARGB(255, 47, 55, 83);
                       if (booking.status == BookingStatus.assigned) {
                         statusColor = AppColors.warning;
@@ -395,6 +395,7 @@ class _BookingCard extends StatelessWidget {
             const SizedBox(height: 8),
 
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Icon(
                   Iconsax.location,
@@ -402,7 +403,14 @@ class _BookingCard extends StatelessWidget {
                   color: AppColors.textSecondary,
                 ),
                 const SizedBox(width: 4),
-                Text(location, style: AppTextStyles.bodySmall),
+                Expanded(
+                  child: Text(
+                    location, 
+                    style: AppTextStyles.bodySmall,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
 

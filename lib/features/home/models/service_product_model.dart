@@ -114,10 +114,12 @@ class ServiceProductModel {
     }
 
     if (json['additionalSkills'] is List) {
-      additionalSkills =
-          (json['additionalSkills'] as List)
-              .map((e) => e['name'] as String)
-              .toList();
+      additionalSkills = (json['additionalSkills'] as List).map((e) {
+        if (e is Map) {
+          return (e['name'] ?? '').toString();
+        }
+        return e.toString();
+      }).toList();
     }
 
     return ServiceProductModel(
@@ -125,7 +127,7 @@ class ServiceProductModel {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       price: (json['price'] ?? 0).toDouble(),
-      duration: json['duration'] ?? 0,
+      duration: (json['duration'] ?? 0).toInt(),
       providerName: providerName,
       providerImage: providerImage,
       providerId: providerId,
@@ -133,10 +135,12 @@ class ServiceProductModel {
       reviewsCount: reviewsCount,
       profession: profession,
       image: json['image'] ?? '',
-      gallery:
-          (json['gallery'] as List? ?? [])
-              .map((e) => e['imageUrl'] as String)
-              .toList(),
+      gallery: (json['gallery'] as List? ?? []).map((e) {
+        if (e is Map) {
+          return (e['imageUrl'] ?? '').toString();
+        }
+        return e.toString();
+      }).toList(),
       subcategoryName:
           json['subcategoryId'] != null && json['subcategoryId'] is Map
               ? json['subcategoryId']['name'] ?? ''
