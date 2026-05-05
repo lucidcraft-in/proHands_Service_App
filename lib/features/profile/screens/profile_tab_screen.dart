@@ -688,12 +688,12 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                     size: 20,
                     color: Colors.green,
                   ),
-                  onTap:
-                      () => _showLocationConfirmDialog(
-                        displayAddress,
-                        coordinates,
-                        'Primary Location',
-                      ),
+                  // onTap:
+                  //     () => _showLocationConfirmDialog(
+                  //       displayAddress,
+                  //       coordinates,
+                  //       'Primary Location',
+                  //     ),
                 ),
               ),
             ],

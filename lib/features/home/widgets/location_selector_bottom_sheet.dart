@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_button.dart';
 import '../../../core/services/location_service.dart';
+import '../../location/screens/map_selection_screen.dart';
 
 class LocationSelectorBottomSheet extends StatefulWidget {
   final Function(Map<String, dynamic>) onLocationSelected;
@@ -20,6 +22,7 @@ class LocationSelectorBottomSheet extends StatefulWidget {
 
 class _LocationSelectorBottomSheetState
     extends State<LocationSelectorBottomSheet> {
+  final _searchController = TextEditingController();
   final _addressController = TextEditingController();
   final _zipcodeController = TextEditingController();
   final _localityController = TextEditingController(); // City
@@ -27,9 +30,11 @@ class _LocationSelectorBottomSheetState
   final _labelController = TextEditingController(text: 'My Location');
   bool _isLoading = false;
   List<double> _coordinates = [0.0, 0.0];
+  List<Map<String, dynamic>> _suggestions = [];
 
   @override
   void dispose() {
+    _searchController.dispose();
     _addressController.dispose();
     _zipcodeController.dispose();
     _localityController.dispose();
@@ -80,6 +85,7 @@ class _LocationSelectorBottomSheetState
             _administrativeAreaController.text =
                 addressData['administrativeArea'] ?? '';
             _labelController.text = 'Current Location';
+            _suggestions = [];
           });
         }
       } else {
@@ -106,9 +112,86 @@ class _LocationSelectorBottomSheetState
     }
   }
 
+  Future<void> _onSearchChanged(String query) async {
+    if (query.isEmpty) {
+      setState(() => _suggestions = []);
+      return;
+    }
+
+    final suggestions = await LocationService.getPlaceSuggestions(query);
+    if (mounted) {
+      setState(() => _suggestions = suggestions);
+    }
+  }
+
+  Future<void> _onSuggestionSelected(Map<String, dynamic> suggestion) async {
+    setState(() => _isLoading = true);
+    final placeId = suggestion['place_id'];
+    final description = suggestion['description'];
+
+    try {
+      final latLng = await LocationService.getLatLngFromPlaceId(placeId);
+      if (latLng != null) {
+        final addressData = await LocationService.getAddressFromLatLng(
+          latLng.latitude,
+          latLng.longitude,
+        );
+
+        if (mounted) {
+          setState(() {
+            _coordinates = [latLng.latitude, latLng.longitude];
+            _addressController.text = addressData?['address'] ?? description;
+            _zipcodeController.text = addressData?['zipcode'] ?? '';
+            _localityController.text = addressData?['locality'] ?? '';
+            _administrativeAreaController.text =
+                addressData?['administrativeArea'] ?? '';
+            _labelController.text = 'Searched Location';
+            _suggestions = [];
+            _searchController.clear();
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error selecting place: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _openMapPicker() async {
+    final LatLng initial = _coordinates[0] != 0
+        ? LatLng(_coordinates[0], _coordinates[1])
+        : const LatLng(10.0101, 76.3630);
+
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapSelectionScreen(initialLocation: initial),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _coordinates = [result['latitude'], result['longitude']];
+        _addressController.text = result['address'];
+        _labelController.text = 'Pinned Location';
+        _suggestions = [];
+      });
+      // Optionally fetch full address details like zip/locality if needed, 
+      // but MapSelectionScreen already provides a good address.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
@@ -134,14 +217,94 @@ class _LocationSelectorBottomSheetState
             ],
           ),
           const SizedBox(height: 20),
-          CustomButton(
-            text: _isLoading ? 'Fetching Location...' : 'Use Current Location',
-            onPressed: _isLoading ? null : _useCurrentLocation,
-            icon: _isLoading ? null : Iconsax.location,
-            isLoading: _isLoading,
-            isOutlined: true,
-            width: double.infinity,
+
+          // Search Box
+          TextField(
+            controller: _searchController,
+            onChanged: _onSearchChanged,
+            decoration: InputDecoration(
+              hintText: 'Search for area, street name...',
+              prefixIcon: const Icon(Iconsax.search_normal, size: 20),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onSearchChanged('');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: Theme.of(context).colorScheme.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 16),
+            ),
           ),
+
+          if (_suggestions.isNotEmpty)
+            Container(
+              constraints: const BoxConstraints(maxHeight: 200),
+              margin: const EdgeInsets.only(top: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.shadowLight,
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: _suggestions.length,
+                itemBuilder: (context, index) {
+                  final suggestion = _suggestions[index];
+                  return ListTile(
+                    leading: const Icon(Iconsax.location, size: 18),
+                    title: Text(
+                      suggestion['description'],
+                      style: AppTextStyles.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    onTap: () => _onSuggestionSelected(suggestion),
+                  );
+                },
+              ),
+            ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              Expanded(
+                child: CustomButton(
+                  text: _isLoading ? 'Locating...' : 'Current Location',
+                  onPressed: _isLoading ? null : _useCurrentLocation,
+                  icon: _isLoading ? null : Iconsax.location,
+                  isLoading: _isLoading,
+                  isOutlined: true,
+                  width: double.infinity,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: CustomButton(
+                  text: 'Select on Map',
+                  onPressed: _isLoading ? null : _openMapPicker,
+                  icon: Iconsax.map,
+                  isOutlined: true,
+                  width: double.infinity,
+                ),
+              ),
+            ],
+          ),
+
           if (_addressController.text.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text('Selected Location', style: AppTextStyles.labelLarge),
@@ -149,7 +312,7 @@ class _LocationSelectorBottomSheetState
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.primary.withOpacity(0.1)),
                 boxShadow: [

@@ -9,6 +9,7 @@ import '../../location/screens/location_fetch_screen.dart';
 import '../../service_boy/screens/service_boy_main_screen.dart';
 import '../providers/auth_provider.dart';
 import '../../home/services/consumer_service.dart';
+import '../../home/screens/main_screen.dart';
 import '../../../core/services/storage_service.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
@@ -130,29 +131,24 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               final consumerService = ConsumerService();
               final fullProfile = await consumerService.getMe();
 
-              // Save location if available
-              // Parse location from the response structure which might be a String or Map
-              // UserModel.fromJson handles this, so detailed location info is in fullProfile.location (String address)
-              // But we might need coordinates if available in the raw response or if UserModel is updated to store them.
-              // For now, based on User Request, the location in response is a Map.
-              // UserModel stores address in `location` field.
-              // Let's rely on what we have. If we need coordinates, we might need to update UserModel to store them or parse them here.
-              // The user request showed: "location": { "type": "Point", "coordinates": [0,0], "address": "Kochi" }
-              // UserModel.fromJson extracts address to `location`.
-
-              // Ideally we should update UserModel to hold coordinates too, but for this task: share preference replacement.
-              // I will save the address to shared prefs.
-
-              // await StorageService.saveUserLocation(
-              //   address: fullProfile.location,
-              //   coordinates: [
-              //     0.0,
-              //     0.0,
-              //   ], // Default/Placeholder for now as UserModel doesn't expose it yet
-              // );
+              // Check if location exists
+              if (fullProfile.latitude != null &&
+                  fullProfile.longitude != null &&
+                  fullProfile.latitude != 0.0) {
+                debugPrint(
+                  '========= step: location exists, navigating to MainScreen ==========',
+                );
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const MainScreen()),
+                    (route) => false,
+                  );
+                  return;
+                }
+              }
             } catch (e) {
               debugPrint('Error fetching/saving profile during login: $e');
-              // Continue login even if profile fetch fails
+              // Continue to LocationFetchScreen if profile fetch fails
             }
 
             debugPrint(
@@ -166,8 +162,33 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               (route) => false,
             );
           } else {
+            // Service Boy Profile Check
+            try {
+              final consumerService = ConsumerService();
+              final fullProfile = await consumerService.getMe();
+
+              if (fullProfile.latitude != null &&
+                  fullProfile.longitude != null &&
+                  fullProfile.latitude != 0.0) {
+                debugPrint(
+                  '========= step: location exists, navigating to ServiceBoyMainScreen ==========',
+                );
+                if (mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const ServiceBoyMainScreen(),
+                    ),
+                    (route) => false,
+                  );
+                  return;
+                }
+              }
+            } catch (e) {
+              debugPrint('Error fetching technician profile during login: $e');
+            }
+
             debugPrint(
-              '========= step: navigating to ServiceBoyMainScreen ==========',
+              '========= step: navigating to LocationFetchScreen (ServiceBoy) ==========',
             );
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
