@@ -19,6 +19,7 @@ class ServiceModel {
   final String subcategoryId;
   final String subcategoryName;
   final bool isCommissionPending;
+  final List<String> additionalSkills;
 
   ServiceModel({
     required this.id,
@@ -41,6 +42,7 @@ class ServiceModel {
     this.subcategoryId = '',
     this.subcategoryName = '',
     this.isCommissionPending = false,
+    this.additionalSkills = const [],
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
@@ -98,6 +100,10 @@ class ServiceModel {
       subcategoryId: subCatId,
       subcategoryName: subCatName,
       isCommissionPending: json['isCommissionPending'] ?? false,
+      additionalSkills:
+          json['additionalSkills'] != null
+              ? List<String>.from(json['additionalSkills'])
+              : [],
     );
   }
 }
