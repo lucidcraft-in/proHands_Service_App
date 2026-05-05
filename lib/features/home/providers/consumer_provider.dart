@@ -231,10 +231,11 @@ class ConsumerProvider extends ChangeNotifier {
     _isSearching = true;
     _searchError = null;
     notifyListeners();
-    print("-------------------");
-    print(keyword);
+
     try {
       _searchResults = await _service.searchServices(keyword);
+      print("------------ ---------- ----------");
+      print(_searchResults.length);
     } catch (e) {
       _searchError = e.toString().replaceAll('Exception: ', '');
     } finally {

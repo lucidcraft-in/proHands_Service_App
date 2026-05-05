@@ -958,24 +958,25 @@ class ConsumerService {
   Future<List<ServiceProductModel>> searchServices(String keyword) async {
     print("----- --------   ------");
     print(keyword);
-    final url = Uri.parse('$baseUrl/services/search?keyword=$keyword');
+    final url = Uri.parse('$baseUrl/services/search?keyword=${keyword}');
+    print(url);
     try {
-      final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http.get(url);
 
-      print("----- --------   ------");
-      print(response.body);
-      print("----- --------   ------");
-      print(response.statusCode);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
           print(servicesJson);
-          return servicesJson
-              .map((json) => ServiceProductModel.fromJson(json))
-              .where((service) => service.isCommissionPending == false)
-              .toList();
+          try {
+            return servicesJson
+                .map((json) => ServiceProductModel.fromJson(json))
+                // .where((service) => service.isCommissionPending == false)
+                .toList();
+          } catch (e) {
+            print(e);
+            return [];
+          }
         } else {
           throw Exception(data['message'] ?? 'Failed to search services');
         }
