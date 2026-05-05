@@ -7,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../models/service_product_model.dart';
+import 'service_product_detail_screen.dart';
 
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../core/widgets/empty_state_widget.dart';
@@ -37,6 +39,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // Check if categories are already loaded to avoid redundant calls if maintained in provider
       // But allow refresh if needed. Provider usually keeps state.
+      context.read<ConsumerProvider>().fetchUserProfile();
       if (context.read<ConsumerProvider>().categories.isEmpty) {
         context.read<ConsumerProvider>().fetchCategories();
       }
@@ -97,7 +100,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                           children: [
                             Consumer<ConsumerProvider>(
                               builder: (context, provider, child) {
-                                final points = provider.currentUser?.points ?? 0;
+                                final points =
+                                    provider.currentUser?.points ?? 0;
                                 return Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 8,
@@ -120,10 +124,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                       const SizedBox(width: 4),
                                       Text(
                                         '$points pts',
-                                        style: AppTextStyles.labelSmall.copyWith(
-                                          color: Colors.amber.shade800,
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(
+                                              color: Colors.amber.shade800,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -151,7 +156,10 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                     isLabelVisible: provider.unreadCount > 0,
                                     child: Icon(
                                       Iconsax.notification,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                     ),
                                   ),
                                 );
@@ -163,49 +171,213 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     ),
                     const SizedBox(height: 8),
                     // Location Display Row
-                    GestureDetector(
-                      onTap: () {
+                    Consumer<ConsumerProvider>(
+                      builder: (context, provider, child) {
+                        String displayLocation =
+                            (provider.currentUser?.location != null &&
+                                    provider.currentUser!.location != 'Unknown')
+                                ? provider.currentUser!.location
+                                : _locationText;
+
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => const LocationFetchScreen(),
+                              ),
+                            ).then(
+                              (_) => _loadLocation(),
+                            ); // Refresh location after returning
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.07),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Iconsax.location,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    displayLocation,
+                                    style: AppTextStyles.bodySmall.copyWith(
+                                      color: AppColors.textSecondary,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Service Search Box
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+                child: Consumer<ConsumerProvider>(
+                  builder: (context, provider, child) {
+                    return Autocomplete<ServiceProductModel>(
+                      displayStringForOption: (option) => option.name,
+                      optionsBuilder: (
+                        TextEditingValue textEditingValue,
+                      ) async {
+                        if (textEditingValue.text.isEmpty) {
+                          return const Iterable<ServiceProductModel>.empty();
+                        }
+                        await provider.searchServices(textEditingValue.text);
+                        print("---------------------");
+                        print(provider.searchResults);
+                        print("---------------------");
+
+                        if (provider.searchResults.isEmpty) {
+                          // Return a dummy item to trigger optionsViewBuilder
+                          return [
+                            ServiceProductModel(
+                              id: 'empty',
+                              name: 'No services available',
+                              description: '',
+                              price: 0,
+                              duration: 0,
+                              providerName: '',
+                              providerImage: '',
+                              providerId: '',
+                              image: '',
+                            ),
+                          ];
+                        }
+                        return provider.searchResults;
+                      },
+                      onSelected: (ServiceProductModel selection) {
+                        if (selection.id == 'empty') return;
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LocationFetchScreen(),
-                          ),
-                        ).then(
-                          (_) => _loadLocation(),
-                        ); // Refresh location after returning
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.07),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Iconsax.location,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _locationText,
-                                style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                            builder:
+                                (context) => ServiceProductDetailScreen(
+                                  service: selection,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                          ),
+                        );
+                      },
+                      fieldViewBuilder: (
+                        context,
+                        textEditingController,
+                        focusNode,
+                        onFieldSubmitted,
+                      ) {
+                        return TextField(
+                          controller: textEditingController,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            hintText: 'Search services...',
+                            prefixIcon: const Icon(Iconsax.search_normal),
+                            filled: true,
+                            fillColor: Theme.of(context).colorScheme.surface,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.primary.withOpacity(0.1),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.primary.withOpacity(0.1),
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ),
+                          ),
+                        );
+                      },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 8,
+                            borderRadius: const BorderRadius.vertical(
+                              bottom: Radius.circular(12),
+                            ),
+                            child: Container(
+                              width: MediaQuery.of(context).size.width - 40,
+                              constraints: const BoxConstraints(maxHeight: 300),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: const BorderRadius.vertical(
+                                  bottom: Radius.circular(12),
+                                ),
+                              ),
+                              child: ListView.builder(
+                                padding: EdgeInsets.zero,
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (context, index) {
+                                  final option = options.elementAt(index);
+                                  if (option.id == 'empty') {
+                                    return ListTile(
+                                      title: Center(
+                                        child: Text(
+                                          option.name,
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
+                                                color: AppColors.textSecondary,
+                                                fontStyle: FontStyle.italic,
+                                              ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                  return ListTile(
+                                    leading: CircleAvatar(
+                                      backgroundImage: NetworkImage(
+                                        option.image.isNotEmpty
+                                            ? option.image
+                                            : 'https://via.placeholder.com/50',
+                                      ),
+                                    ),
+                                    title: Text(
+                                      option.name,
+                                      style: AppTextStyles.bodyMedium.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    subtitle: Text(
+                                      '₹${option.price}',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    onTap: () => onSelected(option),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -264,8 +436,10 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(Icons.error_outline,
-                                color: AppColors.error),
+                            const Icon(
+                              Icons.error_outline,
+                              color: AppColors.error,
+                            ),
                             const SizedBox(height: 8),
                             TextButton(
                               onPressed: () => provider.fetchCategories(),
@@ -385,8 +559,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.error_outline,
-                                  color: AppColors.error, size: 40),
+                              const Icon(
+                                Icons.error_outline,
+                                color: AppColors.error,
+                                size: 40,
+                              ),
                               const SizedBox(height: 12),
                               Text(provider.feedsError!),
                               const SizedBox(height: 12),

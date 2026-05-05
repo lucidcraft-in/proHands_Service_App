@@ -39,6 +39,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController
   _workLocationPreferredController; // Comma separated for now
 
+  // Bank Details (Technician Only)
+  late TextEditingController _bankNameController;
+  late TextEditingController _accountNumberController;
+  late TextEditingController _ifscCodeController;
+  late TextEditingController _accountHolderNameController;
+
   // Dropdowns/Selections
   final List<String> _workPreferenceOptions = ['Full-time', 'Part-time'];
   String? _selectedWorkPreference;
@@ -70,6 +76,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _servicesOfferedController = TextEditingController();
     _specialtiesController = TextEditingController();
     _workLocationPreferredController = TextEditingController();
+    _bankNameController = TextEditingController();
+    _accountNumberController = TextEditingController();
+    _ifscCodeController = TextEditingController();
+    _accountHolderNameController = TextEditingController();
 
     // Fetch latest profile
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -119,6 +129,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _selectedWorkPreference = null;
       }
     }
+
+    // Bank Details
+    if (user.bankDetails != null) {
+      _bankNameController.text = user.bankDetails?.bankName ?? '';
+      _accountNumberController.text = user.bankDetails?.accountNumber ?? '';
+      _ifscCodeController.text = user.bankDetails?.ifscCode ?? '';
+      _accountHolderNameController.text =
+          user.bankDetails?.accountHolderName ?? '';
+    }
     setState(() {});
   }
 
@@ -132,6 +151,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _servicesOfferedController.dispose();
     _specialtiesController.dispose();
     _workLocationPreferredController.dispose();
+    _bankNameController.dispose();
+    _accountNumberController.dispose();
+    _ifscCodeController.dispose();
+    _accountHolderNameController.dispose();
     _locationDebounce?.cancel();
     super.dispose();
   }
@@ -313,6 +336,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           licensePath: _license?.path,
           serviceImagePath: _serviceImage?.path,
           portfolioImagePaths: _portfolioImages.map((e) => e.path).toList(),
+          bankDetails:
+              isServiceBoy
+                  ? BankDetails(
+                    bankName: _bankNameController.text,
+                    accountNumber: _accountNumberController.text,
+                    ifscCode: _ifscCodeController.text,
+                    accountHolderName: _accountHolderNameController.text,
+                  )
+                  : null,
         ),
         Future.delayed(const Duration(seconds: 2)),
       ]);
@@ -722,8 +754,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 30),
 
+                  const SizedBox(height: 30),
                   // File Uploads
                   Text('Documents & Images', style: AppTextStyles.h4),
                   const SizedBox(height: 16),
@@ -836,6 +868,57 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   //     ),
                   //   ],
                   // ),
+                  const SizedBox(height: 30),
+                  Text(
+                    'Bank Account Details (Optional)',
+                    style: AppTextStyles.h4,
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Bank Name',
+                    hint: 'Enter bank name',
+                    controller: _bankNameController,
+                    prefixIcon: const Icon(
+                      Iconsax.bank,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Account Holder Name',
+                    hint: 'Enter name as per bank records',
+                    controller: _accountHolderNameController,
+                    prefixIcon: const Icon(
+                      Iconsax.user,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'Account Number',
+                    hint: 'Enter account number',
+                    controller: _accountNumberController,
+                    keyboardType: TextInputType.number,
+                    prefixIcon: const Icon(
+                      Iconsax.card,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    label: 'IFSC Code',
+                    hint: 'Enter IFSC code',
+                    controller: _ifscCodeController,
+                    textCapitalization: TextCapitalization.characters,
+                    prefixIcon: const Icon(
+                      Iconsax.code,
+                      color: AppColors.textTertiary,
+                      size: 20,
+                    ),
+                  ),
                   const SizedBox(height: 32),
                 ],
 

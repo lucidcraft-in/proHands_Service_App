@@ -261,7 +261,10 @@ class _CustomerBookingDetailsScreenState
                 ),
               ),
 
-            if (_currentBooking.status == BookingStatus.completed)
+            if (_currentBooking.status == BookingStatus.completed ||
+                _currentBooking.status ==
+                    BookingStatus.commissionPaymentPending ||
+                _currentBooking.status == BookingStatus.closed)
               Container(
                 margin: const EdgeInsets.only(top: 24),
                 padding: const EdgeInsets.all(20),
@@ -281,6 +284,26 @@ class _CustomerBookingDetailsScreenState
                   children: [
                     Text('Payment Details', style: AppTextStyles.h4),
                     Divider(height: 24),
+                    _buildPaymentRow(
+                      'Booking Price',
+                      '₹${_currentBooking.price.toStringAsFixed(0)}',
+                    ),
+                    if (_currentBooking.additionalAmount > 0) ...[
+                      const SizedBox(height: 12),
+                      _buildPaymentRow(
+                        'Additional Amount',
+                        '₹${_currentBooking.additionalAmount.toStringAsFixed(0)}',
+                      ),
+                    ],
+                    if (_currentBooking.redeemedPoints > 0) ...[
+                      const SizedBox(height: 12),
+                      _buildPaymentRow(
+                        'Points Redeemed',
+                        '-₹${_currentBooking.pointsValue.toStringAsFixed(0)}',
+                        isNegative: true,
+                      ),
+                    ],
+                    const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -298,24 +321,40 @@ class _CustomerBookingDetailsScreenState
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    const Divider(height: 32),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           'Total Amount',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppTextStyles.h4.copyWith(fontSize: 18),
                         ),
                         Text(
                           '₹${_currentBooking.totalAmount.toStringAsFixed(0)}',
                           style: AppTextStyles.h4.copyWith(
                             color: AppColors.primary,
+                            fontSize: 20,
                           ),
                         ),
                       ],
                     ),
+                    if (_currentBooking.additionalNote != null &&
+                        _currentBooking.additionalNote!.isNotEmpty) ...[
+                      const Divider(height: 32),
+                      Text(
+                        'Additional Note',
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _currentBooking.additionalNote!,
+                        style: AppTextStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -880,6 +919,27 @@ class _CustomerBookingDetailsScreenState
         ),
       );
     }
+  }
+
+  Widget _buildPaymentRow(String label, String value, {bool isNegative = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: AppTextStyles.bodyMedium.copyWith(
+            color: AppColors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: AppTextStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.w600,
+            color: isNegative ? AppColors.error : AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildDetailRow(IconData icon, String text) {

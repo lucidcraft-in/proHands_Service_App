@@ -762,7 +762,7 @@ class _ServiceBoyTaskDetailsScreenState
                       ),
                       const SizedBox(height: 16),
                       CustomButton(
-                        text: 'Delay Req',
+                        text: 'Delay Request',
                         onPressed:
                             () => _showDelayRequestDialog(context, booking.id),
                         isOutlined: true,

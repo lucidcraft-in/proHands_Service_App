@@ -956,11 +956,17 @@ class ConsumerService {
 
   // Search Services
   Future<List<ServiceProductModel>> searchServices(String keyword) async {
+    print("----- --------   ------");
+    print(keyword);
     final url = Uri.parse('$baseUrl/services/search?keyword=$keyword');
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
 
+      print("----- --------   ------");
+      print(response.body);
+      print("----- --------   ------");
+      print(response.statusCode);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -1019,6 +1025,33 @@ class ConsumerService {
       }
     } catch (e) {
       throw Exception('Error fetching services near location: $e');
+    }
+  }
+
+  // Get Leaderboard
+  Future<List<UserModel>> getLeaderboard() async {
+    final url = Uri.parse('$baseUrl/users/leaderboard/customers');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.get(url, headers: headers);
+
+      print("Leaderboard Response: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> leaderboardJson = data['customers'];
+          return leaderboardJson
+              .map((json) => UserModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load leaderboard');
+        }
+      } else {
+        throw Exception('Failed to load leaderboard: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching leaderboard: $e');
     }
   }
 }

@@ -18,6 +18,7 @@ class CustomTextField extends StatefulWidget {
   final List<TextInputFormatter>? inputFormatters;
   final FocusNode? focusNode;
   final bool readOnly;
+  final TextCapitalization textCapitalization;
 
   const CustomTextField({
     super.key,
@@ -35,6 +36,7 @@ class CustomTextField extends StatefulWidget {
     this.inputFormatters,
     this.focusNode,
     this.readOnly = false,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
@@ -64,6 +66,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           controller: widget.controller,
           obscureText: _obscureText,
           keyboardType: widget.keyboardType,
+          textCapitalization: widget.textCapitalization,
           validator: widget.validator,
           onChanged: widget.onChanged,
           maxLines: widget.maxLines,

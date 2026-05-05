@@ -3,6 +3,38 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'user_type.dart';
 
+class BankDetails {
+  final String? bankName;
+  final String? accountNumber;
+  final String? ifscCode;
+  final String? accountHolderName;
+
+  const BankDetails({
+    this.bankName,
+    this.accountNumber,
+    this.ifscCode,
+    this.accountHolderName,
+  });
+
+  factory BankDetails.fromJson(Map<String, dynamic> json) {
+    return BankDetails(
+      bankName: json['bankName'],
+      accountNumber: json['accountNumber'],
+      ifscCode: json['ifscCode'],
+      accountHolderName: json['accountHolderName'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'bankName': bankName,
+      'accountNumber': accountNumber,
+      'ifscCode': ifscCode,
+      'accountHolderName': accountHolderName,
+    };
+  }
+}
+
 class UserModel {
   final String id;
   final String? name; // Nullable as it might not be in login response
@@ -44,6 +76,7 @@ class UserModel {
   final int totalRedeemedPoints;
   final List<String> additionalDocuments;
   final String? updatedBy;
+  final BankDetails? bankDetails;
 
   const UserModel({
     required this.id,
@@ -85,6 +118,7 @@ class UserModel {
     this.totalRedeemedPoints = 0,
     this.additionalDocuments = const [],
     this.updatedBy,
+    this.bankDetails,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -173,6 +207,10 @@ class UserModel {
       totalRedeemedPoints: json['totalRedeemedPoints'] ?? 0,
       additionalDocuments: List<String>.from(json['additionalDocuments'] ?? []),
       updatedBy: json['updatedBy'],
+      bankDetails:
+          json['bankDetails'] != null
+              ? BankDetails.fromJson(json['bankDetails'])
+              : null,
     );
   }
 
@@ -216,6 +254,7 @@ class UserModel {
       'totalRedeemedPoints': totalRedeemedPoints,
       'additionalDocuments': additionalDocuments,
       'updatedBy': updatedBy,
+      'bankDetails': bankDetails?.toJson(),
     };
   }
 
@@ -247,5 +286,93 @@ class UserModel {
   @override
   String toString() {
     return 'UserModel(id: $id, phone: $phone, type: ${userType.displayName}, complete: $isProfileComplete)';
+  }
+
+  UserModel copyWith({
+    String? id,
+    String? name,
+    String? email,
+    String? phone,
+    UserType? userType,
+    bool? isProfileComplete,
+    bool? isActive,
+    bool? isApproved,
+    String? address,
+    String? otp,
+    String? profession,
+    double? rating,
+    int? reviewsCount,
+    String? bio,
+    List<String>? specialties,
+    String? serviceImage,
+    String? profilePhoto,
+    String? location,
+    List<String>? portfolioImages,
+    int? postsCount,
+    int? followersCount,
+    List<String>? servicesOffered,
+    List<String>? workPreference,
+    List<dynamic>? workLocationPreferred,
+    String? experience,
+    String? adharCard,
+    String? license,
+    double? latitude,
+    double? longitude,
+    bool? isCommissionPending,
+    int? jobsCompleted,
+    double? earnings,
+    double? completionRate,
+    bool? isProfilePhotoApproved,
+    String? proofOfIdentity,
+    int? points,
+    int? totalRedeemedPoints,
+    List<String>? additionalDocuments,
+    String? updatedBy,
+    BankDetails? bankDetails,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      userType: userType ?? this.userType,
+      isProfileComplete: isProfileComplete ?? this.isProfileComplete,
+      isActive: isActive ?? this.isActive,
+      isApproved: isApproved ?? this.isApproved,
+      address: address ?? this.address,
+      otp: otp ?? this.otp,
+      profession: profession ?? this.profession,
+      rating: rating ?? this.rating,
+      reviewsCount: reviewsCount ?? this.reviewsCount,
+      bio: bio ?? this.bio,
+      specialties: specialties ?? this.specialties,
+      serviceImage: serviceImage ?? this.serviceImage,
+      profilePhoto: profilePhoto ?? this.profilePhoto,
+      location: location ?? this.location,
+      portfolioImages: portfolioImages ?? this.portfolioImages,
+      postsCount: postsCount ?? this.postsCount,
+      followersCount: followersCount ?? this.followersCount,
+      servicesOffered: servicesOffered ?? this.servicesOffered,
+      workPreference: workPreference ?? this.workPreference,
+      workLocationPreferred:
+          workLocationPreferred ?? this.workLocationPreferred,
+      experience: experience ?? this.experience,
+      adharCard: adharCard ?? this.adharCard,
+      license: license ?? this.license,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      isCommissionPending: isCommissionPending ?? this.isCommissionPending,
+      jobsCompleted: jobsCompleted ?? this.jobsCompleted,
+      earnings: earnings ?? this.earnings,
+      completionRate: completionRate ?? this.completionRate,
+      isProfilePhotoApproved:
+          isProfilePhotoApproved ?? this.isProfilePhotoApproved,
+      proofOfIdentity: proofOfIdentity ?? this.proofOfIdentity,
+      points: points ?? this.points,
+      totalRedeemedPoints: totalRedeemedPoints ?? this.totalRedeemedPoints,
+      additionalDocuments: additionalDocuments ?? this.additionalDocuments,
+      updatedBy: updatedBy ?? this.updatedBy,
+      bankDetails: bankDetails ?? this.bankDetails,
+    );
   }
 }

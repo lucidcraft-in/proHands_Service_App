@@ -47,6 +47,10 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isFetchingNearLocation = false;
   String? _nearLocationError;
 
+  List<UserModel> _leaderboard = [];
+  bool _isLoadingLeaderboard = false;
+  String? _leaderboardError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
@@ -78,6 +82,10 @@ class ConsumerProvider extends ChangeNotifier {
   List<ServiceProductModel> get nearLocationResults => _nearLocationResults;
   bool get isFetchingNearLocation => _isFetchingNearLocation;
   String? get nearLocationError => _nearLocationError;
+
+  List<UserModel> get leaderboard => _leaderboard;
+  bool get isLoadingLeaderboard => _isLoadingLeaderboard;
+  String? get leaderboardError => _leaderboardError;
 
   Future<void> fetchCategories() async {
     if (_isLoadingCategories) return;
@@ -223,7 +231,8 @@ class ConsumerProvider extends ChangeNotifier {
     _isSearching = true;
     _searchError = null;
     notifyListeners();
-
+    print("-------------------");
+    print(keyword);
     try {
       _searchResults = await _service.searchServices(keyword);
     } catch (e) {
@@ -489,6 +498,7 @@ class ConsumerProvider extends ChangeNotifier {
     String? adharCardPath,
     String? licensePath,
     List<String>? portfolioImagePaths,
+    BankDetails? bankDetails,
   }) async {
     _isUpdatingProfile = true;
     _updateProfileError = null;
@@ -794,6 +804,21 @@ class ConsumerProvider extends ChangeNotifier {
       _delayHandleError = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<void> fetchLeaderboard() async {
+    _isLoadingLeaderboard = true;
+    _leaderboardError = null;
+    notifyListeners();
+
+    try {
+      _leaderboard = await _service.getLeaderboard();
+    } catch (e) {
+      _leaderboardError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingLeaderboard = false;
+      notifyListeners();
     }
   }
 }
