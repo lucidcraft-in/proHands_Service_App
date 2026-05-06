@@ -361,12 +361,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ? (_serviceFormKey.currentState?.validate() ?? false)
             : false;
 
+    if (!profileValid && !serviceValid && isServiceBoy) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please check both Profile and Service forms for errors',
+          ),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
     if (profileValid || serviceValid) {
       setState(() {
         _isSaving = true;
       });
 
       try {
+        bool profileSuccess = true;
+        bool serviceSuccess = true;
+
         if (profileValid) {
           final results = await Future.wait([
             consumerProvider.updateFullProfile(
@@ -407,20 +422,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               licensePath: _license?.path,
               serviceImagePath: _serviceImage?.path,
               portfolioImagePaths: _portfolioImages.map((e) => e.path).toList(),
-              bankDetails:
-                  isServiceBoy
-                      ? BankDetails(
-                        bankName: _bankNameController.text,
-                        accountNumber: _accountNumberController.text,
-                        ifscCode: _ifscCodeController.text,
-                        accountHolderName: _accountHolderNameController.text,
-                      )
-                      : null,
             ),
             Future.delayed(const Duration(seconds: 1)),
           ]);
 
-          bool profileSuccess = results[0] as bool;
+          profileSuccess = results[0] as bool;
           if (profileSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -467,7 +473,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     : 0,
           };
 
-          bool serviceSuccess;
           if (_existingServiceId != null) {
             serviceSuccess = await serviceProvider.updateService(
               _existingServiceId!,
@@ -498,8 +503,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
         }
 
-        // If everything successful or at least one, maybe pop?
-        // Let's stay on the page so user can see both tabs updated.
+        // If we reached here without catching an error, check if both succeeded
+        if (profileSuccess && serviceSuccess) {
+          Future.delayed(const Duration(seconds: 1), () {
+            if (mounted) Navigator.pop(context);
+          });
+        }
+      } catch (e) {
+        debugPrint('Error in _handleSave: $e');
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
       } finally {
         if (mounted) {
           setState(() {
@@ -569,6 +583,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ConsumerProvider>();
+    final serviceBoyProvider = context.watch<ServiceBoyProvider>();
     final user = provider.currentUser;
     final isServiceBoy = user?.userType == UserType.serviceBoy;
 
@@ -603,11 +618,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             isServiceBoy
                 ? TabBarView(
                   children: [
-                    _buildProfileTab(isLoading, user, provider),
-                    _buildServiceTab(isLoading),
+                    _KeepAliveWrapper(
+                      child: _buildProfileTab(isLoading, user, provider),
+                    ),
+                    _KeepAliveWrapper(child: _buildServiceTab(isLoading)),
                   ],
                 )
                 : _buildProfileTab(isLoading, user, provider),
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(20),
+          child:
+              isLoading ||
+                      serviceBoyProvider.isCreatingService ||
+                      serviceBoyProvider.isUpdatingService
+                  ? const SizedBox(
+                    height: 50,
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                  : GradientButton(
+                    text: 'Save All Changes',
+                    onPressed: _handleSave,
+                  ),
+        ),
       ),
     );
   }
@@ -936,71 +968,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   user?.license,
                   () => _pickImage('license'),
                 ),
-                const SizedBox(height: 30),
-                Text(
-                  'Bank Account Details (Optional)',
-                  style: AppTextStyles.h4,
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Bank Name',
-                  hint: 'Enter bank name',
-                  controller: _bankNameController,
-                  prefixIcon: const Icon(
-                    Iconsax.bank,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Account Holder Name',
-                  hint: 'Enter name as per bank records',
-                  controller: _accountHolderNameController,
-                  prefixIcon: const Icon(
-                    Iconsax.user,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'Account Number',
-                  hint: 'Enter account number',
-                  controller: _accountNumberController,
-                  keyboardType: TextInputType.number,
-                  prefixIcon: const Icon(
-                    Iconsax.card,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(
-                  label: 'IFSC Code',
-                  hint: 'Enter IFSC code',
-                  controller: _ifscCodeController,
-                  textCapitalization: TextCapitalization.characters,
-                  prefixIcon: const Icon(
-                    Iconsax.code,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                ),
               ],
 
               const SizedBox(height: 32),
-
-              // Save button
-              if (isLoading)
-                const Center(child: CircularProgressIndicator())
-              else
-                GradientButton(
-                  text: 'Save Profile Changes',
-                  onPressed: _handleSave,
-                  width: double.infinity,
-                ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -1348,21 +1318,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 ),
 
                 const SizedBox(height: 32),
-
-                if (isLoading ||
-                    provider.isCreatingService ||
-                    provider.isUpdatingService)
-                  const Center(child: CircularProgressIndicator())
-                else
-                  GradientButton(
-                    text:
-                        _existingServiceId != null
-                            ? 'Update Service'
-                            : 'Create Service',
-                    onPressed: _handleSave, // Use same handler
-                    width: double.infinity,
-                  ),
-                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -1370,4 +1325,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       },
     );
   }
+}
+
+class _KeepAliveWrapper extends StatefulWidget {
+  final Widget child;
+  const _KeepAliveWrapper({required this.child});
+
+  @override
+  State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();
+}
+
+class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
+  }
+
+  @override
+  bool get wantKeepAlive => true;
 }

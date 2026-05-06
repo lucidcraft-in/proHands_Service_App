@@ -83,7 +83,7 @@ class MainScreenState extends State<MainScreen> {
             ),
             BottomNavigationBarItem(
               icon: Icon(Iconsax.search_normal),
-              activeIcon: Icon(Iconsax.search_normal_1),
+              activeIcon: Icon(Iconsax.search_normal),
               label: 'Explore',
             ),
             BottomNavigationBarItem(

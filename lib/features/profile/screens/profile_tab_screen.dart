@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/providers/theme_provider.dart';
 import 'edit_profile_screen.dart';
+import 'update_bank_details_screen.dart';
 import '../../service_boy/screens/service_boy_services_screen.dart';
 import '../../auth/screens/login_screen.dart';
 import '../../../core/models/user_model.dart';
@@ -223,9 +224,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                                 !user.isApproved) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    'Please complete your profile or your account is not approved',
-                                  ),
+                                  content: Text('Your account is not approved'),
                                   backgroundColor: AppColors.error,
                                 ),
                               );
@@ -241,11 +240,36 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                             );
                           },
                         ),
-                        // Divider(
-                        //   height: 1,
-                        //   indent: 70,
-                        //   color: Theme.of(context).dividerColor,
-                        // ),
+                        Divider(
+                          height: 1,
+                          indent: 70,
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                        ),
+                        _MenuItem(
+                          icon: Iconsax.briefcase,
+                          title: 'Update Bank Details',
+                          onTap: () {
+                            if (!user.isProfileComplete ||
+                                !user.isActive ||
+                                !user.isApproved) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Your account is not approved'),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                              return;
+                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        const UpdateBankDetailsScreen(),
+                              ),
+                            );
+                          },
+                        ),
                       ],
                       _MenuItem(
                         icon: Iconsax.location,

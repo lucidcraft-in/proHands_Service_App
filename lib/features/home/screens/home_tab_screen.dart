@@ -8,7 +8,9 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../models/service_product_model.dart';
+import '../widgets/service_card_horizontal.dart';
 import 'service_product_detail_screen.dart';
+import 'location_search_screen.dart';
 
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../core/widgets/empty_state_widget.dart';
@@ -218,6 +220,26 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: const Icon(
+                                    Iconsax.map,
+                                    size: 18,
+                                    color: AppColors.primary,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const LocationSearchScreen(),
+                                      ),
+                                    );
+                                  },
+                                ),
                               ],
                             ),
                           ),
@@ -244,9 +266,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                           return const Iterable<ServiceProductModel>.empty();
                         }
                         await provider.searchServices(textEditingValue.text);
-                        print("---------------------");
-                        print(provider.searchResults);
-                        print("---------------------");
+                        ;
 
                         if (provider.searchResults.isEmpty) {
                           // Return a dummy item to trigger optionsViewBuilder
@@ -268,15 +288,19 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       },
                       onSelected: (ServiceProductModel selection) {
                         if (selection.id == 'empty') return;
-                        Navigator.push(
+                        fetchAndNavigateToProfile(
                           context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => ServiceProductDetailScreen(
-                                  service: selection,
-                                ),
-                          ),
+                          selection.providerId,
                         );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder:
+                        //         (context) => ServiceProductDetailScreen(
+                        //           service: selection,
+                        //         ),
+                        //   ),
+                        // );
                       },
                       fieldViewBuilder: (
                         context,

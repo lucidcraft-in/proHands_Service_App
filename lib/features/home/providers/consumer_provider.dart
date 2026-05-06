@@ -251,6 +251,29 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> searchServicesNearLocation({
+    required double latitude,
+    required double longitude,
+    required double radius,
+  }) async {
+    _isFetchingNearLocation = true;
+    _nearLocationError = null;
+    notifyListeners();
+
+    try {
+      _nearLocationResults = await _service.getServicesNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+    } catch (e) {
+      _nearLocationError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isFetchingNearLocation = false;
+      notifyListeners();
+    }
+  }
+
   // Fetch Location Suggestions
   Future<void> fetchLocationSuggestions(String query) async {
     if (query.isEmpty) {
@@ -273,21 +296,21 @@ class ConsumerProvider extends ChangeNotifier {
   }
 
   // Fetch Services Near Location
-  Future<void> fetchServicesNearLocation(double lat, double lng) async {
-    _isFetchingNearLocation = true;
-    _nearLocationError = null;
-    _locationSuggestions = []; // Clear suggestions once selected
-    notifyListeners();
+  // Future<void> fetchServicesNearLocation(double lat, double lng) async {
+  //   _isFetchingNearLocation = true;
+  //   _nearLocationError = null;
+  //   _locationSuggestions = []; // Clear suggestions once selected
+  //   notifyListeners();
 
-    try {
-      _nearLocationResults = await _service.getServicesNearLocation(lat, lng);
-    } catch (e) {
-      _nearLocationError = e.toString().replaceAll('Exception: ', '');
-    } finally {
-      _isFetchingNearLocation = false;
-      notifyListeners();
-    }
-  }
+  //   try {
+  //     _nearLocationResults = await _service.getServicesNearLocation(lat, lng);
+  //   } catch (e) {
+  //     _nearLocationError = e.toString().replaceAll('Exception: ', '');
+  //   } finally {
+  //     _isFetchingNearLocation = false;
+  //     notifyListeners();
+  //   }
+  // }
 
   void clearLocationSearch() {
     _nearLocationResults = [];
@@ -482,6 +505,24 @@ class ConsumerProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfileBankDetails(BankDetails bankDetails) async {
+    _isUpdatingProfile = true;
+    _updateProfileError = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _service.updateBankDetails(bankDetails);
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _updateProfileError = e.toString().replaceAll('Exception: ', '');
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> updateFullProfile({
     String? name,
     String? email,
@@ -525,6 +566,7 @@ class ConsumerProvider extends ChangeNotifier {
         adharCardPath: adharCardPath,
         licensePath: licensePath,
         portfolioImagePaths: portfolioImagePaths,
+        bankDetails: bankDetails,
       );
       _isUpdatingProfile = false;
       notifyListeners();
