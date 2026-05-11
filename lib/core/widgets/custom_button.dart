@@ -95,6 +95,8 @@ class CustomButton extends StatelessWidget {
                 ? (backgroundColor ?? AppColors.primary)
                 : AppColors.white),
       ),
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
     );
 
     if (icon != null) {
@@ -111,7 +113,7 @@ class CustomButton extends StatelessWidget {
                     : AppColors.white),
           ),
           const SizedBox(width: 8),
-          textWidget,
+          Flexible(child: textWidget),
         ],
       );
     }
@@ -179,7 +181,12 @@ class GradientButton extends StatelessWidget {
   }
 
   Widget _buildChild() {
-    final textWidget = Text(text, style: AppTextStyles.button);
+    final textWidget = Text(
+      text,
+      style: AppTextStyles.button,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
 
     if (icon != null) {
       return Row(
@@ -187,7 +194,7 @@ class GradientButton extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: AppColors.white),
           const SizedBox(width: 8),
-          textWidget,
+          Flexible(child: textWidget),
         ],
       );
     }
