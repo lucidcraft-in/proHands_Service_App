@@ -396,6 +396,7 @@ class ConsumerProvider extends ChangeNotifier {
       _currentUser = await _service.getMe();
       print("==== =     = = = = = = = = = = = =  ====");
       print(_currentUser!);
+      notifyListeners();
     } catch (e) {
       _profileError = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -547,8 +548,6 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print("==================================================");
-      print(workLocationPreferred);
       _currentUser = await _service.updateFullProfile(
         name: name,
         email: email,
@@ -692,6 +691,7 @@ class ConsumerProvider extends ChangeNotifier {
     required String time,
     required String address,
     required List<double> coordinates,
+    String? description,
   }) async {
     _isCreatingBooking = true;
     _createBookingError = null;
@@ -704,6 +704,7 @@ class ConsumerProvider extends ChangeNotifier {
         time: time,
         address: address,
         coordinates: coordinates,
+        description: description,
       );
       _isCreatingBooking = false;
       notifyListeners();

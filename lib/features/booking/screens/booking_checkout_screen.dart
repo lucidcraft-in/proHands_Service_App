@@ -15,12 +15,14 @@ class BookingCheckoutScreen extends StatefulWidget {
   final String serviceName;
   final String serviceId;
   final double price;
+  final String? serviceDescription; // Added
 
   const BookingCheckoutScreen({
     super.key,
     required this.serviceName,
     required this.serviceId,
     required this.price,
+    this.serviceDescription, // Added
   });
 
   @override
@@ -37,6 +39,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   final _houseNameController = TextEditingController();
   final _placeController = TextEditingController();
   final _zipcodeController = TextEditingController();
+  final _notesController = TextEditingController(); // Added
   bool _isProcessing = false;
   bool _showNameField = false;
 
@@ -46,6 +49,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
     _houseNameController.dispose();
     _placeController.dispose();
     _zipcodeController.dispose();
+    _notesController.dispose(); // Added
     super.dispose();
   }
 
@@ -224,33 +228,60 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.border),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Iconsax.setting_5, color: AppColors.primary),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.serviceName,
-                          style: AppTextStyles.labelMedium,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Professional Service',
-                          style: AppTextStyles.caption,
+                        child: Icon(
+                          Iconsax.setting_5,
+                          color: AppColors.primary,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.serviceName,
+                              style: AppTextStyles.labelMedium,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Professional Service',
+                              style: AppTextStyles.caption,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+                  if (widget.serviceDescription != null &&
+                      widget.serviceDescription!.isNotEmpty) ...[
+                    const Divider(height: 24),
+                    Text(
+                      'Description',
+                      style: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.serviceDescription!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -458,6 +489,19 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
               ],
             ),
 
+            const SizedBox(height: 32),
+
+            // Booking Notes Section
+            Text('Booking Notes', style: AppTextStyles.labelLarge),
+            const SizedBox(height: 16),
+            _buildAddressField(
+              controller: _notesController,
+              label: 'Additional Instructions',
+              hint: 'e.g. Please bring a ladder, doorbell is broken...',
+              icon: Iconsax.document_text,
+              maxLines: 3,
+            ),
+
             const SizedBox(height: 40),
 
             GradientButton(
@@ -478,6 +522,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
     required String hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -490,6 +535,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
         TextField(
           controller: controller,
           keyboardType: keyboardType,
+          maxLines: maxLines,
           style: AppTextStyles.bodyMedium,
           decoration: InputDecoration(
             hintText: hint,
@@ -585,6 +631,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
         time: formattedTime,
         address: finalAddress,
         coordinates: _selectedCoordinates, // Use selected coordinates
+        description: _notesController.text.trim(), // Added
       );
 
       if (!mounted) return;

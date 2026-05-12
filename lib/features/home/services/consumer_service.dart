@@ -799,6 +799,7 @@ class ConsumerService {
     required String time,
     required String address,
     required List<double> coordinates,
+    String? description,
   }) async {
     final url = Uri.parse('$baseUrl/bookings');
 
@@ -810,6 +811,7 @@ class ConsumerService {
           'date': date,
           'time': time,
           'location': {'location_name': address, 'coordinates': coordinates},
+          if (description != null) 'description': description,
         })}",
       );
       final headers = await _getHeaders();
@@ -822,6 +824,7 @@ class ConsumerService {
           'location_name': address, // ✅ FIXED
           'coordinates': coordinates,
         },
+        if (description != null) 'description': description,
       });
 
       final response = await http.post(url, headers: headers, body: body);

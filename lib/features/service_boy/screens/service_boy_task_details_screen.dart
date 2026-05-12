@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/services/locationTrack.dart';
+import '../../home/widgets/timelinechip.dart';
 import '../providers/service_boy_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -929,11 +930,124 @@ class _ServiceBoyTaskDetailsScreenState
     );
   }
 
+  // Widget _buildLogsTimeline() {
+  //   return Consumer<ServiceBoyProvider>(
+  //     builder: (context, provider, child) {
+  //       if (provider.isLoadingBookingLogs) {
+  //         return Padding(
+  //           padding: EdgeInsets.symmetric(vertical: 20),
+  //           child: ListCardShimmer(),
+  //         );
+  //       }
+
+  //       if (provider.bookingLogs.isEmpty) {
+  //         return const SizedBox.shrink();
+  //       }
+
+  //       return Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text('Booking Timeline', style: AppTextStyles.h4),
+  //           const SizedBox(height: 16),
+  //           ListView.builder(
+  //             shrinkWrap: true,
+  //             physics: const NeverScrollableScrollPhysics(),
+  //             itemCount: provider.bookingLogs.length,
+  //             itemBuilder: (context, index) {
+  //               final log = provider.bookingLogs[index];
+  //               final isLast = index == provider.bookingLogs.length - 1;
+
+  //               DateTime? dateTime;
+  //               try {
+  //                 dateTime = DateTime.parse(log.createdAt).toLocal();
+  //               } catch (_) {}
+
+  //               final dateStr =
+  //                   dateTime != null
+  //                       ? "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"
+  //                       : log.createdAt;
+
+  //               return IntrinsicHeight(
+  //                 child: Row(
+  //                   children: [
+  //                     Column(
+  //                       children: [
+  //                         Container(
+  //                           width: 12,
+  //                           height: 12,
+  //                           decoration: BoxDecoration(
+  //                             color: AppColors.primary,
+  //                             shape: BoxShape.circle,
+  //                           ),
+  //                         ),
+  //                         if (!isLast)
+  //                           Expanded(
+  //                             child: Container(
+  //                               width: 2,
+  //                               color: AppColors.primary.withValues(alpha: 0.3),
+  //                             ),
+  //                           ),
+  //                       ],
+  //                     ),
+  //                     const SizedBox(width: 16),
+  //                     Expanded(
+  //                       child: Padding(
+  //                         padding: const EdgeInsets.only(bottom: 24),
+  //                         child: Column(
+  //                           crossAxisAlignment: CrossAxisAlignment.start,
+  //                           children: [
+  //                             Row(
+  //                               mainAxisAlignment:
+  //                                   MainAxisAlignment.spaceBetween,
+  //                               children: [
+  //                                 Text(
+  //                                   log.createdByUserType,
+  //                                   style: AppTextStyles.bodyLarge.copyWith(
+  //                                     fontWeight: FontWeight.bold,
+  //                                   ),
+  //                                 ),
+  //                                 Text(
+  //                                   dateStr,
+  //                                   style: AppTextStyles.bodySmall.copyWith(
+  //                                     color: AppColors.textTertiary,
+  //                                   ),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                             const SizedBox(height: 4),
+  //                             Text(
+  //                               log.notes,
+  //                               style: AppTextStyles.bodyMedium.copyWith(
+  //                                 color: AppColors.textSecondary,
+  //                               ),
+  //                             ),
+  //                             const SizedBox(height: 4),
+  //                             Text(
+  //                               "By: ${log.createdByName}",
+  //                               style: AppTextStyles.labelSmall.copyWith(
+  //                                 color: AppColors.textTertiary,
+  //                                 fontStyle: FontStyle.italic,
+  //                               ),
+  //                             ),
+  //                           ],
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
   Widget _buildLogsTimeline() {
     return Consumer<ServiceBoyProvider>(
       builder: (context, provider, child) {
         if (provider.isLoadingBookingLogs) {
-          return Padding(
+          return const Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: ListCardShimmer(),
           );
@@ -946,8 +1060,15 @@ class _ServiceBoyTaskDetailsScreenState
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Booking Timeline', style: AppTextStyles.h4),
-            const SizedBox(height: 16),
+            Text(
+              'BOOKING TIMELINE',
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.2,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -955,86 +1076,7 @@ class _ServiceBoyTaskDetailsScreenState
               itemBuilder: (context, index) {
                 final log = provider.bookingLogs[index];
                 final isLast = index == provider.bookingLogs.length - 1;
-
-                DateTime? dateTime;
-                try {
-                  dateTime = DateTime.parse(log.createdAt).toLocal();
-                } catch (_) {}
-
-                final dateStr =
-                    dateTime != null
-                        ? "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"
-                        : log.createdAt;
-
-                return IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      Column(
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          if (!isLast)
-                            Expanded(
-                              child: Container(
-                                width: 2,
-                                color: AppColors.primary.withValues(alpha: 0.3),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    log.createdByUserType,
-                                    style: AppTextStyles.bodyLarge.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    dateStr,
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.textTertiary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                log.notes,
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "By: ${log.createdByName}",
-                                style: AppTextStyles.labelSmall.copyWith(
-                                  color: AppColors.textTertiary,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                return TimelineItem(log: log, isLast: isLast);
               },
             ),
           ],

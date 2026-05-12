@@ -29,7 +29,6 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _profileFormKey = GlobalKey<FormState>();
-  final _serviceFormKey = GlobalKey<FormState>();
 
   // Common Fields
   late TextEditingController _nameController;
@@ -39,8 +38,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // Technician Fields
   late TextEditingController _professionController;
   late TextEditingController _experienceController;
-  late TextEditingController
-  _servicesOfferedController; // Comma separated for now
   late TextEditingController _specialtiesController; // Comma separated
   late TextEditingController
   _workLocationPreferredController; // Comma separated for now
@@ -91,7 +88,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _addressController = TextEditingController();
     _professionController = TextEditingController();
     _experienceController = TextEditingController();
-    _servicesOfferedController = TextEditingController();
     _specialtiesController = TextEditingController();
     _workLocationPreferredController = TextEditingController();
     _bankNameController = TextEditingController();
@@ -138,6 +134,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         if (_selectedCategoryId != null) {
           await serviceProvider.fetchSubcategories(_selectedCategoryId!);
         }
+      } else {
+        // If no service exists yet, try to match user.profession to a category
+        // to show the appropriate fields (like Services Offered)
+        final user = context.read<ConsumerProvider>().currentUser;
+        if (user != null) {
+          final match = serviceProvider.categories.firstWhere(
+            (c) => c.name.toLowerCase() == user.profession.toLowerCase(),
+            orElse:
+                () =>
+                    serviceProvider
+                        .categories
+                        .first, // Fallback to first if needed? Or null
+          );
+          if (match != null) {
+            setState(() {
+              _selectedCategoryId = match.id;
+              _professionController.text = match.name;
+            });
+            await serviceProvider.fetchSubcategories(match.id);
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error fetching service info: $e');
@@ -149,6 +166,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _initializeFromUser(UserModel? user) {
+    print("+++++++ user ${user}");
+
     if (user == null) return;
 
     _nameController.text = user.name ?? '';
@@ -158,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // Technician Specifics
     _professionController.text = user.profession;
     _experienceController.text = user.experience;
-    _servicesOfferedController.text = user.servicesOffered.join(', ');
+    _selectedAdditionalSkills = List<String>.from(user.servicesOffered);
     _specialtiesController.text = user.specialties.join(', ');
     _workLocationPreferredController.text =
         ''; // We use _selectedPreferredLocations instead
@@ -168,8 +187,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     for (var loc in user.workLocationPreferred) {
       try {
         final decoded = jsonDecode(loc);
-        if (decoded is Map<String, dynamic>) {
-          _selectedPreferredLocations.add(decoded);
+        try {
+          if (decoded is Map<String, dynamic>) {
+            print("+++++ +=======");
+            setState(() {
+              _selectedPreferredLocations.add(decoded);
+            });
+            print(_selectedPreferredLocations);
+          }
+        } catch (e) {
+          print("++++++=======");
+          print(e);
         }
       } catch (e) {
         // Fallback for plain strings if any
@@ -205,7 +233,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _addressController.dispose();
     _professionController.dispose();
     _experienceController.dispose();
-    _servicesOfferedController.dispose();
     _specialtiesController.dispose();
     _workLocationPreferredController.dispose();
     _bankNameController.dispose();
@@ -252,7 +279,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       // Check if already added
       if (_selectedPreferredLocations.any(
-        (loc) => (loc['location_name'] ?? loc['location name']) == description,
+        (loc) => (loc['location name'] ?? loc['location name']) == description,
       )) {
         ScaffoldMessenger.of(
           context,
@@ -271,6 +298,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _workLocationPreferredController.clear();
         });
       }
+      print(_selectedPreferredLocations);
     } catch (e) {
       print(e);
     }
@@ -355,25 +383,44 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // If the user is on the Service tab, save service. If on Profile tab, save profile.
     // Actually, I'll just check which form validates.
 
-    bool profileValid = _profileFormKey.currentState?.validate() ?? false;
-    bool serviceValid =
-        isServiceBoy
-            ? (_serviceFormKey.currentState?.validate() ?? false)
-            : false;
+    bool isValid = _profileFormKey.currentState?.validate() ?? false;
 
-    if (!profileValid && !serviceValid && isServiceBoy) {
+    if (isServiceBoy) {
+      final hasAdhar =
+          (user?.adharCard != null && user!.adharCard!.isNotEmpty) ||
+          _adharCard != null;
+      final hasLicense =
+          (user?.license != null && user!.license!.isNotEmpty) ||
+          _license != null;
+
+      if (!hasAdhar || !hasLicense) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              !hasAdhar && !hasLicense
+                  ? 'Please upload both Adhar Card and License'
+                  : !hasAdhar
+                  ? 'Please upload Adhar Card'
+                  : 'Please upload License',
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+        return;
+      }
+    }
+
+    if (!isValid && isServiceBoy) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Please check both Profile and Service forms for errors',
-          ),
+          content: Text('Please check the form for errors'),
           backgroundColor: AppColors.error,
         ),
       );
       return;
     }
 
-    if (profileValid || serviceValid) {
+    if (isValid) {
       setState(() {
         _isSaving = true;
       });
@@ -381,8 +428,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       try {
         bool profileSuccess = true;
         bool serviceSuccess = true;
-
-        if (profileValid) {
+        print("_________________==================-");
+        print(_selectedPreferredLocations);
+        if (isValid) {
           final results = await Future.wait([
             consumerProvider.updateFullProfile(
               name: _nameController.text.trim(),
@@ -392,14 +440,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isServiceBoy ? _professionController.text.trim() : null,
               experience:
                   isServiceBoy ? _experienceController.text.trim() : null,
-              servicesOffered:
-                  isServiceBoy
-                      ? _servicesOfferedController.text
-                          .split(',')
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList()
-                      : null,
+              servicesOffered: isServiceBoy ? _selectedAdditionalSkills : null,
               specialties:
                   isServiceBoy
                       ? _specialtiesController.text
@@ -427,14 +468,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ]);
 
           profileSuccess = results[0] as bool;
-          if (profileSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully'),
-                backgroundColor: AppColors.success,
-              ),
-            );
-          } else {
+          if (!profileSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -447,18 +481,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           }
         }
 
-        if (isServiceBoy && serviceValid) {
+        if (isServiceBoy && isValid) {
           // Handle Service Save
           String? imageUrl;
           if (_serviceImage != null) {
             imageUrl = await serviceProvider.uploadServiceImage(_serviceImage!);
           }
-
+          print("------------");
+          print(_selectedSubcategoryId);
           final serviceData = {
             'name': _serviceNameController.text.trim(),
             'description': _serviceDescriptionController.text.trim(),
             'categoryId': _selectedCategoryId,
-            'subcategoryId': _selectedSubcategoryId,
+            'subcategoryId':
+                _selectedSubcategoryId ??
+                '', // Use existing or empty if none selected
             'additionalSkills': _selectedAdditionalSkills,
             'isTrending': _isTrending,
             if (imageUrl != null) 'image': imageUrl,
@@ -482,14 +519,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             serviceSuccess = await serviceProvider.createService(serviceData);
           }
 
-          if (serviceSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Service saved successfully'),
-                backgroundColor: AppColors.success,
-              ),
-            );
-          } else {
+          if (!serviceSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
@@ -505,6 +535,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
         // If we reached here without catching an error, check if both succeeded
         if (profileSuccess && serviceSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Changes saved successfully'),
+              backgroundColor: AppColors.success,
+            ),
+          );
           Future.delayed(const Duration(seconds: 1), () {
             if (mounted) Navigator.pop(context);
           });
@@ -594,626 +630,293 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ? provider.isCompletingProfile
             : provider.isUpdatingProfile);
 
-    return DefaultTabController(
-      length: isServiceBoy ? 2 : 1,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: Text(
-            isServiceBoy ? 'Edit Profile & Service' : 'Edit Profile',
-            style: AppTextStyles.h4,
-          ),
-          centerTitle: true,
-          bottom:
-              isServiceBoy
-                  ? const TabBar(
-                    indicatorColor: AppColors.primary,
-                    labelColor: AppColors.primary,
-                    unselectedLabelColor: AppColors.textSecondary,
-                    tabs: [Tab(text: 'Profile'), Tab(text: 'Service')],
-                  )
-                  : null,
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          isServiceBoy ? 'Edit Profile & Service' : 'Edit Profile',
+          style: AppTextStyles.h4,
         ),
-        body:
-            isServiceBoy
-                ? TabBarView(
-                  children: [
-                    _KeepAliveWrapper(
-                      child: _buildProfileTab(isLoading, user, provider),
-                    ),
-                    _KeepAliveWrapper(child: _buildServiceTab(isLoading)),
-                  ],
-                )
-                : _buildProfileTab(isLoading, user, provider),
-        bottomNavigationBar: Padding(
-          padding: const EdgeInsets.all(20),
-          child:
-              isLoading ||
-                      serviceBoyProvider.isCreatingService ||
-                      serviceBoyProvider.isUpdatingService
-                  ? const SizedBox(
-                    height: 50,
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                  : GradientButton(
-                    text: 'Save All Changes',
-                    onPressed: _handleSave,
-                  ),
-        ),
+        centerTitle: true,
       ),
-    );
-  }
-
-  Widget _buildProfileTab(
-    bool isLoading,
-    UserModel? user,
-    ConsumerProvider provider,
-  ) {
-    final isServiceBoy = user?.userType == UserType.serviceBoy;
-    return SafeArea(
-      child: SingleChildScrollView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _profileFormKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
-              InkWell(
-                onTap: provider.isUpdatingPhoto ? null : _updateProfilePhoto,
-                borderRadius: BorderRadius.circular(60),
-                child: Stack(
-                  children: [
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      backgroundImage:
-                          (user?.profilePhoto != null &&
-                                  user!.profilePhoto.isNotEmpty &&
-                                  !user.profilePhoto.contains('default'))
-                              ? NetworkImage(user.profilePhoto)
-                              : null,
-                      child:
-                          (user?.profilePhoto == null ||
-                                  user!.profilePhoto.isEmpty ||
-                                  user.profilePhoto.contains('default'))
-                              ? const Icon(
-                                Icons.person,
-                                size: 60,
-                                color: AppColors.primary,
-                              )
-                              : provider.isUpdatingPhoto
-                              ? const CircularProgressIndicator()
-                              : null,
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Theme.of(context).colorScheme.surface,
-                            width: 3,
-                          ),
-                        ),
-                        child: const Icon(
-                          Iconsax.camera,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Common Fields
-              CustomTextField(
-                label: 'Full Name',
-                hint: 'Enter your name',
-                controller: _nameController,
-                prefixIcon: const Icon(
-                  Iconsax.user,
-                  color: AppColors.textTertiary,
-                  size: 20,
-                ),
-                validator:
-                    (value) =>
-                        (value == null || value.isEmpty)
-                            ? 'Name is required'
-                            : null,
-              ),
-              const SizedBox(height: 20),
-              CustomTextField(
-                label: 'Email',
-                hint: 'Enter your email',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(
-                  Iconsax.sms,
-                  color: AppColors.textTertiary,
-                  size: 20,
-                ),
-                validator:
-                    (value) =>
-                        (value == null || value.isEmpty)
-                            ? 'Email is required'
-                            : null,
-              ),
-              const SizedBox(height: 20),
-              CustomTextField(
-                label: 'Address',
-                hint: 'Enter your address',
-                controller: _addressController,
-                maxLines: 2,
-                prefixIcon: const Icon(
-                  Iconsax.location,
-                  color: AppColors.textTertiary,
-                  size: 20,
-                ),
-                validator:
-                    (value) =>
-                        (value == null || value.isEmpty)
-                            ? 'Address is required'
-                            : null,
-              ),
-              const SizedBox(height: 20),
-
-              // Technician Specific Fields
-              if (isServiceBoy) ...[
-                CustomTextField(
-                  label: 'Profession',
-                  hint: 'e.g. Plumber, Electrician',
-                  controller: _professionController,
-                  prefixIcon: const Icon(
-                    Iconsax.briefcase,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  validator:
-                      (value) =>
-                          (value == null || value.isEmpty)
-                              ? 'Profession is required'
-                              : null,
-                ),
+              _buildProfileFields(user, provider),
+              if (user?.userType == UserType.serviceBoy) ...[
+                const SizedBox(height: 40),
+                const Divider(),
                 const SizedBox(height: 20),
-                CustomTextField(
-                  label: 'Experience',
-                  hint: 'e.g. 5 Years',
-                  controller: _experienceController,
-                  prefixIcon: const Icon(
-                    Iconsax.timer_1,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  validator:
-                      (value) =>
-                          (value == null || value.isEmpty)
-                              ? 'Experience is required'
-                              : null,
+                _buildServiceFields(),
+              ],
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(20),
+        child:
+            isLoading ||
+                    serviceBoyProvider.isCreatingService ||
+                    serviceBoyProvider.isUpdatingService
+                ? const SizedBox(
+                  height: 50,
+                  child: Center(child: CircularProgressIndicator()),
+                )
+                : GradientButton(
+                  text: 'Save All Changes',
+                  onPressed: _handleSave,
                 ),
-                const SizedBox(height: 20),
+      ),
+    );
+  }
 
-                // Work Preference Dropdown
-                DropdownButtonFormField<String>(
-                  value: _selectedWorkPreference,
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Theme.of(context).colorScheme.surface,
-                    labelText: 'Work Preference',
-                    labelStyle: const TextStyle(color: AppColors.textSecondary),
+  Widget _buildProfileFields(UserModel? user, ConsumerProvider provider) {
+    final isServiceBoy = user?.userType == UserType.serviceBoy;
+    return Column(
+      children: [
+        // Avatar
+        InkWell(
+          onTap: provider.isUpdatingPhoto ? null : _updateProfilePhoto,
+          borderRadius: BorderRadius.circular(60),
+          child: Stack(
+            children: [
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                backgroundImage:
+                    (user?.profilePhoto != null &&
+                            user!.profilePhoto.isNotEmpty &&
+                            !user.profilePhoto.contains('default'))
+                        ? NetworkImage(user.profilePhoto)
+                        : null,
+                child:
+                    (user?.profilePhoto == null ||
+                            user!.profilePhoto.isEmpty ||
+                            user.profilePhoto.contains('default'))
+                        ? const Icon(
+                          Icons.person,
+                          size: 60,
+                          color: AppColors.primary,
+                        )
+                        : provider.isUpdatingPhoto
+                        ? const CircularProgressIndicator()
+                        : null,
+              ),
+              Positioned(
+                bottom: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.surface,
+                      width: 3,
+                    ),
+                  ),
+                  child: const Icon(
+                    Iconsax.camera,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 32),
+
+        // Common Fields
+        CustomTextField(
+          label: 'Full Name',
+          hint: 'Enter your name',
+          controller: _nameController,
+          prefixIcon: const Icon(
+            Iconsax.user,
+            color: AppColors.textTertiary,
+            size: 20,
+          ),
+          validator:
+              (value) =>
+                  (value == null || value.isEmpty) ? 'Name is required' : null,
+        ),
+        const SizedBox(height: 20),
+        CustomTextField(
+          label: 'Email',
+          hint: 'Enter your email',
+          controller: _emailController,
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: const Icon(
+            Iconsax.sms,
+            color: AppColors.textTertiary,
+            size: 20,
+          ),
+          validator:
+              (value) =>
+                  (value == null || value.isEmpty) ? 'Email is required' : null,
+        ),
+        const SizedBox(height: 20),
+        CustomTextField(
+          label: 'Address',
+          hint: 'Enter your address',
+          controller: _addressController,
+          maxLines: 2,
+          prefixIcon: const Icon(
+            Iconsax.location,
+            color: AppColors.textTertiary,
+            size: 20,
+          ),
+          validator:
+              (value) =>
+                  (value == null || value.isEmpty)
+                      ? 'Address is required'
+                      : null,
+        ),
+        const SizedBox(height: 20),
+
+        // Technician Specific Fields
+        if (isServiceBoy) ...[
+          // Category Selector (Profession)
+          Consumer<ServiceBoyProvider>(
+            builder: (context, sbProvider, _) {
+              return DropdownSearch<ServiceCategoryModel>(
+                items: sbProvider.categories,
+                itemAsString: (ServiceCategoryModel c) => c.name,
+                selectedItem:
+                    _selectedCategoryId == null
+                        ? null
+                        : sbProvider.categories
+                            .cast<ServiceCategoryModel?>()
+                            .firstWhere(
+                              (e) => e?.id == _selectedCategoryId,
+                              orElse: () => null,
+                            ),
+                popupProps: const PopupProps.menu(showSearchBox: true),
+                dropdownDecoratorProps: DropDownDecoratorProps(
+                  dropdownSearchDecoration: InputDecoration(
+                    labelText: "User Profession (Category)",
+                    hintText: "Select Profession",
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
                         color: Theme.of(context).dividerColor,
                       ),
                     ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).dividerColor,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: AppColors.primary),
-                    ),
-                  ),
-                  items:
-                      _workPreferenceOptions.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      _selectedWorkPreference = newValue;
-                    });
-                  },
-                  validator:
-                      (value) =>
-                          value == null ? 'Please select preference' : null,
-                ),
-                const SizedBox(height: 20),
-
-                CustomTextField(
-                  label: 'Services Offered',
-                  hint: 'e.g. Pipe Fixing, Drain Cleaning (comma separated)',
-                  controller: _servicesOfferedController,
-                  prefixIcon: const Icon(
-                    Iconsax.task,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  maxLines: 2,
-                  validator:
-                      (value) =>
-                          (value == null || value.isEmpty)
-                              ? 'Services are required'
-                              : null,
-                ),
-                const SizedBox(height: 20),
-                CustomTextField(
-                  label: 'Specialties',
-                  hint: 'e.g. Electrical Wiring, AC Repair (comma separated)',
-                  controller: _specialtiesController,
-                  prefixIcon: const Icon(
-                    Iconsax.star,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomTextField(
-                      label: 'Preferred Work Locations',
-                      hint: 'Search and add locations',
-                      controller: _workLocationPreferredController,
-                      onChanged: _onLocationChanged,
-                      prefixIcon: const Icon(
-                        Iconsax.map,
-                        color: AppColors.textTertiary,
-                        size: 20,
-                      ),
-                      suffixIcon:
-                          _isFetchingSuggestions
-                              ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: Padding(
-                                  padding: EdgeInsets.all(12.0),
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                ),
-                              )
-                              : null,
-                    ),
-                    if (_locationSuggestions.isNotEmpty)
-                      Container(
-                        margin: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Theme.of(context).dividerColor,
-                          ),
-                        ),
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          padding: EdgeInsets.zero,
-                          itemCount: _locationSuggestions.length,
-                          itemBuilder: (context, index) {
-                            final suggestion = _locationSuggestions[index];
-                            return ListTile(
-                              leading: const Icon(Iconsax.location),
-                              title: Text(suggestion['description']),
-                              onTap: () => _addLocation(suggestion),
-                            );
-                          },
-                        ),
-                      ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children:
-                          _selectedPreferredLocations.asMap().entries.map((
-                            entry,
-                          ) {
-                            final index = entry.key;
-                            final loc = entry.value;
-                            return Chip(
-                              label: Text(
-                                loc['location_name'] ??
-                                    loc['location name'] ??
-                                    'Unknown location',
-                                style: const TextStyle(fontSize: 12),
-                              ),
-                              onDeleted: () => _removeLocation(index),
-                              deleteIcon: const Icon(Icons.close, size: 16),
-                              backgroundColor: AppColors.primary.withOpacity(
-                                0.1,
-                              ),
-                              side: BorderSide.none,
-                            );
-                          }).toList(),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 30),
-                // File Uploads
-                Text('Documents & Images', style: AppTextStyles.h4),
-                const SizedBox(height: 16),
-
-                _buildFilePicker(
-                  'Adhar Card',
-                  _adharCard,
-                  user?.adharCard,
-                  () => _pickImage('adhar'),
-                ),
-                const SizedBox(height: 16),
-                _buildFilePicker(
-                  'License',
-                  _license,
-                  user?.license,
-                  () => _pickImage('license'),
-                ),
-              ],
-
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServiceTab(bool isLoading) {
-    return Consumer<ServiceBoyProvider>(
-      builder: (context, provider, child) {
-        if (_isLoadingService || provider.isLoadingCategories) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _serviceFormKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _existingServiceId != null
-                      ? 'Edit Service'
-                      : 'Create Service',
-                  style: AppTextStyles.h4,
-                ),
-                const SizedBox(height: 20),
-
-                // Image Picker
-                Text('Service Title Image', style: AppTextStyles.labelMedium),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () => _pickImage('service'),
-                  child: Container(
-                    height: 180,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Theme.of(context).dividerColor),
-                    ),
-                    child:
-                        _serviceImage != null
-                            ? Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Image.file(
-                                    _serviceImage!,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Positioned(
-                                  right: 8,
-                                  top: 8,
-                                  child: GestureDetector(
-                                    onTap: () {
-                                      setState(() => _serviceImage = null);
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.red,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.close,
-                                        color: Colors.white,
-                                        size: 16,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            )
-                            : provider.selectedService?.imageUrl != null
-                            ? ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                provider.selectedService!.imageUrl!,
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                            : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Iconsax.image,
-                                  size: 40,
-                                  color: AppColors.textTertiary,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Add Service Title Image',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.textTertiary,
-                                  ),
-                                ),
-                              ],
-                            ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                // Category Selector
-                DropdownSearch<ServiceCategoryModel>(
-                  items: provider.categories,
-                  itemAsString: (ServiceCategoryModel c) => c.name,
-                  selectedItem:
-                      _selectedCategoryId == null
-                          ? null
-                          : provider.categories.firstWhere(
-                            (e) => e.id == _selectedCategoryId,
-                          ),
-                  popupProps: const PopupProps.menu(showSearchBox: true),
-                  dropdownDecoratorProps: DropDownDecoratorProps(
-                    dropdownSearchDecoration: InputDecoration(
-                      hintText: "Select Category",
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: Theme.of(context).dividerColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  onChanged: (ServiceCategoryModel? selected) {
-                    setState(() {
-                      _selectedCategoryId = selected?.id;
-                      _selectedSubcategoryId = null;
-                      _selectedAdditionalSkills = [];
-                    });
+                onChanged: (ServiceCategoryModel? selected) {
+                  setState(() {
+                    _selectedCategoryId = selected?.id;
                     if (selected != null) {
-                      provider.fetchSubcategories(selected.id);
+                      _professionController.text = selected.name;
+                      sbProvider.fetchSubcategories(selected.id);
                     } else {
-                      provider.clearSubcategories();
+                      _professionController.clear();
+                      sbProvider.clearSubcategories();
                     }
-                  },
-                ),
+                    _selectedAdditionalSkills = [];
+                    _selectedSubcategoryId = null;
+                    _serviceNameController.clear();
+                  });
+                },
+                validator:
+                    (value) => value == null ? 'Profession is required' : null,
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          CustomTextField(
+            label: 'Experience',
+            hint: 'e.g. 5 Years',
+            controller: _experienceController,
+            prefixIcon: const Icon(
+              Iconsax.timer_1,
+              color: AppColors.textTertiary,
+              size: 20,
+            ),
+            validator:
+                (value) =>
+                    (value == null || value.isEmpty)
+                        ? 'Experience is required'
+                        : null,
+          ),
+          const SizedBox(height: 20),
 
-                const SizedBox(height: 20),
+          // Work Preference Dropdown
+          DropdownButtonFormField<String>(
+            value: _selectedWorkPreference,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Theme.of(context).colorScheme.surface,
+              labelText: 'Work Preference',
+              labelStyle: const TextStyle(color: AppColors.textSecondary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary),
+              ),
+            ),
+            items:
+                _workPreferenceOptions.map((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+            onChanged: (newValue) {
+              setState(() {
+                _selectedWorkPreference = newValue;
+              });
+            },
+            validator:
+                (value) => value == null ? 'Please select preference' : null,
+          ),
+          const SizedBox(height: 20),
 
-                // Subcategory Selector
-                if (_selectedCategoryId != null) ...[
-                  DropdownSearch<ServiceSubcategoryModel>(
-                    items: provider.subcategories,
-                    itemAsString: (ServiceSubcategoryModel s) => s.name,
-                    selectedItem:
-                        _selectedSubcategoryId == null ||
-                                _selectedSubcategoryId!.isEmpty
-                            ? null
-                            : provider.subcategories
-                                .cast<ServiceSubcategoryModel?>()
-                                .firstWhere(
-                                  (e) => e?.id == _selectedSubcategoryId,
-                                  orElse: () => null,
-                                ),
-                    popupProps: const PopupProps.menu(showSearchBox: true),
-                    dropdownDecoratorProps: DropDownDecoratorProps(
-                      dropdownSearchDecoration: InputDecoration(
-                        hintText:
-                            provider.isLoadingSubcategories
-                                ? 'Loading...'
-                                : 'Select Subcategory',
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                          ),
-                        ),
-                      ),
-                    ),
-                    onChanged: (ServiceSubcategoryModel? selected) {
-                      setState(() {
-                        _selectedSubcategoryId = selected?.id;
-                        if (selected != null) {
-                          _serviceNameController.text = selected.name;
-                          if (!_selectedAdditionalSkills.contains(
-                            selected.name,
-                          )) {
-                            _selectedAdditionalSkills.add(selected.name);
-                          }
-                        }
-                      });
-                    },
+          // Services Offered (Additional Skills)
+          if (_selectedCategoryId != null) ...[
+            Text('Services Offered', style: AppTextStyles.labelMedium),
+            const SizedBox(height: 12),
+            Consumer<ServiceBoyProvider>(
+              builder: (context, sbProvider, _) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
-                  const SizedBox(height: 20),
-                ],
-
-                // Service Title
-                CustomTextField(
-                  label: 'Service Title',
-                  hint: 'e.g. Expert AC Repair',
-                  controller: _serviceNameController,
-                  prefixIcon: const Icon(
-                    Iconsax.briefcase,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Description
-                CustomTextField(
-                  label: 'Description',
-                  hint: 'Describe your service...',
-                  controller: _serviceDescriptionController,
-                  maxLines: 4,
-                  prefixIcon: const Icon(
-                    Iconsax.document_text,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Additional Skills
-                if (_selectedCategoryId != null) ...[
-                  Text('Additional Skills', style: AppTextStyles.labelMedium),
-                  const SizedBox(height: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Theme.of(context).dividerColor),
-                    ),
-                    child: Column(
-                      children: [
-                        ...provider.subcategories.map((sub) {
+                  child: Column(
+                    children: [
+                      if (sbProvider.isLoadingSubcategories)
+                        const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      else if (sbProvider.subcategories.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Text('No services found for this category'),
+                        )
+                      else
+                        ...sbProvider.subcategories.map((sub) {
                           final isSelected = _selectedAdditionalSkills.contains(
                             sub.name,
                           );
@@ -1234,115 +937,369 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 } else {
                                   _selectedAdditionalSkills.remove(sub.name);
                                 }
+
+                                // Auto-set service title and subcategory ID from first selected skill
+                                if (_selectedAdditionalSkills.isNotEmpty) {
+                                  final firstSkill =
+                                      _selectedAdditionalSkills.first;
+                                  _serviceNameController.text = firstSkill;
+
+                                  // Find the ID for the first skill
+                                  try {
+                                    final sub = sbProvider.subcategories
+                                        .firstWhere(
+                                          (s) => s.name == firstSkill,
+                                        );
+                                    _selectedSubcategoryId = sub.id;
+                                  } catch (_) {
+                                    _selectedSubcategoryId = null;
+                                  }
+                                } else {
+                                  _serviceNameController.clear();
+                                  _selectedSubcategoryId = null;
+                                }
                               });
                             },
                             activeColor: AppColors.primary,
                           );
                         }).toList(),
-                        // Custom skills input
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _customSkillController,
-                                  decoration: InputDecoration(
-                                    hintText: 'Add custom skill...',
-                                    isDense: true,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                      // Custom skills input
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _customSkillController,
+                                decoration: InputDecoration(
+                                  hintText: 'Add custom service...',
+                                  isDense: true,
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                onPressed: () {
-                                  final skill =
-                                      _customSkillController.text.trim();
-                                  if (skill.isNotEmpty) {
-                                    setState(() {
-                                      if (!_selectedAdditionalSkills.contains(
-                                        skill,
-                                      )) {
-                                        _selectedAdditionalSkills.add(skill);
-                                      }
-                                      _customSkillController.clear();
-                                    });
-                                  }
-                                },
-                                icon: const Icon(
-                                  Iconsax.add_circle,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
+                            ),
+                            const SizedBox(width: 8),
+                            IconButton(
+                              onPressed: () {
+                                final skill =
+                                    _customSkillController.text.trim();
+                                if (skill.isNotEmpty) {
+                                  setState(() {
+                                    if (!_selectedAdditionalSkills.contains(
+                                      skill,
+                                    )) {
+                                      _selectedAdditionalSkills.add(skill);
+                                    }
 
-                // Trending Toggle
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Iconsax.trend_up,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          'Mark as Trending',
-                          style: AppTextStyles.labelMedium,
+                                    // Update title and ID if this is the first skill
+                                    if (_selectedAdditionalSkills.isNotEmpty) {
+                                      final firstSkill =
+                                          _selectedAdditionalSkills.first;
+                                      _serviceNameController.text = firstSkill;
+
+                                      // Find the ID for the first skill
+                                      try {
+                                        final sub = sbProvider.subcategories
+                                            .firstWhere(
+                                              (s) => s.name == firstSkill,
+                                            );
+                                        _selectedSubcategoryId = sub.id;
+                                      } catch (_) {
+                                        _selectedSubcategoryId = null;
+                                      }
+                                    }
+                                    _customSkillController.clear();
+                                  });
+                                }
+                              },
+                              icon: const Icon(
+                                Iconsax.add_circle,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      Switch(
-                        value: _isTrending,
-                        onChanged: (v) => setState(() => _isTrending = v),
-                        activeColor: AppColors.primary,
                       ),
                     ],
                   ),
-                ),
-
-                const SizedBox(height: 32),
-              ],
+                );
+              },
             ),
+          ],
+          const SizedBox(height: 20),
+          CustomTextField(
+            label: 'Specialties',
+            hint: 'e.g. Electrical Wiring, AC Repair (comma separated)',
+            controller: _specialtiesController,
+            prefixIcon: const Icon(
+              Iconsax.star,
+              color: AppColors.textTertiary,
+              size: 20,
+            ),
+            maxLines: 2,
           ),
+          const SizedBox(height: 20),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomTextField(
+                label: 'Preferred Work Locations',
+                hint: 'Search and add locations',
+                controller: _workLocationPreferredController,
+                onChanged: _onLocationChanged,
+                prefixIcon: const Icon(
+                  Iconsax.map,
+                  color: AppColors.textTertiary,
+                  size: 20,
+                ),
+                suffixIcon:
+                    _isFetchingSuggestions
+                        ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                        : null,
+              ),
+              if (_locationSuggestions.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    itemCount: _locationSuggestions.length,
+                    itemBuilder: (context, index) {
+                      final suggestion = _locationSuggestions[index];
+                      return ListTile(
+                        leading: const Icon(Iconsax.location),
+                        title: Text(suggestion['description']),
+                        onTap: () => _addLocation(suggestion),
+                      );
+                    },
+                  ),
+                ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children:
+                    _selectedPreferredLocations.asMap().entries.map((entry) {
+                      final index = entry.key;
+                      final loc = entry.value;
+                      return Chip(
+                        label: Text(
+                          loc['location_name'] ??
+                              loc['location name'] ??
+                              'Unknown location',
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        onDeleted: () => _removeLocation(index),
+                        deleteIcon: const Icon(Icons.close, size: 16),
+                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        side: BorderSide.none,
+                      );
+                    }).toList(),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 30),
+          // File Uploads
+          Text('Documents & Images', style: AppTextStyles.h4),
+          const SizedBox(height: 16),
+
+          _buildFilePicker(
+            'Adhar Card',
+            _adharCard,
+            user?.adharCard,
+            () => _pickImage('adhar'),
+          ),
+          const SizedBox(height: 16),
+          _buildFilePicker(
+            'License',
+            _license,
+            user?.license,
+            () => _pickImage('license'),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildServiceFields() {
+    return Consumer<ServiceBoyProvider>(
+      builder: (context, provider, child) {
+        if (_isLoadingService || provider.isLoadingCategories) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _existingServiceId != null
+                  ? 'Service Details'
+                  : 'Service Details',
+              style: AppTextStyles.h4,
+            ),
+            const SizedBox(height: 20),
+
+            // Image Picker
+            Text('Service Title Image', style: AppTextStyles.labelMedium),
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => _pickImage('service'),
+              child: Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                ),
+                child:
+                    _serviceImage != null
+                        ? Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.file(
+                                _serviceImage!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: GestureDetector(
+                                onTap: () {
+                                  setState(() => _serviceImage = null);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                        : provider.selectedService?.imageUrl != null
+                        ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            provider.selectedService!.imageUrl!,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                        : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Iconsax.image,
+                              size: 40,
+                              color: AppColors.textTertiary,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Add Service Title Image',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            const SizedBox(height: 10),
+
+            // Service Title
+            CustomTextField(
+              label: 'Service Title',
+              hint: 'e.g. Expert AC Repair',
+              controller: _serviceNameController,
+              readOnly: true,
+              prefixIcon: const Icon(
+                Iconsax.briefcase,
+                color: AppColors.textTertiary,
+                size: 20,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Description
+            CustomTextField(
+              label: 'Description',
+              hint: 'Describe your service...',
+              controller: _serviceDescriptionController,
+              maxLines: 4,
+              prefixIcon: const Icon(
+                Iconsax.document_text,
+                color: AppColors.textTertiary,
+                size: 20,
+              ),
+            ),
+            // const SizedBox(height: 20),
+
+            // const SizedBox(height: 20),
+
+            // // Trending Toggle
+            // Container(
+            //   padding: const EdgeInsets.all(16),
+            //   decoration: BoxDecoration(
+            //     color: Theme.of(context).colorScheme.surface,
+            //     borderRadius: BorderRadius.circular(16),
+            //     border: Border.all(color: Theme.of(context).dividerColor),
+            //   ),
+            //   child: Row(
+            //     children: [
+            //       const Icon(
+            //         Iconsax.trend_up,
+            //         color: AppColors.primary,
+            //         size: 20,
+            //       ),
+            //       const SizedBox(width: 16),
+            // Expanded(
+            //   child: Text(
+            //     'Mark as Trending',
+            //     style: AppTextStyles.labelMedium,
+            //   ),
+            // ),
+            // Switch(
+            //   value: _isTrending,
+            //   onChanged: (v) => setState(() => _isTrending = v),
+            //   activeColor: AppColors.primary,
+            // ),
+            //     ],
+            //   ),
+            // ),
+          ],
         );
       },
     );
   }
-}
-
-class _KeepAliveWrapper extends StatefulWidget {
-  final Widget child;
-  const _KeepAliveWrapper({required this.child});
-
-  @override
-  State<_KeepAliveWrapper> createState() => _KeepAliveWrapperState();
-}
-
-class _KeepAliveWrapperState extends State<_KeepAliveWrapper>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return widget.child;
-  }
-
-  @override
-  bool get wantKeepAlive => true;
 }
