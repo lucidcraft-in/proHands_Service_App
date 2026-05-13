@@ -181,7 +181,7 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
             bottom: 220,
             child: FloatingActionButton(
               onPressed: () async {
-                final pos = await LocationService.getCurrentPosition();
+                final pos = await LocationService.getCurrentPosition(context);
                 if (pos != null) {
                   _mapController.animateCamera(
                     CameraUpdate.newLatLng(

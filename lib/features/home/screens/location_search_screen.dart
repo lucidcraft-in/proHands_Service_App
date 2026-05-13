@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:service_app/core/services/location_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 // import '../../../core/widgets/gradient_button.dart';
@@ -34,14 +35,8 @@ class _LocationSearchScreenState extends State<LocationSearchScreen> {
   Future<void> _getCurrentLocation() async {
     setState(() => _isLocating = true);
     try {
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-      }
-
-      if (permission == LocationPermission.whileInUse ||
-          permission == LocationPermission.always) {
-        Position position = await Geolocator.getCurrentPosition();
+      Position? position = await LocationService.getCurrentPosition(context);
+      if (position != null) {
         setState(() {
           _center = LatLng(position.latitude, position.longitude);
         });

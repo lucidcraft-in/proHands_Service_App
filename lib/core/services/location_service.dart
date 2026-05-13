@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -55,7 +55,84 @@ class LocationService {
     return null;
   }
 
-  /// Check and request location permissions
+  /// Centralized location permission handler with UI dialogs
+  static Future<bool> handleLocationPermission(BuildContext context) async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Location Services Disabled'),
+                content: const Text(
+                  'Please enable location services to continue.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Geolocator.openLocationSettings();
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Enable'),
+                  ),
+                ],
+              ),
+        );
+      }
+      return false;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return false;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Location Permission Denied'),
+                content: const Text(
+                  'Location permissions are permanently denied. Please enable them in settings to continue.',
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Geolocator.openAppSettings();
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Open Settings'),
+                  ),
+                ],
+              ),
+        );
+      }
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Check and request location permissions (Non-UI version)
   static Future<bool> checkPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -84,8 +161,14 @@ class LocationService {
   }
 
   /// Get current coordinates
-  static Future<Position?> getCurrentPosition() async {
-    final hasPermission = await checkPermission();
+  static Future<Position?> getCurrentPosition([BuildContext? context]) async {
+    bool hasPermission;
+    if (context != null) {
+      hasPermission = await handleLocationPermission(context);
+    } else {
+      hasPermission = await checkPermission();
+    }
+
     if (!hasPermission) {
       debugPrint('No location permission.');
       return null;

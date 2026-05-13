@@ -202,7 +202,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       } catch (e) {
         // Fallback for plain strings if any
         _selectedPreferredLocations.add({
-          'location_name': loc,
+          'location name': loc,
           'coordinates': [0.0, 0.0],
         });
       }
@@ -279,7 +279,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       // Check if already added
       if (_selectedPreferredLocations.any(
-        (loc) => (loc['location name'] ?? loc['location name']) == description,
+        (loc) => (loc['location name'] ?? loc['location_name']) == description,
       )) {
         ScaffoldMessenger.of(
           context,

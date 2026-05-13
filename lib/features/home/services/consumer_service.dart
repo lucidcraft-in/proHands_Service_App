@@ -462,11 +462,11 @@ class ConsumerService {
       if (workPreference != null) {
         request.fields['workPreference'] = jsonEncode(workPreference);
       }
-      // if (workLocationPreferred != null) {
-      //   request.fields['workLocationPreferred'] = jsonEncode(
-      //     workLocationPreferred,
-      //   ); // ✅ correct
-      // }
+      if (workLocationPreferred != null) {
+        request.fields['workLocationPreferred'] = jsonEncode(
+          workLocationPreferred,
+        ); // ✅ correct
+      }
 
       if (latitude != null) request.fields['latitude'] = latitude.toString();
       if (longitude != null) request.fields['longitude'] = longitude.toString();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
@@ -47,10 +48,12 @@ class _LocationFetchScreenState extends State<LocationFetchScreen>
     setState(() {
       _isFetching = true;
       _isFetched = false;
-      _status = 'Locating...';
+      _status = 'Checking permissions...';
     });
+
     try {
-      final position = await LocationService.getCurrentPosition();
+      // Fetch current position using centralized handler
+      final position = await LocationService.getCurrentPosition(context);
       if (position != null) {
         final addressData = await LocationService.getAddressFromLatLng(
           position.latitude,
@@ -70,6 +73,7 @@ class _LocationFetchScreenState extends State<LocationFetchScreen>
         _handleError();
       }
     } catch (e) {
+      debugPrint('Error fetching location: $e');
       _handleError();
     } finally {
       if (mounted) setState(() => _isFetching = false);
