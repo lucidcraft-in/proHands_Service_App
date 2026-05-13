@@ -441,6 +441,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               experience:
                   isServiceBoy ? _experienceController.text.trim() : null,
               servicesOffered: isServiceBoy ? _selectedAdditionalSkills : null,
+
               specialties:
                   isServiceBoy
                       ? _specialtiesController.text

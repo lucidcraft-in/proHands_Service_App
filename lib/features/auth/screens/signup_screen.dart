@@ -58,16 +58,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
       if (mounted) {
         setState(() => _isLoading = false);
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (context) => OTPVerificationScreen(
-                  phone: _phoneController.text.trim(),
-                  identifier: _phoneController.text,
-                  userType: UserType.customer,
-                ),
-          ),
-        );
+        // Navigator.of(context).push(
+        //   MaterialPageRoute(
+        //     builder:
+        //         (context) => OTPVerificationScreen(
+        //           email: _emailController.text.trim(),
+        //           identifier: _emailController.text.trim(),
+        //           userType: UserType.customer,
+        //         ),
+        //   ),
+        // );
       }
     }
   }

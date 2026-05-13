@@ -14,12 +14,12 @@ import '../../../core/services/storage_service.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String identifier;
-  final String? phone;
+  final String? email;
   final UserType userType;
 
   const OTPVerificationScreen({
     super.key,
-    required this.phone,
+    required this.email,
     required this.identifier,
     required this.userType,
   });
@@ -69,7 +69,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   Future<void> _handleResend() async {
     try {
-      await context.read<AuthProvider>().login(widget.phone!, widget.userType);
+      await context.read<AuthProvider>().login(widget.email!, widget.userType);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -107,7 +107,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
     try {
       debugPrint('========= step: calling verifyOtp ==========');
-      await context.read<AuthProvider>().verifyOtp(widget.phone!, otp);
+      await context.read<AuthProvider>().verifyOtp(widget.email!, otp);
       debugPrint('========= step: verifyOtp completed ==========');
 
       if (mounted) {
@@ -309,7 +309,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     children: [
                       TextSpan(
                         text:
-                            'Enter the verification code we sent to your phone\n',
+                            'Enter the verification code we sent to your email\n',
                       ),
                       TextSpan(
                         text: widget.identifier,

@@ -387,20 +387,17 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/users/me');
 
     try {
-      final token = await StorageService.getAuthToken();
+      final headers = await _getHeaders();
 
-      final request = http.MultipartRequest('PATCH', url);
+      final bodyMap = {
+        "bankDetails": bankDetails.toJson(),
+      };
 
-      request.headers['Authorization'] = 'Bearer $token';
-
-      request.fields['bankName'] = bankDetails.bankName ?? '';
-      request.fields['accountHolderName'] = bankDetails.accountHolderName ?? '';
-      request.fields['accountNumber'] = bankDetails.accountNumber ?? '';
-      request.fields['ifscCode'] = bankDetails.ifscCode ?? '';
-
-      final streamedResponse = await request.send();
-
-      final response = await http.Response.fromStream(streamedResponse);
+      final response = await http.patch(
+        url,
+        headers: {...headers, "Content-Type": "application/json"},
+        body: jsonEncode(bodyMap),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
