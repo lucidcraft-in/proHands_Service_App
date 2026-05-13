@@ -10,6 +10,7 @@ import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/full_screen_image.dart';
 import '../providers/consumer_provider.dart';
+import '../widgets/timelinechip.dart';
 
 class CustomerBookingDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -100,7 +101,10 @@ class _CustomerBookingDetailsScreenState
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -216,10 +220,7 @@ class _CustomerBookingDetailsScreenState
                     const SizedBox(height: 16),
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 24,
-                          child: Icon(Icons.person),
-                        ),
+                        CircleAvatar(radius: 24, child: Icon(Icons.person)),
                         const SizedBox(width: 16),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -397,6 +398,106 @@ class _CustomerBookingDetailsScreenState
     );
   }
 
+  // Widget _buildLogsTimeline() {
+  //   return Consumer<ConsumerProvider>(
+  //     builder: (context, provider, child) {
+  //       if (provider.isLoadingBookingLogs) {
+  //         return const Center(child: CircularProgressIndicator());
+  //       }
+
+  //       if (provider.bookingLogs.isEmpty) {
+  //         return const SizedBox.shrink();
+  //       }
+
+  //       return Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text('Booking Timeline', style: AppTextStyles.h4),
+  //           const SizedBox(height: 16),
+  //           ListView.builder(
+  //             shrinkWrap: true,
+  //             physics: const NeverScrollableScrollPhysics(),
+  //             itemCount: provider.bookingLogs.length,
+  //             itemBuilder: (context, index) {
+  //               final log = provider.bookingLogs[index];
+  //               final isLast = index == provider.bookingLogs.length - 1;
+
+  //               DateTime? dateTime;
+  //               try {
+  //                 dateTime = DateTime.parse(log.createdAt).toLocal();
+  //                 ;
+  //               } catch (_) {}
+
+  //               final dateStr =
+  //                   dateTime != null
+  //                       ? "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"
+  //                       : log.createdAt;
+
+  //               return IntrinsicHeight(
+  //                 child: Row(
+  //                   children: [
+  //                     Column(
+  //                       children: [
+  //                         Container(
+  //                           width: 12,
+  //                           height: 12,
+  //                           decoration: BoxDecoration(
+  //                             color: AppColors.primary,
+  //                             shape: BoxShape.circle,
+  //                           ),
+  //                         ),
+  //                         if (!isLast)
+  //                           Expanded(
+  //                             child: Container(
+  //                               width: 2,
+  //                               color: Theme.of(context).dividerColor,
+  //                             ),
+  //                           ),
+  //                       ],
+  //                     ),
+  //                     const SizedBox(width: 16),
+  //                     Expanded(
+  //                       child: Column(
+  //                         crossAxisAlignment: CrossAxisAlignment.start,
+  //                         children: [
+  //                           Text(
+  //                             log.notes,
+  //                             style: AppTextStyles.bodyMedium.copyWith(
+  //                               fontWeight: FontWeight.w500,
+  //                             ),
+  //                           ),
+  //                           const SizedBox(height: 4),
+  //                           Row(
+  //                             children: [
+  //                               Text(
+  //                                 dateStr,
+  //                                 style: AppTextStyles.caption.copyWith(
+  //                                   color: AppColors.textSecondary,
+  //                                 ),
+  //                               ),
+  //                               Text(
+  //                                 "  created by ${log.createdByName}",
+  //                                 style: AppTextStyles.caption.copyWith(
+  //                                   color: AppColors.textSecondary,
+  //                                 ),
+  //                               ),
+  //                             ],
+  //                           ),
+  //                           const SizedBox(height: 16),
+  //                         ],
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               );
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget _buildLogsTimeline() {
     return Consumer<ConsumerProvider>(
       builder: (context, provider, child) {
@@ -411,8 +512,15 @@ class _CustomerBookingDetailsScreenState
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Booking Timeline', style: AppTextStyles.h4),
-            const SizedBox(height: 16),
+            Text(
+              'BOOKING TIMELINE',
+              style: AppTextStyles.caption.copyWith(
+                fontWeight: FontWeight.w500,
+                letterSpacing: 1.2,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 20),
             ListView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -420,75 +528,7 @@ class _CustomerBookingDetailsScreenState
               itemBuilder: (context, index) {
                 final log = provider.bookingLogs[index];
                 final isLast = index == provider.bookingLogs.length - 1;
-
-                DateTime? dateTime;
-                try {
-                  dateTime = DateTime.parse(log.createdAt).toLocal();
-                  ;
-                } catch (_) {}
-
-                final dateStr =
-                    dateTime != null
-                        ? "${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}"
-                        : log.createdAt;
-
-                return IntrinsicHeight(
-                  child: Row(
-                    children: [
-                      Column(
-                        children: [
-                          Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          if (!isLast)
-                            Expanded(
-                              child: Container(
-                                width: 2,
-                                color: Theme.of(context).dividerColor,
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              log.notes,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Text(
-                                  dateStr,
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                                Text(
-                                  "  created by ${log.createdByName}",
-                                  style: AppTextStyles.caption.copyWith(
-                                    color: AppColors.textSecondary,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
+                return TimelineItem(log: log, isLast: isLast);
               },
             ),
           ],
@@ -649,10 +689,7 @@ class _CustomerBookingDetailsScreenState
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(color: AppColors.border),
                     ),
-                    child: Icon(
-                      Icons.add_a_photo,
-                      color: AppColors.primary,
-                    ),
+                    child: Icon(Icons.add_a_photo, color: AppColors.primary),
                   ),
                 ),
                 ..._images.map(
@@ -720,7 +757,10 @@ class _CustomerBookingDetailsScreenState
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor, style: BorderStyle.solid),
+        border: Border.all(
+          color: Theme.of(context).dividerColor,
+          style: BorderStyle.solid,
+        ),
       ),
       child: Column(
         children: [
@@ -921,7 +961,11 @@ class _CustomerBookingDetailsScreenState
     }
   }
 
-  Widget _buildPaymentRow(String label, String value, {bool isNegative = false}) {
+  Widget _buildPaymentRow(
+    String label,
+    String value, {
+    bool isNegative = false,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

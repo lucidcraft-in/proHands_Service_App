@@ -16,8 +16,7 @@ class ServiceBoyService {
   // Get headers with token
   Future<Map<String, String>> _getHeaders() async {
     final token = await StorageService.getAuthToken();
-    print("----------- token -------  ");
-    print(token);
+
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',

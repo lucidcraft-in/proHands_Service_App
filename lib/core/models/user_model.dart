@@ -163,7 +163,7 @@ class UserModel {
               : 'Guest',
       email: json['email'],
       phone: json['phone'] ?? '',
-      address: json['address'],
+      address: json['address'] ?? "",
       isApproved: json['isApproved'] ?? false,
       userType: _parseUserType(json['userType']),
       isProfileComplete: json['isProfileComplete'] ?? false,

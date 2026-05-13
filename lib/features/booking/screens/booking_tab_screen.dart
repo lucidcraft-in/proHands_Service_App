@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -21,6 +22,9 @@ class BookingTabScreen extends StatefulWidget {
 class _BookingTabScreenState extends State<BookingTabScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  BookingStatus? _selectedStatus;
+  DateTimeRange? _selectedDateRange;
+  bool _isAscending = false;
 
   @override
   void initState() {
@@ -68,7 +72,7 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
                     _searchQuery = value.toLowerCase();
                   });
                 },
-                onFilterTap: () {},
+                onFilterTap: _showFilterBottomSheet,
               ),
             ),
 
@@ -124,14 +128,67 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
 
                   final filteredBookings =
                       provider.bookings.where((booking) {
+                        // Search query
                         final id = booking.bookingId.toLowerCase();
                         final service = booking.serviceName.toLowerCase();
                         final providerName =
                             (booking.providerName ?? '').toLowerCase();
-                        return id.contains(_searchQuery) ||
+                        bool matchesSearch =
+                            id.contains(_searchQuery) ||
                             service.contains(_searchQuery) ||
                             providerName.contains(_searchQuery);
+
+                        if (!matchesSearch) return false;
+
+                        // Status filter
+                        if (_selectedStatus != null &&
+                            booking.status != _selectedStatus) {
+                          return false;
+                        }
+
+                        // Date range filter
+                        if (_selectedDateRange != null) {
+                          try {
+                            final bookingDate = DateTime.parse(booking.date);
+                            // Set time to midnight for comparison
+                            final start = DateTime(
+                              _selectedDateRange!.start.year,
+                              _selectedDateRange!.start.month,
+                              _selectedDateRange!.start.day,
+                            );
+                            final end = DateTime(
+                              _selectedDateRange!.end.year,
+                              _selectedDateRange!.end.month,
+                              _selectedDateRange!.end.day,
+                              23,
+                              59,
+                              59,
+                            );
+
+                            if (bookingDate.isBefore(start) ||
+                                bookingDate.isAfter(end)) {
+                              return false;
+                            }
+                          } catch (e) {
+                            return true; // If parsing fails, don't filter it out
+                          }
+                        }
+
+                        return true;
                       }).toList();
+
+                  // Sorting
+                  filteredBookings.sort((a, b) {
+                    try {
+                      final dateA = DateTime.parse(a.date);
+                      final dateB = DateTime.parse(b.date);
+                      return _isAscending
+                          ? dateA.compareTo(dateB)
+                          : dateB.compareTo(dateA);
+                    } catch (e) {
+                      return 0;
+                    }
+                  });
 
                   if (filteredBookings.isEmpty) {
                     return EmptyStateWidget(
@@ -202,6 +259,27 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => BookingFilterBottomSheet(
+            selectedStatus: _selectedStatus,
+            selectedDateRange: _selectedDateRange,
+            isAscending: _isAscending,
+            onApply: (status, dateRange, ascending) {
+              setState(() {
+                _selectedStatus = status;
+                _selectedDateRange = dateRange;
+                _isAscending = ascending;
+              });
+            },
+          ),
     );
   }
 }
@@ -476,6 +554,278 @@ class _BookingCard extends StatelessWidget {
                 //   ),
                 // ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BookingFilterBottomSheet extends StatefulWidget {
+  final BookingStatus? selectedStatus;
+  final DateTimeRange? selectedDateRange;
+  final bool isAscending;
+  final Function(BookingStatus?, DateTimeRange?, bool) onApply;
+
+  const BookingFilterBottomSheet({
+    super.key,
+    this.selectedStatus,
+    this.selectedDateRange,
+    required this.isAscending,
+    required this.onApply,
+  });
+
+  @override
+  State<BookingFilterBottomSheet> createState() =>
+      _BookingFilterBottomSheetState();
+}
+
+class _BookingFilterBottomSheetState extends State<BookingFilterBottomSheet> {
+  BookingStatus? _tempStatus;
+  DateTimeRange? _tempDateRange;
+  late bool _tempAscending;
+
+  @override
+  void initState() {
+    super.initState();
+    _tempStatus = widget.selectedStatus;
+    _tempDateRange = widget.selectedDateRange;
+    _tempAscending = widget.isAscending;
+  }
+
+  Future<void> _selectDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2023),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      initialDateRange: _tempDateRange,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              onSurface: AppColors.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (picked != null) {
+      setState(() => _tempDateRange = picked);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Filter Bookings', style: AppTextStyles.h4),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _tempStatus = null;
+                    _tempDateRange = null;
+                    _tempAscending = false;
+                  });
+                },
+                child: Text(
+                  'Reset',
+                  style: TextStyle(color: AppColors.error),
+                ),
+              ),
+            ],
+          ),
+          const Divider(),
+          const SizedBox(height: 16),
+
+          // Status Filter
+          Text('Status', style: AppTextStyles.labelLarge),
+          const SizedBox(height: 12),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildStatusChip(null, 'All'),
+                ...BookingStatus.values.map(
+                  (status) => _buildStatusChip(
+                    status,
+                    status.getDisplayStatus(false),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Date Range Filter
+          Text('Date Range', style: AppTextStyles.labelLarge),
+          const SizedBox(height: 12),
+          InkWell(
+            onTap: _selectDateRange,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.border),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Icon(Iconsax.calendar, size: 20, color: AppColors.primary),
+                  const SizedBox(width: 12),
+                  Text(
+                    _tempDateRange == null
+                        ? 'Select Date Range'
+                        : '${DateFormat('dd MMM').format(_tempDateRange!.start)} - ${DateFormat('dd MMM').format(_tempDateRange!.end)}',
+                    style: AppTextStyles.bodyMedium,
+                  ),
+                  const Spacer(),
+                  if (_tempDateRange != null)
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => setState(() => _tempDateRange = null),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Sort Order
+          Text('Sort by Date', style: AppTextStyles.labelLarge),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSortButton(
+                  'Newest First',
+                  false,
+                  Iconsax.sort,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildSortButton(
+                  'Oldest First',
+                  true,
+                  Iconsax.sort,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                widget.onApply(_tempStatus, _tempDateRange, _tempAscending);
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Apply Filters',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(BookingStatus? status, String label) {
+    final isSelected = _tempStatus == status;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() => _tempStatus = selected ? status : null);
+        },
+        selectedColor: AppColors.primary.withOpacity(0.1),
+        checkmarkColor: AppColors.primary,
+        labelStyle: AppTextStyles.bodySmall.copyWith(
+          color: isSelected ? AppColors.primary : AppColors.textPrimary,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isSelected ? AppColors.primary : AppColors.border,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortButton(String label, bool ascending, IconData icon) {
+    final isSelected = _tempAscending == ascending;
+    return InkWell(
+      onTap: () => setState(() => _tempAscending = ascending),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.border,
+          ),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ],
         ),

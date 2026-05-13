@@ -395,6 +395,7 @@ class ServiceProductDetailScreen extends StatelessWidget {
                         serviceName: service.name,
                         serviceId: service.id,
                         price: service.price,
+                        serviceDescription: service.description,
                       ),
                 ),
               );

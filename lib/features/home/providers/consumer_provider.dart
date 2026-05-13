@@ -231,10 +231,11 @@ class ConsumerProvider extends ChangeNotifier {
     _isSearching = true;
     _searchError = null;
     notifyListeners();
-    print("-------------------");
-    print(keyword);
+
     try {
       _searchResults = await _service.searchServices(keyword);
+      print("------------ ---------- ----------");
+      print(_searchResults.length);
     } catch (e) {
       _searchError = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -248,6 +249,29 @@ class ConsumerProvider extends ChangeNotifier {
     _isSearching = false;
     _searchError = null;
     notifyListeners();
+  }
+
+  Future<void> searchServicesNearLocation({
+    required double latitude,
+    required double longitude,
+    required double radius,
+  }) async {
+    _isFetchingNearLocation = true;
+    _nearLocationError = null;
+    notifyListeners();
+
+    try {
+      _nearLocationResults = await _service.getServicesNearLocation(
+        latitude: latitude,
+        longitude: longitude,
+        radius: radius,
+      );
+    } catch (e) {
+      _nearLocationError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isFetchingNearLocation = false;
+      notifyListeners();
+    }
   }
 
   // Fetch Location Suggestions
@@ -272,21 +296,21 @@ class ConsumerProvider extends ChangeNotifier {
   }
 
   // Fetch Services Near Location
-  Future<void> fetchServicesNearLocation(double lat, double lng) async {
-    _isFetchingNearLocation = true;
-    _nearLocationError = null;
-    _locationSuggestions = []; // Clear suggestions once selected
-    notifyListeners();
+  // Future<void> fetchServicesNearLocation(double lat, double lng) async {
+  //   _isFetchingNearLocation = true;
+  //   _nearLocationError = null;
+  //   _locationSuggestions = []; // Clear suggestions once selected
+  //   notifyListeners();
 
-    try {
-      _nearLocationResults = await _service.getServicesNearLocation(lat, lng);
-    } catch (e) {
-      _nearLocationError = e.toString().replaceAll('Exception: ', '');
-    } finally {
-      _isFetchingNearLocation = false;
-      notifyListeners();
-    }
-  }
+  //   try {
+  //     _nearLocationResults = await _service.getServicesNearLocation(lat, lng);
+  //   } catch (e) {
+  //     _nearLocationError = e.toString().replaceAll('Exception: ', '');
+  //   } finally {
+  //     _isFetchingNearLocation = false;
+  //     notifyListeners();
+  //   }
+  // }
 
   void clearLocationSearch() {
     _nearLocationResults = [];
@@ -372,6 +396,7 @@ class ConsumerProvider extends ChangeNotifier {
       _currentUser = await _service.getMe();
       print("==== =     = = = = = = = = = = = =  ====");
       print(_currentUser!);
+      notifyListeners();
     } catch (e) {
       _profileError = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -481,6 +506,24 @@ class ConsumerProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> updateProfileBankDetails(BankDetails bankDetails) async {
+    _isUpdatingProfile = true;
+    _updateProfileError = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await _service.updateBankDetails(bankDetails);
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _updateProfileError = e.toString().replaceAll('Exception: ', '');
+      _isUpdatingProfile = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> updateFullProfile({
     String? name,
     String? email,
@@ -505,8 +548,6 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print("==================================================");
-      print(workLocationPreferred);
       _currentUser = await _service.updateFullProfile(
         name: name,
         email: email,
@@ -524,6 +565,7 @@ class ConsumerProvider extends ChangeNotifier {
         adharCardPath: adharCardPath,
         licensePath: licensePath,
         portfolioImagePaths: portfolioImagePaths,
+        bankDetails: bankDetails,
       );
       _isUpdatingProfile = false;
       notifyListeners();
@@ -649,6 +691,7 @@ class ConsumerProvider extends ChangeNotifier {
     required String time,
     required String address,
     required List<double> coordinates,
+    String? description,
   }) async {
     _isCreatingBooking = true;
     _createBookingError = null;
@@ -661,6 +704,7 @@ class ConsumerProvider extends ChangeNotifier {
         time: time,
         address: address,
         coordinates: coordinates,
+        description: description,
       );
       _isCreatingBooking = false;
       notifyListeners();

@@ -17,21 +17,22 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   UserType _selectedUserType = UserType.customer;
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
-  String? _validatePhone(String? value) {
+  String? _validateEmail(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Phone number is required';
+      return 'Email is required';
     }
-    if (value.length < 10) {
-      return 'Enter a valid phone number';
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Enter a valid email address';
     }
     return null;
   }
@@ -40,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         await context.read<AuthProvider>().login(
-          _phoneController.text.trim(),
+          _emailController.text.trim(),
           _selectedUserType,
         );
         print(_selectedUserType);
@@ -49,10 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(
               builder:
                   (context) => OTPVerificationScreen(
-                    phone: _phoneController.text.trim(),
+                    email: _emailController.text.trim(),
                     identifier:
-                        _phoneController.text
-                            .trim(), // Using phone as identifier
+                        _emailController.text
+                            .trim(), // Using email as identifier
                     userType: _selectedUserType,
                   ),
             ),
@@ -186,18 +187,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 16),
 
-                // Phone Number field
+                // Email field
                 CustomTextField(
-                  label: 'Phone Number',
-                  hint: 'Enter your phone number',
-                  controller: _phoneController,
-                  keyboardType: TextInputType.phone,
+                  label: 'Email Address',
+                  hint: 'Enter your email address',
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
                   prefixIcon: Icon(
-                    Icons.phone_outlined,
+                    Icons.email_outlined,
                     color: AppColors.textTertiary,
                     size: 20,
                   ),
-                  validator: _validatePhone,
+                  validator: _validateEmail,
                 ),
 
                 const SizedBox(height: 20),

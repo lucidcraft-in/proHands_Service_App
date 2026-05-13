@@ -383,6 +383,40 @@ class ConsumerService {
     }
   }
 
+  Future<UserModel> updateBankDetails(BankDetails bankDetails) async {
+    final url = Uri.parse('$baseUrl/users/me');
+
+    try {
+      final headers = await _getHeaders();
+
+      final bodyMap = {
+        "bankDetails": bankDetails.toJson(),
+      };
+
+      final response = await http.patch(
+        url,
+        headers: {...headers, "Content-Type": "application/json"},
+        body: jsonEncode(bodyMap),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['success'] == true) {
+          return UserModel.fromJson(data['user']);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to update bank details');
+        }
+      } else {
+        throw Exception(
+          'Failed to update bank details: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error updating bank details: $e');
+    }
+  }
+
   // Update Full Profile (Details + Documents)
   Future<UserModel> updateFullProfile({
     String? name,
@@ -401,6 +435,7 @@ class ConsumerService {
     String? adharCardPath,
     String? licensePath,
     List<String>? portfolioImagePaths,
+    BankDetails? bankDetails,
   }) async {
     final url = Uri.parse('$baseUrl/users/me');
     try {
@@ -427,14 +462,18 @@ class ConsumerService {
       if (workPreference != null) {
         request.fields['workPreference'] = jsonEncode(workPreference);
       }
-      if (workLocationPreferred != null) {
-        request.fields['workLocationPreferred'] = jsonEncode(
-          workLocationPreferred,
-        ); // ✅ correct
-      }
+      // if (workLocationPreferred != null) {
+      //   request.fields['workLocationPreferred'] = jsonEncode(
+      //     workLocationPreferred,
+      //   ); // ✅ correct
+      // }
 
       if (latitude != null) request.fields['latitude'] = latitude.toString();
       if (longitude != null) request.fields['longitude'] = longitude.toString();
+
+      if (bankDetails != null) {
+        request.fields['bankDetails'] = jsonEncode(bankDetails.toJson());
+      }
 
       // Files
       if (profilePhotoPath != null) {
@@ -467,7 +506,9 @@ class ConsumerService {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
+      print("+++++++++++++++++++++++++++++++++++++");
       print(response.body);
+      print("+++++++++++++++++++++++++++++++++++++");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -479,6 +520,7 @@ class ConsumerService {
         throw Exception('Failed to update profile: ${response.statusCode}');
       }
     } catch (e) {
+      print(e);
       throw Exception('Error updating profile: $e');
     }
   }
@@ -754,6 +796,7 @@ class ConsumerService {
     required String time,
     required String address,
     required List<double> coordinates,
+    String? description,
   }) async {
     final url = Uri.parse('$baseUrl/bookings');
 
@@ -765,6 +808,7 @@ class ConsumerService {
           'date': date,
           'time': time,
           'location': {'location_name': address, 'coordinates': coordinates},
+          if (description != null) 'description': description,
         })}",
       );
       final headers = await _getHeaders();
@@ -777,6 +821,7 @@ class ConsumerService {
           'location_name': address, // ✅ FIXED
           'coordinates': coordinates,
         },
+        if (description != null) 'description': description,
       });
 
       final response = await http.post(url, headers: headers, body: body);
@@ -958,24 +1003,25 @@ class ConsumerService {
   Future<List<ServiceProductModel>> searchServices(String keyword) async {
     print("----- --------   ------");
     print(keyword);
-    final url = Uri.parse('$baseUrl/services/search?keyword=$keyword');
+    final url = Uri.parse('$baseUrl/services/search?keyword=${keyword}');
+    print(url);
     try {
-      final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      final response = await http.get(url);
 
-      print("----- --------   ------");
-      print(response.body);
-      print("----- --------   ------");
-      print(response.statusCode);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
           print(servicesJson);
-          return servicesJson
-              .map((json) => ServiceProductModel.fromJson(json))
-              .where((service) => service.isCommissionPending == false)
-              .toList();
+          try {
+            return servicesJson
+                .map((json) => ServiceProductModel.fromJson(json))
+                // .where((service) => service.isCommissionPending == false)
+                .toList();
+          } catch (e) {
+            print(e);
+            return [];
+          }
         } else {
           throw Exception(data['message'] ?? 'Failed to search services');
         }
@@ -987,23 +1033,18 @@ class ConsumerService {
     }
   }
 
-  // Get Services Near Location
-  Future<List<ServiceProductModel>> getServicesNearLocation(
-    double latitude,
-    double longitude,
-  ) async {
-    print(latitude);
-    print(longitude);
+  // Get services near location
+  Future<List<ServiceProductModel>> getServicesNearLocation({
+    required double latitude,
+    required double longitude,
+    required double radius,
+  }) async {
     final url = Uri.parse(
-      '$baseUrl/services/near-location?latitude=$latitude&longitude=$longitude',
+      '$baseUrl/services/near-location?latitude=$latitude&longitude=$longitude&radius=$radius',
     );
     try {
       final headers = await _getHeaders();
-      final response = await http
-          .get(url, headers: headers)
-          .timeout(const Duration(seconds: 20));
-      print(response.body);
-      print(response.statusCode);
+      final response = await http.get(url, headers: headers);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -1011,22 +1052,60 @@ class ConsumerService {
           final List<dynamic> servicesJson = data['services'];
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
-              .where((service) => service.isCommissionPending == false)
               .toList();
         } else {
-          throw Exception(
-            data['message'] ?? 'Failed to load services near location',
-          );
+          throw Exception(data['message'] ?? 'Failed to find services nearby');
         }
       } else {
         throw Exception(
-          'Failed to load services near location: ${response.statusCode}',
+          'Failed to find services nearby: ${response.statusCode}',
         );
       }
     } catch (e) {
-      throw Exception('Error fetching services near location: $e');
+      throw Exception('Error searching services nearby: $e');
     }
   }
+
+  // Get Services Near Location
+  // Future<List<ServiceProductModel>> getServicesNearLocation(
+  //   double latitude,
+  //   double longitude,
+  // ) async {
+  //   print(latitude);
+  //   print(longitude);
+  //   final url = Uri.parse(
+  //     '$baseUrl/services/near-location?latitude=$latitude&longitude=$longitude',
+  //   );
+  //   try {
+  //     final headers = await _getHeaders();
+  //     final response = await http
+  //         .get(url, headers: headers)
+  //         .timeout(const Duration(seconds: 20));
+  //     print(response.body);
+  //     print(response.statusCode);
+
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       if (data['success'] == true) {
+  //         final List<dynamic> servicesJson = data['services'];
+  //         return servicesJson
+  //             .map((json) => ServiceProductModel.fromJson(json))
+  //             .where((service) => service.isCommissionPending == false)
+  //             .toList();
+  //       } else {
+  //         throw Exception(
+  //           data['message'] ?? 'Failed to load services near location',
+  //         );
+  //       }
+  //     } else {
+  //       throw Exception(
+  //         'Failed to load services near location: ${response.statusCode}',
+  //       );
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Error fetching services near location: $e');
+  //   }
+  // }
 
   // Get Leaderboard
   Future<List<UserModel>> getLeaderboard() async {
