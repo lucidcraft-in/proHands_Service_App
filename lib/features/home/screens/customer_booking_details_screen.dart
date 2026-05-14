@@ -9,6 +9,7 @@ import '../../../../core/models/booking_model.dart';
 import '../../../../core/widgets/custom_button.dart';
 import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/full_screen_image.dart';
+import '../../../../core/models/review_model.dart';
 import '../providers/consumer_provider.dart';
 import '../widgets/timelinechip.dart';
 
@@ -36,7 +37,17 @@ class _CustomerBookingDetailsScreenState
     super.initState();
     _currentBooking = widget.booking;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ConsumerProvider>().fetchBookingLogs(_currentBooking.id);
+      final provider = context.read<ConsumerProvider>();
+      provider.fetchBookingLogs(_currentBooking.id);
+
+      // Fetch fresh details to see if status or review changed
+      provider.fetchBookingDetails(_currentBooking.id).then((updatedBooking) {
+        if (updatedBooking != null && mounted) {
+          setState(() {
+            _currentBooking = updatedBooking;
+          });
+        }
+      });
     });
   }
 
@@ -93,6 +104,12 @@ class _CustomerBookingDetailsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final bool isBookingFinished =
+        _currentBooking.status == BookingStatus.completed ||
+        _currentBooking.status == BookingStatus.closed ||
+        _currentBooking.status == BookingStatus.closedByCustomer ||
+        _currentBooking.status == BookingStatus.commissionPaymentPending;
+
     debugPrint("Current Booking Status: ${_currentBooking.status}");
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -108,294 +125,332 @@ class _CustomerBookingDetailsScreenState
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Timeline
-            _buildTimeline(_currentBooking.status),
-            const SizedBox(height: 24),
-
-            // Delay Request Section
-            if (_currentBooking.status == BookingStatus.delayRequested)
-              _buildDelaySection(),
-
-            if (_currentBooking.status == BookingStatus.delayRequested)
-              const SizedBox(height: 24),
-
-            // Reassign Options
-            if (_currentBooking.status == BookingStatus.reassignRequested ||
-                _currentBooking.status == BookingStatus.cancelRequested)
-              _buildReassignSection(),
-
-            if (_currentBooking.status == BookingStatus.reassignRequested ||
-                _currentBooking.status == BookingStatus.cancelRequested)
-              const SizedBox(height: 24),
-
-            // Service Details Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Booking ID',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                      Text(
-                        _currentBooking.bookingId,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Divider(height: 24),
-                  Text(_currentBooking.serviceName, style: AppTextStyles.h4),
-                  const SizedBox(height: 8),
-                  Text(
-                    _currentBooking.description,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow(Iconsax.calendar, _currentBooking.date),
-                  const SizedBox(height: 8),
-                  _buildDetailRow(Iconsax.clock, _currentBooking.time),
-                  const SizedBox(height: 8),
-                  _buildDetailRow(Iconsax.location, _currentBooking.location),
-                  Divider(height: 24),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text('Total Amount', style: AppTextStyles.h4),
-                  //     Text(
-                  //       '₹${_currentBooking.price.toStringAsFixed(0)}',
-                  //       style: AppTextStyles.h4.copyWith(
-                  //         color: AppColors.primary,
-                  //       ),
-                  //     ),
-                  //   ],
-                  // ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Provider Details (if assigned)
-            if (_currentBooking.providerName != null)
-              Container(
+      body: Consumer<ConsumerProvider>(
+        builder: (context, provider, child) {
+          return Stack(
+            children: [
+              SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Service Provider', style: AppTextStyles.h4),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        CircleAvatar(radius: 24, child: Icon(Icons.person)),
-                        const SizedBox(width: 16),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _currentBooking.providerName!,
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (_currentBooking.providerProfession != null)
+                    // Status Timeline
+                    _buildTimeline(_currentBooking.status),
+                    const SizedBox(height: 24),
+
+                    // Delay Request Section
+                    if (_currentBooking.status == BookingStatus.delayRequested)
+                      _buildDelaySection(),
+
+                    if (_currentBooking.status == BookingStatus.delayRequested)
+                      const SizedBox(height: 24),
+
+                    // Reassign Options
+                    if (_currentBooking.status ==
+                            BookingStatus.reassignRequested ||
+                        _currentBooking.status == BookingStatus.cancelRequested)
+                      _buildReassignSection(),
+
+                    if (_currentBooking.status ==
+                            BookingStatus.reassignRequested ||
+                        _currentBooking.status == BookingStatus.cancelRequested)
+                      const SizedBox(height: 24),
+
+                    // Service Details Card
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
                               Text(
-                                _currentBooking.providerProfession!,
-                                style: AppTextStyles.bodySmall.copyWith(
+                                'Booking ID',
+                                style: AppTextStyles.bodyMedium.copyWith(
                                   color: AppColors.textSecondary,
                                 ),
                               ),
+                              Text(
+                                _currentBooking.bookingId,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(height: 24),
+                          Text(
+                            _currentBooking.serviceName,
+                            style: AppTextStyles.h4,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _currentBooking.description,
+                            style: AppTextStyles.bodyMedium.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          _buildDetailRow(
+                            Iconsax.calendar,
+                            _currentBooking.date,
+                          ),
+                          const SizedBox(height: 8),
+                          _buildDetailRow(Iconsax.clock, _currentBooking.time),
+                          const SizedBox(height: 8),
+                          _buildDetailRow(
+                            Iconsax.location,
+                            _currentBooking.location,
+                          ),
+                          Divider(height: 24),
+                          // Row(
+                          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //   children: [
+                          //     Text('Total Amount', style: AppTextStyles.h4),
+                          //     Text(
+                          //       '₹${_currentBooking.price.toStringAsFixed(0)}',
+                          //       style: AppTextStyles.h4.copyWith(
+                          //         color: AppColors.primary,
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Provider Details (if assigned)
+                    if (_currentBooking.providerName != null)
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
                           ],
                         ),
-                      ],
-                    ),
-                    // if (_currentBooking.providerPhone != null &&
-                    //     _currentBooking.status == BookingStatus.reached)
-                    //   Padding(
-                    //     padding: const EdgeInsets.only(top: 16),
-                    //     child: ElevatedButton.icon(
-                    //       onPressed: () {
-                    //         // Call functionality
-                    //       },
-                    //       icon: Icon(Icons.call),
-                    //       label: Text('Call Provider'),
-                    //       style: ElevatedButton.styleFrom(
-                    //         backgroundColor: Colors.green,
-                    //         foregroundColor: Colors.white,
-                    //       ),
-                    //     ),
-                    //   ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Service Provider', style: AppTextStyles.h4),
+                            const SizedBox(height: 16),
+                            Row(
+                              children: [
+                                CircleAvatar(
+                                  radius: 24,
+                                  child: Icon(Icons.person),
+                                ),
+                                const SizedBox(width: 16),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _currentBooking.providerName!,
+                                      style: AppTextStyles.bodyLarge.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (_currentBooking.providerProfession !=
+                                        null)
+                                      Text(
+                                        _currentBooking.providerProfession!,
+                                        style: AppTextStyles.bodySmall.copyWith(
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            // if (_currentBooking.providerPhone != null &&
+                            //     _currentBooking.status == BookingStatus.reached)
+                            //   Padding(
+                            //     padding: const EdgeInsets.only(top: 16),
+                            //     child: ElevatedButton.icon(
+                            //       onPressed: () {
+                            //         // Call functionality
+                            //       },
+                            //       icon: Icon(Icons.call),
+                            //       label: Text('Call Provider'),
+                            //       style: ElevatedButton.styleFrom(
+                            //         backgroundColor: Colors.green,
+                            //         foregroundColor: Colors.white,
+                            //       ),
+                            //     ),
+                            //   ),
+                          ],
+                        ),
+                      ),
+
+                    if (_currentBooking.status == BookingStatus.completed ||
+                        _currentBooking.status ==
+                            BookingStatus.commissionPaymentPending ||
+                        _currentBooking.status == BookingStatus.closed)
+                      Container(
+                        margin: const EdgeInsets.only(top: 24),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Payment Details', style: AppTextStyles.h4),
+                            Divider(height: 24),
+                            _buildPaymentRow(
+                              'Booking Price',
+                              '₹${_currentBooking.price.toStringAsFixed(0)}',
+                            ),
+                            if (_currentBooking.additionalAmount > 0) ...[
+                              const SizedBox(height: 12),
+                              _buildPaymentRow(
+                                'Additional Amount',
+                                '₹${_currentBooking.additionalAmount.toStringAsFixed(0)}',
+                              ),
+                            ],
+                            if (_currentBooking.redeemedPoints > 0) ...[
+                              const SizedBox(height: 12),
+                              _buildPaymentRow(
+                                'Points Redeemed',
+                                '-₹${_currentBooking.pointsValue.toStringAsFixed(0)}',
+                                isNegative: true,
+                              ),
+                            ],
+                            const SizedBox(height: 12),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Payment Mode',
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                                Text(
+                                  _currentBooking.paymentMode,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 32),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Total Amount',
+                                  style: AppTextStyles.h4.copyWith(fontSize: 18),
+                                ),
+                                Text(
+                                  '₹${_currentBooking.totalAmount.toStringAsFixed(0)}',
+                                  style: AppTextStyles.h4.copyWith(
+                                    color: AppColors.primary,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (_currentBooking.additionalNote != null &&
+                                _currentBooking.additionalNote!
+                                    .isNotEmpty) ...[
+                              const Divider(height: 32),
+                              Text(
+                                'Additional Note',
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _currentBooking.additionalNote!,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                    if (_currentBooking.status == BookingStatus.completed) ...[
+                      const SizedBox(height: 24),
+                      Text('Job Proof Photos', style: AppTextStyles.h4),
+                      const SizedBox(height: 12),
+                      _currentBooking.jobProofImages.isEmpty
+                          ? _buildEmptyPhotoPlaceholder(
+                            'No proof photos available',
+                          )
+                          : _buildNetworkImageGallery(
+                            _currentBooking.jobProofImages,
+                          ),
+                    ],
+
+                    // Review Section
+                    if (isBookingFinished) ...[
+                      if (_currentBooking.review != null)
+                        _buildSubmittedReview(_currentBooking.review!)
+                      else if (!_reviewSubmitted)
+                        _buildReviewSection(),
+                    ],
+
+                    const SizedBox(height: 24),
+                    _buildLogsTimeline(),
+
+                    // Cancel Booking Section
+                    if (_currentBooking.status != BookingStatus.completed &&
+                        _currentBooking.status != BookingStatus.cancelled)
+                      Column(
+                        children: [
+                          const SizedBox(height: 32),
+                          CustomButton(
+                            text: 'Cancel Booking',
+                            onPressed: _showCancelDialog,
+                            textColor: AppColors.error,
+                            isOutlined: true,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
                   ],
                 ),
               ),
-
-            if (_currentBooking.status == BookingStatus.completed ||
-                _currentBooking.status ==
-                    BookingStatus.commissionPaymentPending ||
-                _currentBooking.status == BookingStatus.closed)
-              Container(
-                margin: const EdgeInsets.only(top: 24),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Payment Details', style: AppTextStyles.h4),
-                    Divider(height: 24),
-                    _buildPaymentRow(
-                      'Booking Price',
-                      '₹${_currentBooking.price.toStringAsFixed(0)}',
-                    ),
-                    if (_currentBooking.additionalAmount > 0) ...[
-                      const SizedBox(height: 12),
-                      _buildPaymentRow(
-                        'Additional Amount',
-                        '₹${_currentBooking.additionalAmount.toStringAsFixed(0)}',
-                      ),
-                    ],
-                    if (_currentBooking.redeemedPoints > 0) ...[
-                      const SizedBox(height: 12),
-                      _buildPaymentRow(
-                        'Points Redeemed',
-                        '-₹${_currentBooking.pointsValue.toStringAsFixed(0)}',
-                        isNegative: true,
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Payment Mode',
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                        Text(
-                          _currentBooking.paymentMode,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Divider(height: 32),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Amount',
-                          style: AppTextStyles.h4.copyWith(fontSize: 18),
-                        ),
-                        Text(
-                          '₹${_currentBooking.totalAmount.toStringAsFixed(0)}',
-                          style: AppTextStyles.h4.copyWith(
-                            color: AppColors.primary,
-                            fontSize: 20,
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (_currentBooking.additionalNote != null &&
-                        _currentBooking.additionalNote!.isNotEmpty) ...[
-                      const Divider(height: 32),
-                      Text(
-                        'Additional Note',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _currentBooking.additionalNote!,
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-
-            if (_currentBooking.status == BookingStatus.completed) ...[
-              const SizedBox(height: 24),
-              Text('Job Proof Photos', style: AppTextStyles.h4),
-              const SizedBox(height: 12),
-              _currentBooking.jobProofImages.isEmpty
-                  ? _buildEmptyPhotoPlaceholder('No proof photos available')
-                  : _buildNetworkImageGallery(_currentBooking.jobProofImages),
-            ],
-
-            // Review Section
-            if (_currentBooking.status == BookingStatus.completed &&
-                !_reviewSubmitted)
-              _buildReviewSection(),
-
-            const SizedBox(height: 24),
-            _buildLogsTimeline(),
-
-            // Cancel Booking Section
-            if (_currentBooking.status != BookingStatus.completed &&
-                _currentBooking.status != BookingStatus.cancelled)
-              Column(
-                children: [
-                  const SizedBox(height: 32),
-                  CustomButton(
-                    text: 'Cancel Booking',
-                    onPressed: _showCancelDialog,
-                    textColor: AppColors.error,
-                    isOutlined: true,
+              if (provider.isSubmittingReassignChoice)
+                Container(
+                  color: Colors.black.withOpacity(0.3),
+                  child: const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-          ],
-        ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -747,6 +802,57 @@ class _CustomerBookingDetailsScreenState
               );
             },
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmittedReview(ReviewModel review) {
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Your Review', style: AppTextStyles.h4),
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < review.rating ? Icons.star : Icons.star_border,
+                    color: Colors.amber,
+                    size: 20,
+                  );
+                }),
+              ),
+            ],
+          ),
+          if (review.comment.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              review.comment,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+          if (review.images.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            _buildNetworkImageGallery(review.images),
+          ],
         ],
       ),
     );

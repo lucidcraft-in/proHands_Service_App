@@ -487,6 +487,31 @@ class ServiceBoyService {
     }
   }
 
+  Future<bool> reassignBookingRequest(String bookingId, String reason) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/reassign-request');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({'reason': reason}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ??
+              'Failed to submit cancel request: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error submitting cancel request: $e');
+    }
+  }
+
   Future<bool> addReview({
     required String bookingId,
     required double rating,

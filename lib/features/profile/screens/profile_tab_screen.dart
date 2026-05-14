@@ -938,8 +938,8 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                                   backgroundColor: AppColors.primary
                                       .withOpacity(0.1),
                                   child: Text(
-                                    rev.reviewerPhone.isNotEmpty
-                                        ? rev.reviewerPhone[0]
+                                    rev.reviewerName.isNotEmpty
+                                        ? rev.reviewerName[0]
                                         : 'U',
                                     style: AppTextStyles.caption.copyWith(
                                       color: AppColors.primary,
@@ -949,9 +949,24 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                                   ),
                                 ),
                                 const SizedBox(width: 8),
-                                Text(
-                                  rev.reviewerPhone,
-                                  style: AppTextStyles.labelSmall,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      rev.displayBookingId,
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (rev.serviceName.isNotEmpty)
+                                      Text(
+                                        rev.serviceName,
+                                        style: AppTextStyles.caption.copyWith(
+                                          color: AppColors.textTertiary,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ],
                             ),

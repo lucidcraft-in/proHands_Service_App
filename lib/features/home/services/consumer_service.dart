@@ -389,9 +389,7 @@ class ConsumerService {
     try {
       final headers = await _getHeaders();
 
-      final bodyMap = {
-        "bankDetails": bankDetails.toJson(),
-      };
+      final bodyMap = {"bankDetails": bankDetails.toJson()};
 
       final response = await http.patch(
         url,
@@ -462,18 +460,18 @@ class ConsumerService {
       if (workPreference != null) {
         request.fields['workPreference'] = jsonEncode(workPreference);
       }
-      // if (workLocationPreferred != null) {
-      //   request.fields['workLocationPreferred'] = jsonEncode(
-      //     workLocationPreferred,
-      //   ); // ✅ correct
-      // }
+      if (workLocationPreferred != null) {
+        request.fields['workLocationPreferred'] = jsonEncode(
+          workLocationPreferred,
+        ); // ✅ correct
+      }
 
       if (latitude != null) request.fields['latitude'] = latitude.toString();
       if (longitude != null) request.fields['longitude'] = longitude.toString();
 
-      if (bankDetails != null) {
-        request.fields['bankDetails'] = jsonEncode(bankDetails.toJson());
-      }
+      // if (bankDetails != null) {
+      //   request.fields['bankDetails'] = jsonEncode(bankDetails.toJson());
+      // }
 
       // Files
       if (profilePhotoPath != null) {
@@ -850,9 +848,16 @@ class ConsumerService {
         isServiceBoy ? '/reviews/my/received' : '/reviews/my/added';
     final url = Uri.parse('$baseUrl$endpoint');
     try {
+      print(url);
+      print("url----------------------------------------");
       final headers = await _getHeaders();
-      final response = await http.get(url, headers: headers);
+      print(headers);
+      print("headers----------------------------------------");
 
+      final response = await http.get(url, headers: headers);
+      print("--------------------------------------------");
+      print("---------------------------------------");
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {

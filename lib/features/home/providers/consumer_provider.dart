@@ -546,7 +546,7 @@ class ConsumerProvider extends ChangeNotifier {
     _isUpdatingProfile = true;
     _updateProfileError = null;
     notifyListeners();
-
+    print(workLocationPreferred);
     try {
       _currentUser = await _service.updateFullProfile(
         name: name,
@@ -775,7 +775,10 @@ class ConsumerProvider extends ChangeNotifier {
     _isSubmittingReassignChoice = true;
     _reassignChoiceError = null;
     notifyListeners();
-
+    print("-----8888888888888888888888888888888888888-----");
+    print(bookingId);
+    print(choice);
+    print(newServiceId);
     try {
       final success = await _service.submitReassignChoice(
         bookingId: bookingId,

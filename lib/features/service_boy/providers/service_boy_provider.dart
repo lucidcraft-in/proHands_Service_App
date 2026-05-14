@@ -37,6 +37,7 @@ class ServiceBoyProvider extends ChangeNotifier {
   bool _isReaching = false;
   bool _isCancelling = false;
   bool _isVerifyingOtp = false;
+  bool _isReassigning = false;
 
   List<BookingLogModel> _bookingLogs = [];
   bool _isLoadingBookingLogs = false;
@@ -68,6 +69,7 @@ class ServiceBoyProvider extends ChangeNotifier {
   bool get isReaching => _isReaching;
   bool get isCancelling => _isCancelling;
   bool get isVerifyingOtp => _isVerifyingOtp;
+  bool get isReassigning => _isReassigning;
 
   List<BookingLogModel> get bookingLogs => _bookingLogs;
   bool get isLoadingBookingLogs => _isLoadingBookingLogs;
@@ -308,6 +310,28 @@ class ServiceBoyProvider extends ChangeNotifier {
       return false;
     } finally {
       _isCancelling = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> reassignBookingRequest(String bookingId, String reason) async {
+    _isReassigning = true;
+    notifyListeners();
+    print("-----------s-s-s--s-s-s-s-s-s-s---------");
+    try {
+      final success = await _service.reassignBookingRequest(bookingId, reason);
+      if (success) {
+        // Refresh bookings to update the UI
+        await fetchBookings();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      _bookingsError = e.toString().replaceAll('Exception: ', '');
+      return false;
+    } finally {
+      _isReassigning = false;
       notifyListeners();
     }
   }
