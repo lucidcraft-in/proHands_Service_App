@@ -33,6 +33,11 @@ class ServiceBoyProvider extends ChangeNotifier {
   bool _isRequestingDelay = false;
   String? _delayError;
 
+  bool _isAccepting = false;
+  bool _isReaching = false;
+  bool _isCancelling = false;
+  bool _isVerifyingOtp = false;
+
   List<BookingLogModel> _bookingLogs = [];
   bool _isLoadingBookingLogs = false;
   String? _bookingLogsError;
@@ -58,6 +63,11 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   bool get isRequestingDelay => _isRequestingDelay;
   String? get delayError => _delayError;
+
+  bool get isAccepting => _isAccepting;
+  bool get isReaching => _isReaching;
+  bool get isCancelling => _isCancelling;
+  bool get isVerifyingOtp => _isVerifyingOtp;
 
   List<BookingLogModel> get bookingLogs => _bookingLogs;
   bool get isLoadingBookingLogs => _isLoadingBookingLogs;
@@ -209,6 +219,8 @@ class ServiceBoyProvider extends ChangeNotifier {
 
   // Accept Booking
   Future<bool> acceptBooking(String bookingId) async {
+    _isAccepting = true;
+    notifyListeners();
     try {
       final success = await _service.updateBookingStatus(bookingId, 'ACCEPTED');
       if (success) {
@@ -221,10 +233,15 @@ class ServiceBoyProvider extends ChangeNotifier {
     } catch (e) {
       // Handle error gracefully or rethrow if needed
       return false;
+    } finally {
+      _isAccepting = false;
+      notifyListeners();
     }
   }
 
   Future<bool> reachedBooking(String bookingId) async {
+    _isReaching = true;
+    notifyListeners();
     try {
       final success = await _service.updateBookingStatus(bookingId, 'REACHED');
       if (success) {
@@ -237,6 +254,9 @@ class ServiceBoyProvider extends ChangeNotifier {
     } catch (e) {
       // Handle error gracefully or rethrow if needed
       return false;
+    } finally {
+      _isReaching = false;
+      notifyListeners();
     }
   }
 
@@ -245,6 +265,8 @@ class ServiceBoyProvider extends ChangeNotifier {
     String bookingId,
     Map<String, dynamic> verificationData,
   ) async {
+    _isVerifyingOtp = true;
+    notifyListeners();
     try {
       final success = await _service.verifyBookingOtp(
         bookingId,
@@ -261,13 +283,17 @@ class ServiceBoyProvider extends ChangeNotifier {
       }
     } catch (e) {
       _bookingsError = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isVerifyingOtp = false;
+      notifyListeners();
     }
   }
 
   // Cancel Booking Request (Service Boy)
   Future<bool> cancelBookingRequest(String bookingId, String reason) async {
+    _isCancelling = true;
+    notifyListeners();
     try {
       final success = await _service.cancelBookingRequest(bookingId, reason);
       if (success) {
@@ -279,8 +305,10 @@ class ServiceBoyProvider extends ChangeNotifier {
       }
     } catch (e) {
       _bookingsError = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isCancelling = false;
+      notifyListeners();
     }
   }
 

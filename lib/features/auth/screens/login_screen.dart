@@ -18,11 +18,13 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   UserType _selectedUserType = UserType.customer;
 
   @override
   void dispose() {
     _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -42,6 +44,7 @@ class _LoginScreenState extends State<LoginScreen> {
       try {
         await context.read<AuthProvider>().login(
           _emailController.text.trim(),
+          _phoneController.text.trim(),
           _selectedUserType,
         );
         print(_selectedUserType);
@@ -51,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
               builder:
                   (context) => OTPVerificationScreen(
                     email: _emailController.text.trim(),
+                    phone: _phoneController.text.trim(),
                     identifier:
                         _emailController.text
                             .trim(), // Using email as identifier
@@ -199,6 +203,30 @@ class _LoginScreenState extends State<LoginScreen> {
                     size: 20,
                   ),
                   validator: _validateEmail,
+                ),
+
+                const SizedBox(height: 20),
+
+                // Phone field
+                CustomTextField(
+                  label: 'Phone Number',
+                  hint: 'Enter your phone number',
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: Icon(
+                    Icons.phone_outlined,
+                    color: AppColors.textTertiary,
+                    size: 20,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Phone number is required';
+                    }
+                    if (value.length < 10) {
+                      return 'Enter a valid phone number';
+                    }
+                    return null;
+                  },
                 ),
 
                 const SizedBox(height: 20),

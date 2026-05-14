@@ -499,7 +499,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 '', // Use existing or empty if none selected
             'additionalSkills': _selectedAdditionalSkills,
             'isTrending': _isTrending,
-            if (imageUrl != null) 'image': imageUrl,
+            if (imageUrl != null) 'serviceImage': imageUrl,
             // For existing services, these might be required or preserved
             'price':
                 serviceProvider.myServices.isNotEmpty

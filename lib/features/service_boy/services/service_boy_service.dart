@@ -210,7 +210,16 @@ class ServiceBoyService {
     final url = Uri.parse('$baseUrl/bookings/$bookingId');
     try {
       final headers = await _getHeaders();
+      print(" ========== url ========== ");
+      print(bookingId);
+      print(" ========== headers ========== ");
+      print(headers);
+      print(" ========== url ========== ");
       final response = await http.get(url, headers: headers);
+      print(" ========== response ========== ");
+      print(response.body);
+      print(" ========== response ========== ");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {

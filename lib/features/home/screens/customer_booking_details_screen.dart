@@ -125,10 +125,12 @@ class _CustomerBookingDetailsScreenState
               const SizedBox(height: 24),
 
             // Reassign Options
-            if (_currentBooking.status == BookingStatus.reassignRequested)
+            if (_currentBooking.status == BookingStatus.reassignRequested ||
+                _currentBooking.status == BookingStatus.cancelRequested)
               _buildReassignSection(),
 
-            if (_currentBooking.status == BookingStatus.reassignRequested)
+            if (_currentBooking.status == BookingStatus.reassignRequested ||
+                _currentBooking.status == BookingStatus.cancelRequested)
               const SizedBox(height: 24),
 
             // Service Details Card

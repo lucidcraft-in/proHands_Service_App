@@ -8,6 +8,7 @@ class AuthService {
   // Request OTP
   static Future<Map<String, dynamic>> requestOTP(
     String email,
+    String phone,
     String userType,
   ) async {
     final url = Uri.parse('$baseUrl/auth/request-otp');
@@ -17,7 +18,11 @@ class AuthService {
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'userType': userType.toUpperCase()}),
+      body: jsonEncode({
+        'email': email,
+        'phone': phone,
+        'userType': userType.toUpperCase(),
+      }),
     );
     print(response.body);
     print(response.statusCode);
@@ -39,13 +44,14 @@ class AuthService {
   static Future<Map<String, dynamic>> verifyOTP(
     String email,
     String otp,
+    String fcmToken,
   ) async {
     final url = Uri.parse('$baseUrl/auth/verify-otp');
     // try {
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'otp': otp}),
+      body: jsonEncode({'email': email, 'otp': otp, 'fcmToken': fcmToken}),
     );
     print(response.body);
     print(response.statusCode);

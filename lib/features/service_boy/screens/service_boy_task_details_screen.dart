@@ -496,43 +496,44 @@ class _ServiceBoyTaskDetailsScreenState
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: CustomButton(
-                              text: 'Accept',
-                              onPressed: () async {
-                                final provider =
-                                    context.read<ServiceBoyProvider>();
-                                final scaffoldMessenger = ScaffoldMessenger.of(
-                                  context,
-                                );
-                                final success = await provider.acceptBooking(
-                                  booking.id,
-                                );
+                            child: Consumer<ServiceBoyProvider>(
+                              builder: (context, provider, child) {
+                                return CustomButton(
+                                  text: 'Accept',
+                                  isLoading: provider.isAccepting,
+                                  onPressed: () async {
+                                    final scaffoldMessenger =
+                                        ScaffoldMessenger.of(context);
+                                    final success = await provider
+                                        .acceptBooking(booking.id);
 
-                                if (success && mounted) {
-                                  scaffoldMessenger.showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Work accepted successfully!',
-                                      ),
-                                      backgroundColor: AppColors.success,
-                                    ),
-                                  );
-                                  Navigator.pop(context);
-                                } else if (mounted) {
-                                  scaffoldMessenger.showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        provider.bookingsError ??
-                                            'Failed to accept work',
-                                      ),
-                                      backgroundColor: AppColors.error,
-                                    ),
-                                  );
-                                }
+                                    if (success && mounted) {
+                                      scaffoldMessenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Work accepted successfully!',
+                                          ),
+                                          backgroundColor: AppColors.success,
+                                        ),
+                                      );
+                                      Navigator.pop(context);
+                                    } else if (mounted) {
+                                      scaffoldMessenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            provider.bookingsError ??
+                                                'Failed to accept work',
+                                          ),
+                                          backgroundColor: AppColors.error,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  backgroundColor: AppColors.primary,
+                                  height: 50,
+                                  fontSize: 13,
+                                );
                               },
-                              backgroundColor: AppColors.primary,
-                              height: 50,
-                              fontSize: 13,
                             ),
                           ),
                         ],
@@ -754,12 +755,17 @@ class _ServiceBoyTaskDetailsScreenState
                         prefixIcon: Icon(Iconsax.lock),
                       ),
                       const SizedBox(height: 24),
-                      CustomButton(
-                        text: _isCompleting ? 'Completing...' : 'Complete Work',
-                        onPressed: _isCompleting ? null : _completeTask,
-                        backgroundColor: AppColors.success,
-                        height: 44,
-                        fontSize: 14,
+                      Consumer<ServiceBoyProvider>(
+                        builder: (context, provider, child) {
+                          return CustomButton(
+                            text: 'Complete Work',
+                            isLoading: provider.isVerifyingOtp,
+                            onPressed: provider.isVerifyingOtp ? null : _completeTask,
+                            backgroundColor: AppColors.success,
+                            height: 44,
+                            fontSize: 14,
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
                       CustomButton(
@@ -881,46 +887,56 @@ class _ServiceBoyTaskDetailsScreenState
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () async {
-                    final provider = this.context.read<ServiceBoyProvider>();
-                    final scaffoldMessenger = ScaffoldMessenger.of(
-                      this.context,
-                    );
-                    final success = await provider.cancelBookingRequest(
-                      bookingId,
-                      selectedReason,
-                    );
+                Consumer<ServiceBoyProvider>(
+                  builder: (context, provider, child) {
+                    return TextButton(
+                      onPressed:
+                          provider.isCancelling
+                              ? null
+                              : () async {
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  this.context,
+                                );
+                                final success = await provider
+                                    .cancelBookingRequest(
+                                      bookingId,
+                                      selectedReason,
+                                    );
 
-                    if (mounted) {
-                      Navigator.pop(context); // Close dialog
-                      if (success) {
-                        scaffoldMessenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Cancellation request submitted.'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                        Navigator.pop(this.context); // Go back to list
-                      } else {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              provider.bookingsError ??
-                                  'Failed to submit request',
-                            ),
-                            backgroundColor: AppColors.error,
-                          ),
-                        );
-                      }
-                    }
+                                if (mounted) {
+                                  Navigator.pop(context); // Close dialog
+                                  if (success) {
+                                    scaffoldMessenger.showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Cancellation request submitted.',
+                                        ),
+                                        backgroundColor: AppColors.success,
+                                      ),
+                                    );
+                                    Navigator.pop(this.context); // Go back to list
+                                  } else {
+                                    scaffoldMessenger.showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          provider.bookingsError ??
+                                              'Failed to submit request',
+                                        ),
+                                        backgroundColor: AppColors.error,
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                      child: Text(
+                        provider.isCancelling ? 'Submitting...' : 'Submit',
+                        style: AppTextStyles.labelSmall.copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
                   },
-                  child: Text(
-                    'Submit',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.error,
-                    ),
-                  ),
                 ),
               ],
             );

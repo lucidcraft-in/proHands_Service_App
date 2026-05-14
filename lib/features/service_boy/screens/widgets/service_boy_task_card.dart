@@ -196,38 +196,42 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                       ),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: CustomButton(
-                          text: 'Accept',
-                          onPressed: () async {
-                            final provider = context.read<ServiceBoyProvider>();
-                            final scaffoldMessenger = ScaffoldMessenger.of(
-                              context,
+                        child: Consumer<ServiceBoyProvider>(
+                          builder: (context, provider, child) {
+                            return CustomButton(
+                              text: 'Accept',
+                              isLoading: provider.isAccepting,
+                              onPressed: () async {
+                                final scaffoldMessenger = ScaffoldMessenger.of(
+                                  context,
+                                );
+                                final success = await provider.acceptBooking(
+                                  widget.booking.id,
+                                );
+                                if (success) {
+                                  scaffoldMessenger.showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Work accepted successfully!'),
+                                      backgroundColor: AppColors.success,
+                                    ),
+                                  );
+                                } else {
+                                  scaffoldMessenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        provider.bookingsError ??
+                                            'Failed to accept work',
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                    ),
+                                  );
+                                }
+                              },
+                              backgroundColor: AppColors.primary,
+                              height: 50,
+                              fontSize: 13,
                             );
-                            final success = await provider.acceptBooking(
-                              widget.booking.id,
-                            );
-                            if (success) {
-                              scaffoldMessenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Work accepted successfully!'),
-                                  backgroundColor: AppColors.success,
-                                ),
-                              );
-                            } else {
-                              scaffoldMessenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    provider.bookingsError ??
-                                        'Failed to accept work',
-                                  ),
-                                  backgroundColor: AppColors.error,
-                                ),
-                              );
-                            }
                           },
-                          backgroundColor: AppColors.primary,
-                          height: 50,
-                          fontSize: 13,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -294,51 +298,72 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
                     ),
                     const SizedBox(height: 8),
                     ...['Schedule Conflict', 'Location too far', 'Other'].map(
-                      (reason) => InkWell(
-                        onTap: () async {
-                          final provider = context.read<ServiceBoyProvider>();
-                          final scaffoldMessenger = ScaffoldMessenger.of(
-                            context,
-                          );
-                          setState(() => _declineId = null);
-                          final success = await provider.cancelBookingRequest(
-                            widget.booking.id,
-                            reason,
-                          );
-                          if (success) {
-                            scaffoldMessenger.showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Cancellation request submitted.',
-                                ),
-                                backgroundColor: AppColors.success,
+                      (reason) => Consumer<ServiceBoyProvider>(
+                        builder: (context, provider, child) {
+                          return InkWell(
+                            onTap:
+                                provider.isCancelling
+                                    ? null
+                                    : () async {
+                                      final scaffoldMessenger =
+                                          ScaffoldMessenger.of(context);
+                                      setState(() => _declineId = null);
+                                      final success = await provider
+                                          .cancelBookingRequest(
+                                            widget.booking.id,
+                                            reason,
+                                          );
+                                      if (success) {
+                                        scaffoldMessenger.showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Cancellation request submitted.',
+                                            ),
+                                            backgroundColor: AppColors.success,
+                                          ),
+                                        );
+                                      } else {
+                                        scaffoldMessenger.showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              provider.bookingsError ??
+                                                  'Failed to submit.',
+                                            ),
+                                            backgroundColor: AppColors.error,
+                                          ),
+                                        );
+                                      }
+                                    },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(reason, style: AppTextStyles.bodySmall),
+                                  if (provider.isCancelling)
+                                    const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppColors.primary,
+                                            ),
+                                      ),
+                                    )
+                                  else
+                                    const Icon(
+                                      Icons.chevron_right,
+                                      size: 14,
+                                      color: AppColors.textTertiary,
+                                    ),
+                                ],
                               ),
-                            );
-                          } else {
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  provider.bookingsError ?? 'Failed to submit.',
-                                ),
-                                backgroundColor: AppColors.error,
-                              ),
-                            );
-                          }
+                            ),
+                          );
                         },
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(reason, style: AppTextStyles.bodySmall),
-                              const Icon(
-                                Icons.chevron_right,
-                                size: 14,
-                                color: AppColors.textTertiary,
-                              ),
-                            ],
-                          ),
-                        ),
                       ),
                     ),
                   ],
