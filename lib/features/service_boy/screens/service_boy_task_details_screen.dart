@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:service_app/core/models/review_model.dart';
 import '../../../core/services/locationTrack.dart';
 import '../../home/widgets/timelinechip.dart';
 import '../providers/service_boy_provider.dart';
@@ -447,14 +448,13 @@ class _ServiceBoyTaskDetailsScreenState
                   ),
                 ],
 
-                // // Customer Review Section
-                // if (booking.status == BookingStatus.closedByCustomer &&
-                //     booking.review != null) ...[
-                //   const SizedBox(height: 24),
-                //   Text('Customer Review', style: AppTextStyles.labelLarge),
-                //   const SizedBox(height: 16),
-                //   _buildCustomerReviewDisplay(booking.review!),
-                // ],
+                // Customer Review Section
+                if (isCompletedState && booking.review != null) ...[
+                  const SizedBox(height: 24),
+                  Text('Customer Review', style: AppTextStyles.labelLarge),
+                  const SizedBox(height: 16),
+                  _buildCustomerReviewDisplay(booking.review!),
+                ],
 
                 // // Rate Customer Section
                 // if (booking.status == BookingStatus.closedByCustomer &&
@@ -485,7 +485,11 @@ class _ServiceBoyTaskDetailsScreenState
                             child: CustomButton(
                               text: 'Decline',
                               onPressed:
-                                  () => _showDeclineDialog(context, booking.id),
+                                  () => _showDeclineDialog(
+                                    context,
+                                    booking.id,
+                                    true,
+                                  ),
                               isOutlined: true,
                               backgroundColor:
                                   Theme.of(context).colorScheme.surface,
@@ -496,43 +500,94 @@ class _ServiceBoyTaskDetailsScreenState
                           ),
                           const SizedBox(width: 16),
                           Expanded(
-                            child: CustomButton(
-                              text: 'Accept',
-                              onPressed: () async {
-                                final provider =
-                                    context.read<ServiceBoyProvider>();
-                                final scaffoldMessenger = ScaffoldMessenger.of(
-                                  context,
-                                );
-                                final success = await provider.acceptBooking(
-                                  booking.id,
-                                );
+                            child: Consumer<ServiceBoyProvider>(
+                              builder: (context, provider, child) {
+                                return CustomButton(
+                                  text: 'Accept',
+                                  isLoading: provider.isAccepting,
+                                  onPressed: () async {
+                                    final scaffoldMessenger =
+                                        ScaffoldMessenger.of(context);
+                                    final success = await provider
+                                        .acceptBooking(booking.id);
 
-                                if (success && mounted) {
-                                  scaffoldMessenger.showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Work accepted successfully!',
-                                      ),
-                                      backgroundColor: AppColors.success,
-                                    ),
-                                  );
-                                  Navigator.pop(context);
-                                } else if (mounted) {
-                                  scaffoldMessenger.showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        provider.bookingsError ??
-                                            'Failed to accept work',
-                                      ),
-                                      backgroundColor: AppColors.error,
-                                    ),
-                                  );
-                                }
+                                    if (success && mounted) {
+                                      scaffoldMessenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Work accepted successfully!',
+                                          ),
+                                          backgroundColor: AppColors.success,
+                                        ),
+                                      );
+                                      Navigator.pop(context);
+                                    } else if (mounted) {
+                                      scaffoldMessenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            provider.bookingsError ??
+                                                'Failed to accept work',
+                                          ),
+                                          backgroundColor: AppColors.error,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  backgroundColor: AppColors.primary,
+                                  height: 50,
+                                  fontSize: 13,
+                                );
                               },
-                              backgroundColor: AppColors.primary,
-                              height: 50,
-                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  )
+                else if (booking.status == BookingStatus.accepted)
+                  Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Consumer<ServiceBoyProvider>(
+                              builder: (context, provider, child) {
+                                return CustomButton(
+                                  text: 'Mark as Arrived',
+                                  isLoading: provider.isReaching,
+                                  onPressed: () async {
+                                    final scaffoldMessenger =
+                                        ScaffoldMessenger.of(context);
+                                    final success = await provider
+                                        .reachedBooking(booking.id);
+
+                                    if (success && mounted) {
+                                      scaffoldMessenger.showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Work marked as arrived!',
+                                          ),
+                                          backgroundColor: AppColors.success,
+                                        ),
+                                      );
+                                      Navigator.pop(context);
+                                    } else if (mounted) {
+                                      scaffoldMessenger.showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            provider.bookingsError ??
+                                                'Failed to update status',
+                                          ),
+                                          backgroundColor: AppColors.error,
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  backgroundColor: AppColors.primary,
+                                  height: 50,
+                                  fontSize: 13,
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -754,12 +809,18 @@ class _ServiceBoyTaskDetailsScreenState
                         prefixIcon: Icon(Iconsax.lock),
                       ),
                       const SizedBox(height: 24),
-                      CustomButton(
-                        text: _isCompleting ? 'Completing...' : 'Complete Work',
-                        onPressed: _isCompleting ? null : _completeTask,
-                        backgroundColor: AppColors.success,
-                        height: 44,
-                        fontSize: 14,
+                      Consumer<ServiceBoyProvider>(
+                        builder: (context, provider, child) {
+                          return CustomButton(
+                            text: 'Complete Work',
+                            isLoading: provider.isVerifyingOtp,
+                            onPressed:
+                                provider.isVerifyingOtp ? null : _completeTask,
+                            backgroundColor: AppColors.success,
+                            height: 44,
+                            fontSize: 14,
+                          );
+                        },
                       ),
                       const SizedBox(height: 16),
                       CustomButton(
@@ -833,7 +894,7 @@ class _ServiceBoyTaskDetailsScreenState
     );
   }
 
-  void _showDeclineDialog(BuildContext context, String bookingId) {
+  void _showDeclineDialog(BuildContext context, String bookingId, bool type) {
     showDialog(
       context: context,
       builder: (context) {
@@ -881,46 +942,54 @@ class _ServiceBoyTaskDetailsScreenState
                     ),
                   ),
                 ),
-                TextButton(
-                  onPressed: () async {
-                    final provider = this.context.read<ServiceBoyProvider>();
-                    final scaffoldMessenger = ScaffoldMessenger.of(
-                      this.context,
-                    );
-                    final success = await provider.cancelBookingRequest(
-                      bookingId,
-                      selectedReason,
-                    );
+                Consumer<ServiceBoyProvider>(
+                  builder: (context, provider, child) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8, bottom: 8),
+                      child: CustomButton(
+                        text: 'Submit',
+                        isLoading: provider.isReassigning,
+                        onPressed: () async {
+                          final scaffoldMessenger = ScaffoldMessenger.of(
+                            this.context,
+                          );
+                          final success = await provider.reassignBookingRequest(
+                            bookingId,
+                            selectedReason,
+                          );
 
-                    if (mounted) {
-                      Navigator.pop(context); // Close dialog
-                      if (success) {
-                        scaffoldMessenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Cancellation request submitted.'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                        Navigator.pop(this.context); // Go back to list
-                      } else {
-                        scaffoldMessenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              provider.bookingsError ??
-                                  'Failed to submit request',
-                            ),
-                            backgroundColor: AppColors.error,
-                          ),
-                        );
-                      }
-                    }
+                          if (mounted) {
+                            Navigator.pop(context); // Close dialog
+                            if (success) {
+                              scaffoldMessenger.showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Cancellation request submitted.',
+                                  ),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                              Navigator.pop(this.context); // Go back to list
+                            } else {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.bookingsError ??
+                                        'Failed to submit request',
+                                  ),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        width: 100,
+                        height: 40,
+                        backgroundColor: AppColors.primary,
+                        fontSize: 13,
+                      ),
+                    );
                   },
-                  child: Text(
-                    'Submit',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.error,
-                    ),
-                  ),
                 ),
               ],
             );
@@ -1127,57 +1196,53 @@ class _ServiceBoyTaskDetailsScreenState
             ),
             Consumer<ServiceBoyProvider>(
               builder: (consumerContext, provider, child) {
-                return TextButton(
-                  onPressed:
-                      provider.isRequestingDelay
-                          ? null
-                          : () async {
-                            if (timeController.text.isEmpty) {
-                              ScaffoldMessenger.of(
-                                consumerContext,
-                              ).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Please enter delay time'),
-                                ),
-                              );
-                              return;
-                            }
-                            final messenger = ScaffoldMessenger.of(context);
-                            final success = await provider.requestDelay(
-                              bookingId: bookingId,
-                              delayTime: timeController.text.trim(),
-                              delayNote: noteController.text.trim(),
-                            );
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8, bottom: 8),
+                  child: CustomButton(
+                    text: 'Submit',
+                    isLoading: provider.isRequestingDelay,
+                    onPressed: () async {
+                      if (timeController.text.isEmpty) {
+                        ScaffoldMessenger.of(consumerContext).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please enter delay time'),
+                          ),
+                        );
+                        return;
+                      }
+                      final messenger = ScaffoldMessenger.of(context);
+                      final success = await provider.requestDelay(
+                        bookingId: bookingId,
+                        delayTime: timeController.text.trim(),
+                        delayNote: noteController.text.trim(),
+                      );
 
-                            if (!mounted) return;
+                      if (!mounted) return;
 
-                            // Always use the dialog context to pop the dialog
-                            Navigator.of(dialogContext).pop();
+                      // Always use the dialog context to pop the dialog
+                      Navigator.of(dialogContext).pop();
 
-                            if (success) {
-                              messenger.showSnackBar(
-                                const SnackBar(
-                                  content: Text('Delay request submitted'),
-                                  backgroundColor: AppColors.success,
-                                ),
-                              );
-                            } else {
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    provider.delayError ?? 'Failed to submit',
-                                  ),
-                                  backgroundColor: AppColors.error,
-                                ),
-                              );
-                            }
-                          },
-                  child: Text(
-                    provider.isRequestingDelay ? 'Submitting...' : 'Submit',
-                    style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                      if (success) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Delay request submitted'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      } else {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              provider.delayError ?? 'Failed to submit',
+                            ),
+                            backgroundColor: AppColors.error,
+                          ),
+                        );
+                      }
+                    },
+                    width: 100,
+                    height: 40,
+                    fontSize: 13,
                   ),
                 );
               },
@@ -1488,39 +1553,24 @@ class _ServiceBoyTaskDetailsScreenState
     );
   }
 
-  // Widget _buildCustomerReviewDisplay(ReviewModel review) {
-  //   return _buildDetailSection(
-  //     children: [
-  //       Row(
-  //         children: [
-  //           _buildRatingStars(review.rating.toDouble(), size: 20),
-  //           const SizedBox(width: 8),
-  //           Text(
-  //             '${review.rating}.0',
-  //             style: AppTextStyles.labelSmall.copyWith(
-  //               fontWeight: FontWeight.bold,
-  //             ),
-  //           ),
-  //           const Spacer(),
-  //           Text(
-  //             _formatDate(review.createdAt),
-  //             style: AppTextStyles.caption.copyWith(
-  //               color: AppColors.textTertiary,
-  //             ),
-  //           ),
-  //         ],
-  //       ),
-  //       if (review.comment.isNotEmpty) ...[
-  //         const SizedBox(height: 12),
-  //         Text(review.comment, style: AppTextStyles.bodyMedium),
-  //       ],
-  //       if (review.images.isNotEmpty) ...[
-  //         const SizedBox(height: 16),
-  //         _buildNetworkImageGallery(review.images),
-  //       ],
-  //     ],
-  //   );
-  // }
+  Widget _buildCustomerReviewDisplay(ReviewModel review) {
+    return _buildDetailSection(
+      children: [
+        Row(
+          children: [
+            _buildRatingStars(review.rating.toDouble(), size: 20),
+            const SizedBox(width: 8),
+            Text(
+              '${review.rating}.0',
+              style: AppTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
   // Widget _buildRateCustomerSection(String bookingId) {
   //   return Container(
@@ -1602,17 +1652,17 @@ class _ServiceBoyTaskDetailsScreenState
   //   }
   // }
 
-  // Widget _buildRatingStars(double rating, {double size = 16}) {
-  //   return Row(
-  //     children: List.generate(5, (index) {
-  //       return Icon(
-  //         index < rating ? Icons.star : Icons.star_border,
-  //         color: Colors.amber,
-  //         size: size,
-  //       );
-  //     }),
-  //   );
-  // }
+  Widget _buildRatingStars(double rating, {double size = 16}) {
+    return Row(
+      children: List.generate(5, (index) {
+        return Icon(
+          index < rating ? Icons.star : Icons.star_border,
+          color: Colors.amber,
+          size: size,
+        );
+      }),
+    );
+  }
 
   // String _formatDate(DateTime date) {
   //   return '${date.day}/${date.month}/${date.year}';

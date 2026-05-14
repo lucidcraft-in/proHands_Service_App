@@ -6,6 +6,7 @@ class StorageService {
   static const String _authTokenKey = 'auth_token';
   static const String _userDataKey = 'user_data';
   static const String _userTypeKey = 'user_type';
+  static const String _fcmTokenKey = 'fcm_token';
 
   static Future<void> saveUserType(UserType userType) async {
     final prefs = await SharedPreferences.getInstance();
@@ -132,5 +133,15 @@ class StorageService {
   static Future<String> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('theme_mode') ?? 'Light';
+  }
+
+  static Future<void> saveFCMToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_fcmTokenKey, token);
+  }
+
+  static Future getFCMToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_fcmTokenKey);
   }
 }

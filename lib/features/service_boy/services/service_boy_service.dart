@@ -210,7 +210,16 @@ class ServiceBoyService {
     final url = Uri.parse('$baseUrl/bookings/$bookingId');
     try {
       final headers = await _getHeaders();
+      print(" ========== url ========== ");
+      print(bookingId);
+      print(" ========== headers ========== ");
+      print(headers);
+      print(" ========== url ========== ");
       final response = await http.get(url, headers: headers);
+      print(" ========== response ========== ");
+      print(response.body);
+      print(" ========== response ========== ");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -455,6 +464,31 @@ class ServiceBoyService {
   // Cancel Booking Request (Service Boy)
   Future<bool> cancelBookingRequest(String bookingId, String reason) async {
     final url = Uri.parse('$baseUrl/bookings/$bookingId/cancel-request');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(
+        url,
+        headers: headers,
+        body: jsonEncode({'reason': reason}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ??
+              'Failed to submit cancel request: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error submitting cancel request: $e');
+    }
+  }
+
+  Future<bool> reassignBookingRequest(String bookingId, String reason) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/reassign-request');
     try {
       final headers = await _getHeaders();
       final response = await http.post(

@@ -290,7 +290,7 @@ class _ServiceProviderDetailScreenState
                                     final Map<String, dynamic> parsed =
                                         jsonDecode(displayText);
                                     displayText =
-                                        parsed['location name']?.toString() ??
+                                        parsed['location_name']?.toString() ??
                                         parsed['location_name']?.toString() ??
                                         displayText;
                                   }

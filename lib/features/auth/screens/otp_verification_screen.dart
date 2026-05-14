@@ -15,11 +15,13 @@ import '../../../core/services/storage_service.dart';
 class OTPVerificationScreen extends StatefulWidget {
   final String identifier;
   final String? email;
+  final String? phone;
   final UserType userType;
 
   const OTPVerificationScreen({
     super.key,
     required this.email,
+    required this.phone,
     required this.identifier,
     required this.userType,
   });
@@ -30,11 +32,13 @@ class OTPVerificationScreen extends StatefulWidget {
 
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final _otpController = TextEditingController();
+  var _fcmToken;
   int _secondsRemaining = 60;
   bool _canResend = false;
 
   @override
   void initState() {
+    _fcmToken = StorageService.getFCMToken();
     super.initState();
     _startTimer();
   }
@@ -69,7 +73,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
   Future<void> _handleResend() async {
     try {
-      await context.read<AuthProvider>().login(widget.email!, widget.userType);
+      await context.read<AuthProvider>().login(
+        widget.email!,
+        widget.phone ?? "",
+        widget.userType,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -106,8 +114,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     }
 
     try {
+      setState(() {
+        _fcmToken = "";
+      });
       debugPrint('========= step: calling verifyOtp ==========');
-      await context.read<AuthProvider>().verifyOtp(widget.email!, otp);
+      print(_fcmToken);
+      await context.read<AuthProvider>().verifyOtp(
+        widget.email!,
+        otp,
+        _fcmToken,
+      );
       debugPrint('========= step: verifyOtp completed ==========');
 
       if (mounted) {

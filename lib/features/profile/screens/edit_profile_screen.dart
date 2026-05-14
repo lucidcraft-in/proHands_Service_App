@@ -122,6 +122,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (serviceProvider.myServices.isNotEmpty && mounted) {
         final service = serviceProvider.myServices.first;
+        print(service);
         _existingServiceId = service.id;
         _serviceNameController.text = service.name;
         _serviceDescriptionController.text = service.description;
@@ -216,13 +217,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
 
     // Bank Details
-    if (user.bankDetails != null) {
-      _bankNameController.text = user.bankDetails?.bankName ?? '';
-      _accountNumberController.text = user.bankDetails?.accountNumber ?? '';
-      _ifscCodeController.text = user.bankDetails?.ifscCode ?? '';
-      _accountHolderNameController.text =
-          user.bankDetails?.accountHolderName ?? '';
-    }
+    // if (user.bankDetails != null) {
+    //   _bankNameController.text = user.bankDetails?.bankName ?? '';
+    //   _accountNumberController.text = user.bankDetails?.accountNumber ?? '';
+    //   _ifscCodeController.text = user.bankDetails?.ifscCode ?? '';
+    //   _accountHolderNameController.text =
+    //       user.bankDetails?.accountHolderName ?? '';
+    // }
     setState(() {});
   }
 
@@ -279,7 +280,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     try {
       // Check if already added
       if (_selectedPreferredLocations.any(
-        (loc) => (loc['location name'] ?? loc['location name']) == description,
+        (loc) => (loc['location_name'] ?? loc['location_name']) == description,
       )) {
         ScaffoldMessenger.of(
           context,
@@ -291,7 +292,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (latLng != null) {
         setState(() {
           _selectedPreferredLocations.add({
-            'location name': description,
+            'location_name': description,
             'coordinates': [latLng.longitude, latLng.latitude], // ⚠️ lng, lat
           });
           _locationSuggestions = [];
@@ -499,7 +500,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 '', // Use existing or empty if none selected
             'additionalSkills': _selectedAdditionalSkills,
             'isTrending': _isTrending,
-            if (imageUrl != null) 'image': imageUrl,
+            if (imageUrl != null) 'serviceImage': imageUrl,
             // For existing services, these might be required or preserved
             'price':
                 serviceProvider.myServices.isNotEmpty
@@ -1100,7 +1101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       return Chip(
                         label: Text(
                           loc['location_name'] ??
-                              loc['location name'] ??
+                              loc['location_name'] ??
                               'Unknown location',
                           style: const TextStyle(fontSize: 12),
                         ),

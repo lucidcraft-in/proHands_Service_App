@@ -385,13 +385,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    subtitle: Text(
-                                      '₹${option.price}',
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+
                                     onTap: () => onSelected(option),
                                   );
                                 },

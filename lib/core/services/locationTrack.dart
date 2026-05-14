@@ -14,6 +14,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:url_launcher/url_launcher.dart';
 import 'location_service.dart';
+import '../widgets/custom_button.dart';
 
 class MapScreen extends StatefulWidget {
   final BookingModel booking;
@@ -351,191 +352,189 @@ class _MapScreenState extends State<MapScreen> {
             minChildSize: 0.25,
             maxChildSize: 0.6,
             builder: (context, scrollController) {
-              print(widget.booking.status);
-              return Container(
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: Column(
-                    children: [
-                      Container(
-                        margin: const EdgeInsets.symmetric(vertical: 12),
-                        height: 4,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+              return Consumer<ServiceBoyProvider>(
+                builder: (context, provider, child) {
+                  final currentBooking = provider.bookings.firstWhere(
+                    (b) => b.id == widget.booking.id,
+                    orElse: () => widget.booking,
+                  );
+                  final bool isReached =
+                      currentBooking.status == BookingStatus.reached;
+
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: SingleChildScrollView(
+                      controller: scrollController,
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 12),
+                            height: 4,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      eta ?? "Calculating...",
-                                      style: AppTextStyles.h2.copyWith(
-                                        color:
-                                            isTrackingStarted
-                                                ? AppColors.error
-                                                : AppColors.primary,
-                                      ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          eta ?? "Calculating...",
+                                          style: AppTextStyles.h2.copyWith(
+                                            color:
+                                                isTrackingStarted
+                                                    ? AppColors.error
+                                                    : AppColors.primary,
+                                          ),
+                                        ),
+                                        Text(
+                                          "${(currentDistance / 1000).toStringAsFixed(1)} km away",
+                                          style: AppTextStyles.bodySmall,
+                                        ),
+                                      ],
                                     ),
-                                    Text(
-                                      "${(currentDistance / 1000).toStringAsFixed(1)} km away",
-                                      style: AppTextStyles.bodySmall,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primaryLight
+                                            .withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        currentBooking.bookingId,
+                                        style:
+                                            AppTextStyles.labelSmall.copyWith(
+                                              color: AppColors.primary,
+                                            ),
+                                      ),
                                     ),
                                   ],
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primaryLight.withOpacity(
-                                      0.1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    widget.booking.bookingId,
-                                    style: AppTextStyles.labelSmall.copyWith(
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            const Divider(),
-                            const SizedBox(height: 16),
-                            Row(
-                              children: [
-                                CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: Colors.grey[200],
-                                  child: const Icon(
-                                    Iconsax.user,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        widget.booking.customerName,
-                                        style: AppTextStyles.h4,
+                                const SizedBox(height: 24),
+                                const Divider(),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: Colors.grey[200],
+                                      child: const Icon(
+                                        Iconsax.user,
+                                        color: AppColors.primary,
                                       ),
-                                      Text(
-                                        widget.booking.serviceName,
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            currentBooking.customerName,
+                                            style: AppTextStyles.h4,
+                                          ),
+                                          Text(
+                                            currentBooking.serviceName,
+                                            style: AppTextStyles.bodyMedium,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed:
+                                          () => _makePhoneCall(
+                                            currentBooking.customerPhone,
+                                          ),
+                                      icon: const Icon(
+                                        Iconsax.call,
+                                        color: AppColors.success,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  children: [
+                                    const Icon(
+                                      Iconsax.location5,
+                                      color: AppColors.error,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        currentBooking.location,
                                         style: AppTextStyles.bodyMedium,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  onPressed:
-                                      () => _makePhoneCall(
-                                        widget.booking.customerPhone,
-                                      ),
-                                  icon: const Icon(
-                                    Iconsax.call,
-                                    color: AppColors.success,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Iconsax.location5,
-                                  color: AppColors.error,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Text(
-                                    widget.booking.location,
-                                    style: AppTextStyles.bodyMedium,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 32),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      widget.booking.status ==
-                                              BookingStatus.reached
-                                          ? AppColors.primary
-                                          : isTrackingStarted
-                                          ? AppColors.error
-                                          : AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 18,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                onPressed:
-                                    isTrackingStarted
-                                        ? widget.booking.status == "arrived"
+                                const SizedBox(height: 32),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: CustomButton(
+                                    text:
+                                        isReached
+                                            ? "ARRIVED"
+                                            : isTrackingStarted
+                                            ? "MARK AS ARRIVED"
+                                            : "START TRIP",
+                                    isLoading: provider.isReaching,
+                                    onPressed:
+                                        isReached
                                             ? null
-                                            : _markAsArrived
-                                        : widget.booking.status ==
-                                            BookingStatus.reached
-                                        ? null
-                                        : _startRide,
-                                child: Text(
-                                  widget.booking.status == BookingStatus.reached
-                                      ? "ARRIVED"
-                                      : isTrackingStarted
-                                      ? widget.booking.status == "arrived"
-                                          ? "ARRIVED"
-                                          : "MARK AS ARRIVED"
-                                      : "START TRIP",
-                                  style: AppTextStyles.labelLarge.copyWith(
-                                    color: Colors.white,
-                                    letterSpacing: 1.2,
+                                            : isTrackingStarted
+                                            ? _markAsArrived
+                                            : _startRide,
+                                    backgroundColor:
+                                        isReached
+                                            ? AppColors.primary
+                                            : isTrackingStarted
+                                            ? AppColors.error
+                                            : AppColors.primary,
+                                    textColor: Colors.white,
+                                    height: 56,
+                                    borderRadius: 16,
+                                    fontSize: 16,
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 20),
+                              ],
                             ),
-                            const SizedBox(height: 20),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           ),

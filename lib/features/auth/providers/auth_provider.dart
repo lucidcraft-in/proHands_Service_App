@@ -14,13 +14,21 @@ class AuthProvider extends ChangeNotifier {
   String? get error => _error;
   bool get isAuthenticated => _currentUser != null;
 
-  Future<void> login(String email, UserType userType) async {
+  Future<void> login(String email, String phone, UserType userType) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await AuthService.requestOTP(email, userType.apiValue);
+      print("--------------------- -------------------");
+      print(email);
+      print(phone);
+      print(userType.apiValue);
+      final response = await AuthService.requestOTP(
+        email,
+        phone,
+        userType.apiValue,
+      );
       print(response);
       // API returns success message and debug_otp, but we don't need to store them here
       // The UI will handle navigation to OTP screen
@@ -34,13 +42,13 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> verifyOtp(String email, String otp) async {
+  Future<void> verifyOtp(String email, String otp, String fcmToken) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await AuthService.verifyOTP(email, otp);
+      final response = await AuthService.verifyOTP(email, otp, fcmToken);
       print(response);
       final token = response['token'];
       final userData = response['user'];
