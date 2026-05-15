@@ -12,9 +12,6 @@ class AuthService {
     String userType,
   ) async {
     final url = Uri.parse('$baseUrl/auth/request-otp');
-    print(email);
-    print(userType);
-    print("url : $url");
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
@@ -24,8 +21,6 @@ class AuthService {
         'userType': userType.toUpperCase(),
       }),
     );
-    print(response.body);
-    print(response.statusCode);
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
@@ -53,8 +48,6 @@ class AuthService {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'email': email, 'otp': otp, 'fcmToken': fcmToken}),
     );
-    print(response.body);
-    print(response.statusCode);
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {

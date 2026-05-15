@@ -89,8 +89,6 @@ class ServiceBoyService {
         headers: headers,
         body: jsonEncode(serviceData),
       );
-      print(" ========= response ========= ");
-      print(response.body);
       final data = jsonDecode(response.body);
       if (response.statusCode == 200 || response.statusCode == 201) {
         if (data['success'] == true) {
@@ -210,15 +208,7 @@ class ServiceBoyService {
     final url = Uri.parse('$baseUrl/bookings/$bookingId');
     try {
       final headers = await _getHeaders();
-      print(" ========== url ========== ");
-      print(bookingId);
-      print(" ========== headers ========== ");
-      print(headers);
-      print(" ========== url ========== ");
       final response = await http.get(url, headers: headers);
-      print(" ========== response ========== ");
-      print(response.body);
-      print(" ========== response ========== ");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -560,8 +550,6 @@ class ServiceBoyService {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> logsJson = data['logs'] ?? [];
-          print("----------- logsJson -------");
-          print(logsJson);
           return logsJson
               .map((json) => BookingLogModel.fromJson(json))
               .toList();

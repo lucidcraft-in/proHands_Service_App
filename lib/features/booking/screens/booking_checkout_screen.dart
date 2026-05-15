@@ -61,9 +61,7 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
   }
 
   void _checkUserName() {
-    print("+++++++++++++++++++");
     final user = context.read<ConsumerProvider>().currentUser;
-    print(user?.name);
     if (user?.name == null ||
         user!.name!.isEmpty ||
         user.name!.toLowerCase() == 'guest') {
@@ -496,8 +494,8 @@ class _BookingCheckoutScreenState extends State<BookingCheckoutScreen> {
             const SizedBox(height: 16),
             _buildAddressField(
               controller: _notesController,
-              label: 'Additional Instructions',
-              hint: 'e.g. Please bring a ladder, doorbell is broken...',
+              label: 'Work Details',
+              hint: 'Enter Work Details...',
               icon: Iconsax.document_text,
               maxLines: 3,
             ),

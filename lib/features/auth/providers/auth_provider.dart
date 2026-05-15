@@ -20,16 +20,14 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print("--------------------- -------------------");
-      print(email);
-      print(phone);
-      print(userType.apiValue);
       final response = await AuthService.requestOTP(
         email,
         phone,
         userType.apiValue,
       );
-      print(response);
+
+      // Save login details for next time
+      await StorageService.saveLastLoginDetails(email, phone, userType);
       // API returns success message and debug_otp, but we don't need to store them here
       // The UI will handle navigation to OTP screen
       _isLoading = false;
@@ -49,11 +47,8 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await AuthService.verifyOTP(email, otp, fcmToken);
-      print(response);
       final token = response['token'];
       final userData = response['user'];
-      print("--------------------- -------------------");
-      print(userData);
       if (token != null && userData != null) {
         // Save to storage
         await StorageService.saveAuthToken(token);
@@ -71,7 +66,6 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      print(e);
       _isLoading = false;
       _error = e.toString().replaceAll('Exception: ', '');
       notifyListeners();

@@ -7,6 +7,9 @@ class StorageService {
   static const String _userDataKey = 'user_data';
   static const String _userTypeKey = 'user_type';
   static const String _fcmTokenKey = 'fcm_token';
+  static const String _lastLoginEmailKey = 'last_login_email';
+  static const String _lastLoginPhoneKey = 'last_login_phone';
+  static const String _lastLoginUserTypeKey = 'last_login_user_type';
 
   static Future<void> saveUserType(UserType userType) async {
     final prefs = await SharedPreferences.getInstance();
@@ -72,8 +75,6 @@ class StorageService {
       // Move to top if exists
       locations.removeAt(existingIndex);
     }
-    print("=======");
-    print(label);
     // Add new location to top
     locations.insert(0, {
       'address': address,
@@ -122,7 +123,38 @@ class StorageService {
 
   static Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove(_authTokenKey);
+    await prefs.remove(_userDataKey);
+    await prefs.remove(_userTypeKey);
+    // We explicitly don't clear last_login_email, last_login_phone, theme_mode, and saved_locations
+  }
+
+  static Future<void> saveLastLoginDetails(
+    String email,
+    String phone,
+    UserType userType,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_lastLoginEmailKey, email);
+    await prefs.setString(_lastLoginPhoneKey, phone);
+    await prefs.setString(_lastLoginUserTypeKey, userType.name);
+  }
+
+  static Future<Map<String, dynamic>> getLastLoginDetails() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userTypeName = prefs.getString(_lastLoginUserTypeKey);
+    UserType? userType;
+    if (userTypeName != null) {
+      try {
+        userType = UserType.values.byName(userTypeName);
+      } catch (_) {}
+    }
+
+    return {
+      'email': prefs.getString(_lastLoginEmailKey),
+      'phone': prefs.getString(_lastLoginPhoneKey),
+      'userType': userType,
+    };
   }
 
   static Future<void> saveThemeMode(String theme) async {

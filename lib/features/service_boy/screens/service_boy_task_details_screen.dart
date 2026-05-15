@@ -168,9 +168,6 @@ class _ServiceBoyTaskDetailsScreenState
           }
 
           final booking = provider.selectedBooking ?? widget.booking;
-          print("booking");
-          print("--------------");
-          print(booking.status);
           Color statusColor = AppColors.primary; // Default
           switch (booking.status) {
             case BookingStatus.assigned:

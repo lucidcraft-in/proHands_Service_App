@@ -609,8 +609,6 @@ class _MapScreenState extends State<MapScreen> {
       technicianLatLng!,
       destinationLatLng,
     );
-    print("result");
-    print(result);
     if (result != null) {
       setState(() {
         polylineCoordinates = result['points'];

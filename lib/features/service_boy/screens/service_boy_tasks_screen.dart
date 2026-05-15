@@ -239,8 +239,6 @@ class _ServiceBoyTasksScreenState extends State<ServiceBoyTasksScreen>
   }
 
   Widget _buildTasksList(List<BookingModel> tasks, BookingStatus status) {
-    print("----------");
-    print(tasks);
     if (tasks.isEmpty) {
       return Center(
         child: SingleChildScrollView(

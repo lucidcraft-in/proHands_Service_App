@@ -262,8 +262,6 @@ class BookingModel {
   }
 
   static BookingStatus _parseStatus(String? status) {
-    print("status: $status");
-    print("------------------------------");
     if (status == null) return BookingStatus.open;
     switch (status.toUpperCase()) {
       case 'OPEN':

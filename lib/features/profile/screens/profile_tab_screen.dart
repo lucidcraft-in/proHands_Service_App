@@ -80,7 +80,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 phone: '',
                 userType: UserType.customer,
               );
-          print(user);
           if (provider.isLoadingProfile) {
             return const _ProfileShimmer();
           }
@@ -737,8 +736,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
             onLocationSelected: (locationData) async {
               final address = locationData['address'] as String;
               final coordinates = locationData['coordinates'] as List<double>;
-              print("=== ====== ========");
-              print(locationData);
               // Save to Storage
               await StorageService.saveUserLocation(
                 address: address,
@@ -907,7 +904,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           child: Column(
             children:
                 reviews.map((rev) {
-                  print(rev.reviewerPhone);
                   return Container(
                     margin: const EdgeInsets.symmetric(
                       horizontal: 20,

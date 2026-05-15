@@ -109,8 +109,6 @@ class _CustomerBookingDetailsScreenState
         _currentBooking.status == BookingStatus.closed ||
         _currentBooking.status == BookingStatus.closedByCustomer ||
         _currentBooking.status == BookingStatus.commissionPaymentPending;
-
-    debugPrint("Current Booking Status: ${_currentBooking.status}");
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(

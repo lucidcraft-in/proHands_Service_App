@@ -15,8 +15,6 @@ class FullScreenImageViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("============================");
-    print(isFile);
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(

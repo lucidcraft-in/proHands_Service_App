@@ -24,7 +24,9 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedLocation = widget.initialLocation ?? const LatLng(10.0101, 76.3630); // Default to Kochi if not provided
+    _selectedLocation =
+        widget.initialLocation ??
+        const LatLng(10.0101, 76.3630); // Default to Kochi if not provided
     if (widget.initialLocation != null) {
       _fetchAddress(widget.initialLocation!);
     }
@@ -90,7 +92,7 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
             myLocationButtonEnabled: false,
             zoomControlsEnabled: false,
           ),
-          
+
           // Center Marker
           Center(
             child: Padding(
@@ -160,13 +162,16 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
                     const SizedBox(height: 20),
                     GradientButton(
                       text: 'Confirm Location',
-                      onPressed: _isLoadingAddress ? null : () {
-                        Navigator.pop(context, {
-                          'latitude': _selectedLocation!.latitude,
-                          'longitude': _selectedLocation!.longitude,
-                          'address': _address,
-                        });
-                      },
+                      onPressed:
+                          _isLoadingAddress
+                              ? null
+                              : () {
+                                Navigator.pop(context, {
+                                  'latitude': _selectedLocation!.latitude,
+                                  'longitude': _selectedLocation!.longitude,
+                                  'address': _address,
+                                });
+                              },
                       width: double.infinity,
                     ),
                   ],
@@ -181,12 +186,10 @@ class _MapSelectionScreenState extends State<MapSelectionScreen> {
             bottom: 220,
             child: FloatingActionButton(
               onPressed: () async {
-                final pos = await LocationService.getCurrentPosition();
+                final pos = await LocationService.getCurrentPosition(context);
                 if (pos != null) {
                   _mapController.animateCamera(
-                    CameraUpdate.newLatLng(
-                      LatLng(pos.latitude, pos.longitude),
-                    ),
+                    CameraUpdate.newLatLng(LatLng(pos.latitude, pos.longitude)),
                   );
                 }
               },

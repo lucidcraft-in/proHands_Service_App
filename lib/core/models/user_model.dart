@@ -259,11 +259,9 @@ class UserModel {
   }
 
   static UserType _parseUserType(String? type) {
-    debugPrint('Parsing UserType: \'$type\'');
     if (type == null) return UserType.customer;
 
     final normalizedType = type.trim().toUpperCase();
-    debugPrint('Normalized UserType: \'$normalizedType\'');
 
     if (normalizedType == 'SERVICE_BOY' || normalizedType == 'SERVICEBOY') {
       return UserType.serviceBoy;
@@ -278,7 +276,6 @@ class UserModel {
         (e) => e.name.toUpperCase() == normalizedType,
       );
     } catch (_) {
-      debugPrint('Unknown UserType: $type, defaulting to customer');
       return UserType.customer;
     }
   }

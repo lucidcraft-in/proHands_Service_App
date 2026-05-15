@@ -805,7 +805,6 @@ class _ExploreScreenState extends State<ExploreScreen>
   }
 
   Widget _buildLeaderboardTile(UserModel user, int rank) {
-    print(user.profilePhoto);
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),

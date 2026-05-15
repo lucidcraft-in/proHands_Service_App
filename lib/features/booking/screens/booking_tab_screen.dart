@@ -219,8 +219,6 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
 
                       final booking = filteredBookings[index];
                       // Map status to color
-                      print(index);
-                      print(booking.location);
                       Color statusColor = const Color.fromARGB(255, 47, 55, 83);
                       if (booking.status == BookingStatus.assigned) {
                         statusColor = AppColors.warning;

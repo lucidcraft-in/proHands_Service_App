@@ -96,14 +96,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
     }
 
     FocusScope.of(context).unfocus();
-    print(_selectedCategoryId);
-    print(_selectedSubcategoryId);
-    print(_selectedAdditionalSkills);
-    print(_customSkills);
-    print(_descriptionController.text.trim());
-    print(_isTrending);
-    print(_serviceImage);
-    print(" ===========");
 
     final provider = context.read<ServiceBoyProvider>();
     String? imageUrl;
@@ -519,9 +511,6 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                                   ),
                                   value: isSelected,
                                   onChanged: (bool? value) {
-                                    print(value);
-                                    print(skill);
-                                    print("===");
                                     setState(() {
                                       if (value == true) {
                                         if (!_selectedAdditionalSkills.contains(
@@ -618,62 +607,61 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                         (v) => v == null || v.isEmpty ? 'Required' : null,
                   ),
 
-                  const SizedBox(height: 20),
+                  // const SizedBox(height: 20),
 
-                  // isTrending Toggle
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: AppColors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color:
-                            _isTrending
-                                ? AppColors.primary.withOpacity(0.3)
-                                : AppColors.border,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Iconsax.trend_up,
-                            color: AppColors.primary,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Mark as Trending',
-                                style: AppTextStyles.labelMedium,
-                              ),
-                              Text(
-                                'Boost visibility of this service',
-                                style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Switch(
-                          value: _isTrending,
-                          onChanged: (v) => setState(() => _isTrending = v),
-                          activeColor: AppColors.primary,
-                        ),
-                      ],
-                    ),
-                  ),
-
+                  // // isTrending Toggle
+                  // Container(
+                  //   padding: const EdgeInsets.all(16),
+                  //   decoration: BoxDecoration(
+                  //     color: AppColors.white,
+                  //     borderRadius: BorderRadius.circular(16),
+                  //     border: Border.all(
+                  //       color:
+                  //           _isTrending
+                  //               ? AppColors.primary.withOpacity(0.3)
+                  //               : AppColors.border,
+                  //     ),
+                  //   ),
+                  //   child: Row(
+                  //     children: [
+                  //       Container(
+                  //         padding: const EdgeInsets.all(10),
+                  //         decoration: BoxDecoration(
+                  //           color: AppColors.primary.withOpacity(0.08),
+                  //           borderRadius: BorderRadius.circular(12),
+                  //         ),
+                  //         child: const Icon(
+                  //           Iconsax.trend_up,
+                  //           color: AppColors.primary,
+                  //           size: 20,
+                  //         ),
+                  //       ),
+                  //       // const SizedBox(width: 16),
+                  //       // Expanded(
+                  //       //   child: Column(
+                  //       //     crossAxisAlignment: CrossAxisAlignment.start,
+                  //       //     children: [
+                  //       //       Text(
+                  //       //         'Mark as Trending',
+                  //       //         style: AppTextStyles.labelMedium,
+                  //       //       ),
+                  //       //       Text(
+                  //       //         'Boost visibility of this service',
+                  //       //         style: AppTextStyles.caption.copyWith(
+                  //       //           color: AppColors.textSecondary,
+                  //       //         ),
+                  //       //       ),
+                  //       //     ],
+                  //       //   ),
+                  //       // ),
+                  //       Switch(
+                  //         value: _isTrending,
+                  //         onChanged: (v) => setState(() => _isTrending = v),
+                  //         activeColor: AppColors.primary,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                   const SizedBox(height: 32),
 
                   if (provider.isCreatingService)

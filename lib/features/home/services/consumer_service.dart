@@ -18,8 +18,6 @@ class ConsumerService {
   // Get headers with token
   Future<Map<String, String>> _getHeaders() async {
     final token = await StorageService.getAuthToken();
-    print("-------");
-    print(token);
     return {
       'Content-Type': 'application/json',
       'Authorization': 'Bearer $token',
@@ -34,7 +32,6 @@ class ConsumerService {
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -68,8 +65,6 @@ class ConsumerService {
         final data = jsonDecode(response.body);
 
         if (data['success'] == true) {
-          print("=================");
-          print(data['services']);
           final List<dynamic> servicesJson = data['services'];
 
           return servicesJson
@@ -186,7 +181,6 @@ class ConsumerService {
     int limit = 100, // Large limit to fetch most services for filtering
   }) async {
     final url = Uri.parse('$baseUrl/services?page=$page&limit=$limit');
-    print(url);
     try {
       final headers = await _getHeaders();
 
@@ -221,8 +215,6 @@ class ConsumerService {
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
-      print("=======================");
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -441,9 +433,6 @@ class ConsumerService {
       final request = http.MultipartRequest('PATCH', url);
 
       request.headers['Authorization'] = 'Bearer $token';
-      print("=========================== =============== =======");
-      print(workLocationPreferred);
-      print(address);
       // Text Fields
       if (name != null) request.fields['name'] = name;
       if (email != null) request.fields['email'] = email;
@@ -460,6 +449,12 @@ class ConsumerService {
       if (workPreference != null) {
         request.fields['workPreference'] = jsonEncode(workPreference);
       }
+      // if (workLocationPreferred != null) {
+      //   request.fields['workLocationPreferred'] = jsonEncode(
+      //     workLocationPreferred,
+      //   ); // ✅ correct
+      // }
+
       if (workLocationPreferred != null) {
         request.fields['workLocationPreferred'] = jsonEncode(
           workLocationPreferred,
@@ -504,9 +499,6 @@ class ConsumerService {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      print("+++++++++++++++++++++++++++++++++++++");
-      print(response.body);
-      print("+++++++++++++++++++++++++++++++++++++");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -518,7 +510,6 @@ class ConsumerService {
         throw Exception('Failed to update profile: ${response.statusCode}');
       }
     } catch (e) {
-      print(e);
       throw Exception('Error updating profile: $e');
     }
   }
@@ -598,7 +589,6 @@ class ConsumerService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
-        print(data);
         if (data['success'] == true) {
           // The response might contain the updated user or token
           // Assuming it returns updated user data
@@ -631,7 +621,6 @@ class ConsumerService {
   // }) async {
   //   final url = Uri.parse('$baseUrl/users/me');
   //   try {
-  //     print(address);
   //     final headers = await _getHeaders();
   //     final bodyMap = <String, dynamic>{
   //       'latitude': latitude,
@@ -708,14 +697,9 @@ class ConsumerService {
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
-      print("-- ----- ---- -- - ");
-      print(response.statusCode);
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          print("user data");
-          print(data['user']);
           return UserModel.fromJson(data['user']);
         } else {
           throw Exception(data['message'] ?? 'Failed to load user profile');
@@ -733,8 +717,6 @@ class ConsumerService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-      print("provider details");
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -744,8 +726,6 @@ class ConsumerService {
         }
       } else {
         final msg = jsonDecode(response.body)['message'];
-        print(msg);
-        print("--------------------------------------------------");
         throw Exception(msg);
       }
     } catch (e) {
@@ -772,8 +752,6 @@ class ConsumerService {
   //     });
 
   //     final response = await http.post(url, headers: headers, body: body);
-  //     print("booking response");
-  //     print(response.body);
   //     if (response.statusCode == 201 || response.statusCode == 200) {
   //       final data = jsonDecode(response.body);
   //       if (data['success'] == true) {
@@ -799,16 +777,6 @@ class ConsumerService {
     final url = Uri.parse('$baseUrl/bookings');
 
     try {
-      print("ADDRESS => $address");
-      print(
-        "BODY => ${jsonEncode({
-          'serviceId': serviceId,
-          'date': date,
-          'time': time,
-          'location': {'location_name': address, 'coordinates': coordinates},
-          if (description != null) 'description': description,
-        })}",
-      );
       final headers = await _getHeaders();
 
       final body = jsonEncode({
@@ -823,8 +791,6 @@ class ConsumerService {
       });
 
       final response = await http.post(url, headers: headers, body: body);
-
-      print(response.body);
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -848,16 +814,9 @@ class ConsumerService {
         isServiceBoy ? '/reviews/my/received' : '/reviews/my/added';
     final url = Uri.parse('$baseUrl$endpoint');
     try {
-      print(url);
-      print("url----------------------------------------");
       final headers = await _getHeaders();
-      print(headers);
-      print("headers----------------------------------------");
 
       final response = await http.get(url, headers: headers);
-      print("--------------------------------------------");
-      print("---------------------------------------");
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -946,7 +905,6 @@ class ConsumerService {
       }
       final body = jsonEncode(bodyMap);
       final response = await http.post(url, headers: headers, body: body);
-      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         return data['success'] == true;
@@ -1006,10 +964,7 @@ class ConsumerService {
 
   // Search Services
   Future<List<ServiceProductModel>> searchServices(String keyword) async {
-    print("----- --------   ------");
-    print(keyword);
     final url = Uri.parse('$baseUrl/services/search?keyword=${keyword}');
-    print(url);
     try {
       final response = await http.get(url);
 
@@ -1017,14 +972,12 @@ class ConsumerService {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
-          print(servicesJson);
           try {
             return servicesJson
                 .map((json) => ServiceProductModel.fromJson(json))
                 // .where((service) => service.isCommissionPending == false)
                 .toList();
           } catch (e) {
-            print(e);
             return [];
           }
         } else {
@@ -1076,8 +1029,6 @@ class ConsumerService {
   //   double latitude,
   //   double longitude,
   // ) async {
-  //   print(latitude);
-  //   print(longitude);
   //   final url = Uri.parse(
   //     '$baseUrl/services/near-location?latitude=$latitude&longitude=$longitude',
   //   );
@@ -1086,8 +1037,6 @@ class ConsumerService {
   //     final response = await http
   //         .get(url, headers: headers)
   //         .timeout(const Duration(seconds: 20));
-  //     print(response.body);
-  //     print(response.statusCode);
 
   //     if (response.statusCode == 200) {
   //       final data = jsonDecode(response.body);
@@ -1118,8 +1067,6 @@ class ConsumerService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-
-      print("Leaderboard Response: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

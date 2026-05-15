@@ -122,7 +122,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (serviceProvider.myServices.isNotEmpty && mounted) {
         final service = serviceProvider.myServices.first;
-        print(service);
         _existingServiceId = service.id;
         _serviceNameController.text = service.name;
         _serviceDescriptionController.text = service.description;
@@ -158,7 +157,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error fetching service info: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoadingService = false);
@@ -167,8 +165,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _initializeFromUser(UserModel? user) {
-    print("+++++++ user ${user}");
-
     if (user == null) return;
 
     _nameController.text = user.name ?? '';
@@ -182,24 +178,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _specialtiesController.text = user.specialties.join(', ');
     _workLocationPreferredController.text =
         ''; // We use _selectedPreferredLocations instead
-    print("==================================================");
-    print(user.workLocationPreferred);
     _selectedPreferredLocations = [];
     for (var loc in user.workLocationPreferred) {
       try {
         final decoded = jsonDecode(loc);
         try {
           if (decoded is Map<String, dynamic>) {
-            print("+++++ +=======");
             setState(() {
               _selectedPreferredLocations.add(decoded);
             });
-            print(_selectedPreferredLocations);
           }
-        } catch (e) {
-          print("++++++=======");
-          print(e);
-        }
+        } catch (e) {}
       } catch (e) {
         // Fallback for plain strings if any
         _selectedPreferredLocations.add({
@@ -299,10 +288,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _workLocationPreferredController.clear();
         });
       }
-      print(_selectedPreferredLocations);
-    } catch (e) {
-      print(e);
-    }
+    } catch (e) {}
   }
 
   void _removeLocation(int index) {
@@ -400,8 +386,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             content: Text(
               !hasAdhar && !hasLicense
                   ? 'Please upload both Adhar Card and License'
-                  : !hasAdhar
-                  ? 'Please upload Adhar Card'
                   : 'Please upload License',
             ),
             backgroundColor: AppColors.error,
@@ -429,8 +413,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       try {
         bool profileSuccess = true;
         bool serviceSuccess = true;
-        print("_________________==================-");
-        print(_selectedPreferredLocations);
         if (isValid) {
           final results = await Future.wait([
             consumerProvider.updateFullProfile(
@@ -489,8 +471,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (_serviceImage != null) {
             imageUrl = await serviceProvider.uploadServiceImage(_serviceImage!);
           }
-          print("------------");
-          print(_selectedSubcategoryId);
           final serviceData = {
             'name': _serviceNameController.text.trim(),
             'description': _serviceDescriptionController.text.trim(),
@@ -548,7 +528,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           });
         }
       } catch (e) {
-        debugPrint('Error in _handleSave: $e');
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('An error occurred: $e')));
@@ -895,7 +874,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
           // Services Offered (Additional Skills)
           if (_selectedCategoryId != null) ...[
-            Text('Services Offered', style: AppTextStyles.labelMedium),
+            Text(
+              'Services Offered or Additinal Skills',
+              style: AppTextStyles.labelMedium,
+            ),
             const SizedBox(height: 12),
             Consumer<ServiceBoyProvider>(
               builder: (context, sbProvider, _) {

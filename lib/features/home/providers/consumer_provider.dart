@@ -181,9 +181,6 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      print("======== =========");
-      print(categoryId);
-      print(await _service.getServicesByCategory(categoryId));
 
       _services = await _service.getServicesByCategory(categoryId);
     } catch (e) {
@@ -234,8 +231,6 @@ class ConsumerProvider extends ChangeNotifier {
 
     try {
       _searchResults = await _service.searchServices(keyword);
-      print("------------ ---------- ----------");
-      print(_searchResults.length);
     } catch (e) {
       _searchError = e.toString().replaceAll('Exception: ', '');
     } finally {
@@ -288,7 +283,6 @@ class ConsumerProvider extends ChangeNotifier {
     try {
       _locationSuggestions = await LocationService.getPlaceSuggestions(query);
     } catch (e) {
-      debugPrint('Error fetching suggestions: $e');
     } finally {
       _isFetchingSuggestions = false;
       notifyListeners();
@@ -394,8 +388,6 @@ class ConsumerProvider extends ChangeNotifier {
 
     try {
       _currentUser = await _service.getMe();
-      print("==== =     = = = = = = = = = = = =  ====");
-      print(_currentUser!);
       notifyListeners();
     } catch (e) {
       _profileError = e.toString().replaceAll('Exception: ', '');
@@ -546,7 +538,6 @@ class ConsumerProvider extends ChangeNotifier {
     _isUpdatingProfile = true;
     _updateProfileError = null;
     notifyListeners();
-    print(workLocationPreferred);
     try {
       _currentUser = await _service.updateFullProfile(
         name: name,
@@ -775,10 +766,6 @@ class ConsumerProvider extends ChangeNotifier {
     _isSubmittingReassignChoice = true;
     _reassignChoiceError = null;
     notifyListeners();
-    print("-----8888888888888888888888888888888888888-----");
-    print(bookingId);
-    print(choice);
-    print(newServiceId);
     try {
       final success = await _service.submitReassignChoice(
         bookingId: bookingId,
@@ -822,7 +809,6 @@ class ConsumerProvider extends ChangeNotifier {
       final booking = await _service.getBookingDetails(bookingId);
       return booking;
     } catch (e) {
-      debugPrint('Error fetching booking details: $e');
       return null;
     }
   }

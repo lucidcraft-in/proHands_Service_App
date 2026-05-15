@@ -341,7 +341,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("----------------------");
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -368,8 +367,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         phone: '',
                         userType: UserType.serviceBoy,
                       );
-                  print("----------------------");
-                  print(user.profilePhoto);
 
                   final hasName = user.name != null && user.name!.isNotEmpty;
                   return Row(
@@ -736,8 +733,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   final stats = provider.dashboardStats;
                   final bookingsByStatus =
                       stats?['bookingsByStatus'] as Map<String, dynamic>?;
-                  print("--------------------------------------------");
-                  print(bookingsByStatus);
                   final pending =
                       (bookingsByStatus?['ASSIGNED'] ?? 0) +
                       (bookingsByStatus?['ACCEPTED'] ?? 0);
@@ -899,7 +894,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
                             return GestureDetector(
                               onTap: () {
-                                print(image.imageUrl);
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
@@ -1007,8 +1001,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         recentTasks.map((booking) {
                           Color statusColor;
                           String statusText;
-                          print("=======");
-                          print(booking.status);
                           switch (booking.status) {
                             case BookingStatus.assigned:
                               statusColor = AppColors.warning;

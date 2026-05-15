@@ -7,6 +7,7 @@ import '../../../core/widgets/custom_button.dart';
 import '../../../core/widgets/custom_text_field.dart';
 import '../providers/auth_provider.dart';
 import 'otp_verification_screen.dart';
+import '../../../core/services/storage_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,6 +21,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   UserType _selectedUserType = UserType.customer;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedDetails();
+  }
+
+  Future<void> _loadSavedDetails() async {
+    final details = await StorageService.getLastLoginDetails();
+    if (details['email'] != null) {
+      _emailController.text = details['email']!;
+    }
+    if (details['phone'] != null) {
+      _phoneController.text = details['phone']!;
+    }
+    if (details['userType'] != null) {
+      setState(() {
+        _selectedUserType = details['userType'];
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -47,7 +69,6 @@ class _LoginScreenState extends State<LoginScreen> {
           _phoneController.text.trim(),
           _selectedUserType,
         );
-        print(_selectedUserType);
         if (mounted) {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -165,7 +186,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() {
                             _selectedUserType = value!;
                           });
-                          print(_selectedUserType);
                         },
                         contentPadding: EdgeInsets.zero,
                         activeColor: AppColors.primary,
@@ -180,7 +200,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           setState(() {
                             _selectedUserType = value!;
                           });
-                          print(_selectedUserType);
                         },
                         contentPadding: EdgeInsets.zero,
                         activeColor: AppColors.primary,

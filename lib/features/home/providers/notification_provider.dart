@@ -56,7 +56,6 @@ class NotificationProvider with ChangeNotifier {
         }
       }
     } catch (e) {
-      print('Error marking notification as read: $e');
     }
   }
 
@@ -84,7 +83,6 @@ class NotificationProvider with ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      print('Error marking all notifications as read: $e');
     }
   }
 }

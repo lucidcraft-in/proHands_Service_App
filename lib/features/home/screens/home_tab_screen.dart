@@ -485,7 +485,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       itemCount: provider.categories.length,
                       itemBuilder: (context, index) {
                         final category = provider.categories[index];
-                        print(category);
                         // Determine color based on category name for consistent branding
                         Color color = AppColors.primary;
                         final name = category.name.toLowerCase();

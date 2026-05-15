@@ -48,7 +48,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     try {
       _otpController.dispose();
     } catch (e) {
-      debugPrint('Error disposing OTP controller: $e');
     }
     super.dispose();
   }
@@ -101,7 +100,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   }
 
   Future<void> _handleVerify([String? manualOtp]) async {
-    debugPrint('========= step: _handleVerify started ==========');
     final otp = manualOtp ?? _otpController.text;
     if (otp.length < 6) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -117,29 +115,20 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       setState(() {
         _fcmToken = "";
       });
-      debugPrint('========= step: calling verifyOtp ==========');
-      print(_fcmToken);
       await context.read<AuthProvider>().verifyOtp(
         widget.email!,
         otp,
         _fcmToken,
       );
-      debugPrint('========= step: verifyOtp completed ==========');
 
       if (mounted) {
         final user = context.read<AuthProvider>().currentUser;
-        debugPrint(
-          '========= step: user retrieved: ${user?.userType} ==========',
-        );
-        print(user);
         // Check for profile completion or specific logic if needed
         // For now, assume if we have a user (which should be true after verifyOtp), we proceed
 
         if (user != null) {
-          print('User ${user.userType} logged in successfully.');
 
           // Navigate based on user type
-          print(user.userType);
 
           if (user.userType == UserType.customer) {
             // Fetch full profile to get location
@@ -151,9 +140,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               if (fullProfile.latitude != null &&
                   fullProfile.longitude != null &&
                   fullProfile.latitude != 0.0) {
-                debugPrint(
-                  '========= step: location exists, navigating to MainScreen ==========',
-                );
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const MainScreen()),
@@ -163,13 +149,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 }
               }
             } catch (e) {
-              debugPrint('Error fetching/saving profile during login: $e');
               // Continue to LocationFetchScreen if profile fetch fails
             }
-
-            debugPrint(
-              '========= step: navigating to LocationFetchScreen ==========',
-            );
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder:
@@ -186,9 +167,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               if (fullProfile.latitude != null &&
                   fullProfile.longitude != null &&
                   fullProfile.latitude != 0.0) {
-                debugPrint(
-                  '========= step: location exists, navigating to ServiceBoyMainScreen ==========',
-                );
                 if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
@@ -200,12 +178,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 }
               }
             } catch (e) {
-              debugPrint('Error fetching technician profile during login: $e');
             }
-
-            debugPrint(
-              '========= step: navigating to LocationFetchScreen (ServiceBoy) ==========',
-            );
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder:
@@ -228,12 +201,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           });
         }
       } else {
-        debugPrint(
-          '========= step: widget not mounted after verifyOtp ==========',
-        );
       }
     } catch (e) {
-      debugPrint('========= step: error in _handleVerify: $e ==========');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

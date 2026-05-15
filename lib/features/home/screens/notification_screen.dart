@@ -137,7 +137,6 @@ class _NotificationCard extends StatelessWidget {
         if (!notification.isRead) {
           context.read<NotificationProvider>().markAsRead(notification.id);
         }
-        print("=======");
         // Handle navigation based on data
         if (notification.data?.bookingId != null) {
           final bookingId = notification.data!.bookingId!;

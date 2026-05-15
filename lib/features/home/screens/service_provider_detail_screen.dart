@@ -42,7 +42,6 @@ class _ServiceProviderDetailScreenState
               consumerProvider.allServices
                   .where((s) => s.providerId == provider.id)
                   .toList();
-          print(provider.workLocationPreferred);
           return CustomScrollView(
             slivers: [
               // Header with Image/Avatar
@@ -64,15 +63,23 @@ class _ServiceProviderDetailScreenState
                             CircleAvatar(
                               radius: 50,
                               backgroundColor: AppColors.white.withOpacity(0.2),
-                              child: Text(
-                                (provider.name?.isNotEmpty == true
-                                    ? provider.name![0]
-                                    : 'P'),
-                                style: AppTextStyles.h1.copyWith(
-                                  color: AppColors.white,
-                                  fontSize: 50,
-                                ),
-                              ),
+                              backgroundImage: provider.profilePhoto.startsWith('http')
+                                  ? NetworkImage(provider.profilePhoto)
+                                  : AssetImage(provider.profilePhoto) as ImageProvider,
+                              onBackgroundImageError: (exception, stackTrace) {
+                                // Fallback is handled by background color if needed
+                              },
+                              child: provider.profilePhoto.isEmpty
+                                  ? Text(
+                                      (provider.name?.isNotEmpty == true
+                                          ? provider.name![0]
+                                          : 'P'),
+                                      style: AppTextStyles.h1.copyWith(
+                                        color: AppColors.white,
+                                        fontSize: 40,
+                                      ),
+                                    )
+                                  : null,
                             ),
                             if (provider.location.isNotEmpty &&
                                 provider.location != 'Unknown') ...[
@@ -341,7 +348,7 @@ class _ServiceProviderDetailScreenState
 
                       // Services Provided by this Professional
                       Text(
-                        'Services Offered',
+                        'Services Offer ed',
                         style: AppTextStyles.h4.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),

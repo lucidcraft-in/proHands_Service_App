@@ -131,7 +131,6 @@ class _ServiceBoyServicesScreenState extends State<ServiceBoyServicesScreen> {
             itemBuilder: (context, index) {
               final service = provider.myServices[index];
               final serviceId = service.id;
-              print(serviceId);
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
