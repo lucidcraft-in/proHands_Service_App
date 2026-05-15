@@ -799,11 +799,12 @@ class _ServiceBoyTaskDetailsScreenState
                         ],
                       ),
                       const SizedBox(height: 24),
+
                       CustomTextField(
                         hint: 'Enter OTP from customer',
                         controller: _otpController,
                         keyboardType: TextInputType.number,
-                        prefixIcon: Icon(Iconsax.lock),
+                        prefixIcon: const Icon(Iconsax.lock),
                       ),
                       const SizedBox(height: 24),
                       Consumer<ServiceBoyProvider>(
@@ -814,8 +815,8 @@ class _ServiceBoyTaskDetailsScreenState
                             onPressed:
                                 provider.isVerifyingOtp ? null : _completeTask,
                             backgroundColor: AppColors.success,
-                            height: 44,
-                            fontSize: 14,
+                            height: 50,
+                            fontSize: 13,
                           );
                         },
                       ),
@@ -827,7 +828,7 @@ class _ServiceBoyTaskDetailsScreenState
                         isOutlined: true,
                         backgroundColor: Theme.of(context).colorScheme.surface,
                         textColor: AppColors.warning,
-                        height: 44,
+                        height: 50,
                         fontSize: 13,
                       ),
                     ],

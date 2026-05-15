@@ -52,9 +52,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late TextEditingController _serviceNameController;
   late TextEditingController _serviceDescriptionController;
   late TextEditingController _customSkillController;
+  late TextEditingController _additionalSkillsController;
   String? _selectedCategoryId;
   String? _selectedSubcategoryId;
   List<String> _selectedAdditionalSkills = [];
+  List<String> _servicesOffered = [];
   List<String> _customSkills = [];
   bool _isTrending = false;
   String? _existingServiceId;
@@ -99,6 +101,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _serviceNameController = TextEditingController();
     _serviceDescriptionController = TextEditingController();
     _customSkillController = TextEditingController();
+    _additionalSkillsController = TextEditingController();
 
     // Fetch latest profile
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -174,7 +177,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     // Technician Specifics
     _professionController.text = user.profession;
     _experienceController.text = user.experience;
-    _selectedAdditionalSkills = List<String>.from(user.servicesOffered);
+    _servicesOffered = List<String>.from(user.servicesOffered);
     _specialtiesController.text = user.specialties.join(', ');
     _workLocationPreferredController.text =
         ''; // We use _selectedPreferredLocations instead
@@ -232,6 +235,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _serviceNameController.dispose();
     _serviceDescriptionController.dispose();
     _customSkillController.dispose();
+    _additionalSkillsController.dispose();
     _locationDebounce?.cancel();
     super.dispose();
   }
@@ -423,7 +427,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isServiceBoy ? _professionController.text.trim() : null,
               experience:
                   isServiceBoy ? _experienceController.text.trim() : null,
-              servicesOffered: isServiceBoy ? _selectedAdditionalSkills : null,
+              servicesOffered: isServiceBoy ? _servicesOffered : null,
 
               specialties:
                   isServiceBoy
@@ -872,10 +876,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Services Offered (Additional Skills)
+          // Services Offered
           if (_selectedCategoryId != null) ...[
             Text(
-              'Services Offered or Additinal Skills',
+              // 'Services Offered (first service name selected is the main service)',
+              'Services Offered (first selected becomes job title)',
               style: AppTextStyles.labelMedium,
             ),
             const SizedBox(height: 12),
@@ -901,7 +906,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         )
                       else
                         ...sbProvider.subcategories.map((sub) {
-                          final isSelected = _selectedAdditionalSkills.contains(
+                          final isSelected = _servicesOffered.contains(
                             sub.name,
                           );
                           return CheckboxListTile(
@@ -913,19 +918,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             onChanged: (bool? value) {
                               setState(() {
                                 if (value == true) {
-                                  if (!_selectedAdditionalSkills.contains(
-                                    sub.name,
-                                  )) {
-                                    _selectedAdditionalSkills.add(sub.name);
+                                  if (!_servicesOffered.contains(sub.name)) {
+                                    _servicesOffered.add(sub.name);
                                   }
                                 } else {
-                                  _selectedAdditionalSkills.remove(sub.name);
+                                  _servicesOffered.remove(sub.name);
                                 }
 
                                 // Auto-set service title and subcategory ID from first selected skill
-                                if (_selectedAdditionalSkills.isNotEmpty) {
-                                  final firstSkill =
-                                      _selectedAdditionalSkills.first;
+                                if (_servicesOffered.isNotEmpty) {
+                                  final firstSkill = _servicesOffered.first;
                                   _serviceNameController.text = firstSkill;
 
                                   // Find the ID for the first skill
@@ -971,16 +973,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     _customSkillController.text.trim();
                                 if (skill.isNotEmpty) {
                                   setState(() {
-                                    if (!_selectedAdditionalSkills.contains(
-                                      skill,
-                                    )) {
-                                      _selectedAdditionalSkills.add(skill);
+                                    if (!_servicesOffered.contains(skill)) {
+                                      _servicesOffered.add(skill);
                                     }
 
                                     // Update title and ID if this is the first skill
-                                    if (_selectedAdditionalSkills.isNotEmpty) {
-                                      final firstSkill =
-                                          _selectedAdditionalSkills.first;
+                                    if (_servicesOffered.isNotEmpty) {
+                                      final firstSkill = _servicesOffered.first;
                                       _serviceNameController.text = firstSkill;
 
                                       // Find the ID for the first skill
@@ -1010,6 +1009,103 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                 );
               },
+            ),
+          ],
+          const SizedBox(height: 20),
+
+          // Additional Skills Section
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Additional Skills', style: AppTextStyles.labelMedium),
+              if (_specialtiesController.text.isNotEmpty)
+                GestureDetector(
+                  onTap: () {
+                    final skills = _specialtiesController.text.split(',');
+                    setState(() {
+                      for (var skill in skills) {
+                        final trimmed = skill.trim();
+                        if (trimmed.isNotEmpty &&
+                            !_selectedAdditionalSkills.contains(trimmed)) {
+                          _selectedAdditionalSkills.add(trimmed);
+                        }
+                      }
+                    });
+                  },
+                  child: Text(
+                    'Import from Specialties',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          CustomTextField(
+            label: 'Add Skills',
+            hint: 'e.g. Electrical Wiring, AC Repair (comma separated)',
+            controller: _additionalSkillsController,
+            prefixIcon: const Icon(
+              Iconsax.star,
+              color: AppColors.textTertiary,
+              size: 20,
+            ),
+            suffixIcon: IconButton(
+              onPressed: () {
+                final value = _additionalSkillsController.text;
+                if (value.isNotEmpty) {
+                  final skills = value.split(',');
+                  setState(() {
+                    for (var skill in skills) {
+                      final trimmedSkill = skill.trim();
+                      if (trimmedSkill.isNotEmpty &&
+                          !_selectedAdditionalSkills.contains(trimmedSkill)) {
+                        _selectedAdditionalSkills.add(trimmedSkill);
+                      }
+                    }
+                    _additionalSkillsController.clear();
+                  });
+                }
+              },
+              icon: const Icon(Iconsax.add_circle, color: AppColors.primary),
+            ),
+            onChanged: (value) {
+              if (value.endsWith(',')) {
+                final skills = value.split(',');
+                setState(() {
+                  for (var skill in skills) {
+                    final trimmedSkill = skill.trim();
+                    if (trimmedSkill.isNotEmpty &&
+                        !_selectedAdditionalSkills.contains(trimmedSkill)) {
+                      _selectedAdditionalSkills.add(trimmedSkill);
+                    }
+                  }
+                  _additionalSkillsController.clear();
+                });
+              }
+            },
+          ),
+          if (_selectedAdditionalSkills.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children:
+                  _selectedAdditionalSkills.map((skill) {
+                    return Chip(
+                      label: Text(skill, style: const TextStyle(fontSize: 12)),
+                      onDeleted: () {
+                        setState(() {
+                          _selectedAdditionalSkills.remove(skill);
+                        });
+                      },
+                      deleteIcon: const Icon(Icons.close, size: 16),
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      side: BorderSide.none,
+                    );
+                  }).toList(),
             ),
           ],
           const SizedBox(height: 20),

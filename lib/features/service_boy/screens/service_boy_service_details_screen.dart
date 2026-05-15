@@ -85,7 +85,7 @@ class _ServiceBoyServiceDetailsScreenState
               body: Center(child: Text('Service not found')),
             );
           }
-
+          print(service.categoryImage);
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: CustomScrollView(
@@ -141,10 +141,10 @@ class _ServiceBoyServiceDetailsScreenState
                               errorBuilder:
                                   (context, error, stack) =>
                                       _buildImagePlaceholder(
-                                        service.categoryIcon,
+                                        service.categoryImage,
                                       ),
                             )
-                            : _buildImagePlaceholder(service.categoryIcon),
+                            : _buildImagePlaceholder(service.categoryImage),
                   ),
                 ),
 
@@ -207,10 +207,40 @@ class _ServiceBoyServiceDetailsScreenState
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        service.categoryIcon,
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
+                                      if (service.imageUrl != null &&
+                                          service.imageUrl!.isNotEmpty)
+                                        Container(
+                                          width: 20,
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            image: DecorationImage(
+                                              image: NetworkImage(
+                                                service.imageUrl!,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                      else if (service.categoryImage.isNotEmpty)
+                                        Container(
+                                          width: 20,
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            image: DecorationImage(
+                                              image: NetworkImage(
+                                                service.categoryImage,
+                                              ),
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        Text(
+                                          service.categoryIcon,
+                                          style: const TextStyle(fontSize: 14),
+                                        ),
                                       const SizedBox(width: 6),
                                       Text(
                                         service.categoryName,
@@ -464,19 +494,25 @@ class _ServiceBoyServiceDetailsScreenState
     );
   }
 
-  Widget _buildImagePlaceholder(String categoryIcon) {
+  Widget _buildImagePlaceholder(String categoryImage) {
     return Container(
       color: AppColors.primary.withOpacity(0.1),
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              categoryIcon.isNotEmpty ? categoryIcon : '🔧',
-              style: const TextStyle(fontSize: 56),
-            ),
-          ],
-        ),
+        child:
+            categoryImage.isNotEmpty
+                ? Image.network(
+                  categoryImage,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  errorBuilder:
+                      (context, error, stackTrace) => const Icon(
+                        Iconsax.image,
+                        size: 48,
+                        color: AppColors.primary,
+                      ),
+                )
+                : const Icon(Iconsax.image, size: 48, color: AppColors.primary),
       ),
     );
   }

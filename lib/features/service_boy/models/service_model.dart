@@ -9,6 +9,7 @@ class ServiceModel {
   final String categoryName;
   final String categoryIcon;
   final String categoryColor;
+  final String categoryImage;
   final String status;
   final bool isActive;
   final bool isTrending;
@@ -32,6 +33,7 @@ class ServiceModel {
     required this.categoryName,
     required this.categoryIcon,
     required this.categoryColor,
+    required this.categoryImage,
     required this.status,
     required this.isActive,
     required this.isTrending,
@@ -50,6 +52,7 @@ class ServiceModel {
     String catName = '';
     String catIcon = '';
     String catColor = '';
+    String catImage = '';
 
     if (json['categoryId'] is Map) {
       final cat = json['categoryId'];
@@ -57,6 +60,7 @@ class ServiceModel {
       catName = cat['name'] ?? '';
       catIcon = cat['icon'] ?? '';
       catColor = cat['color'] ?? '';
+      catImage = cat['image'] ?? '';
     } else if (json['categoryId'] is String) {
       catId = json['categoryId'];
     }
@@ -90,6 +94,7 @@ class ServiceModel {
       categoryName: catName,
       categoryIcon: catIcon,
       categoryColor: catColor,
+      categoryImage: catImage,
       status: json['status'] ?? 'ACTIVE',
       isActive: json['isActive'] ?? true,
       isTrending: json['isTrending'] ?? false,
