@@ -27,7 +27,7 @@ class _ServiceProviderDetailScreenState
   void initState() {
     super.initState();
     Future.microtask(() {
-      // context.read<ConsumerProvider>().fetchAllServices();
+      context.read<ConsumerProvider>().fetchAllServices();
     });
   }
 

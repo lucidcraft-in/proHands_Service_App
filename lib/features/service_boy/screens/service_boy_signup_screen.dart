@@ -377,7 +377,9 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
                           color: AppColors.white,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Theme.of(context).primaryColor.withOpacity(0.3),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.3),
                             width: 1.5,
                           ),
                         ),
@@ -477,10 +479,13 @@ class _ServiceBoySignUpScreenState extends State<ServiceBoySignUpScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
           color:
-              isAttached ? AppColors.success.withOpacity(0.1) : Theme.of(context).colorScheme.surface,
+              isAttached
+                  ? AppColors.success.withOpacity(0.1)
+                  : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isAttached ? AppColors.success : Theme.of(context).dividerColor,
+            color:
+                isAttached ? AppColors.success : Theme.of(context).dividerColor,
           ),
         ),
         child: Column(
