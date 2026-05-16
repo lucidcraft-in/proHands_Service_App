@@ -12,6 +12,8 @@ class ServiceProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("---------");
+    print(service.image);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
@@ -338,7 +340,12 @@ class ServiceProductDetailScreen extends StatelessWidget {
                           return Padding(
                             padding: const EdgeInsets.only(right: 12),
                             child: GestureDetector(
-                              onTap: () => _openImageViewer(context, imageUrl, heroTag),
+                              onTap:
+                                  () => _openImageViewer(
+                                    context,
+                                    imageUrl,
+                                    heroTag,
+                                  ),
                               child: Hero(
                                 tag: heroTag,
                                 child: ClipRRect(
@@ -349,11 +356,14 @@ class ServiceProductDetailScreen extends StatelessWidget {
                                     height: 100,
                                     fit: BoxFit.cover,
                                     errorBuilder:
-                                        (context, error, stackTrace) => Container(
-                                          width: 140,
-                                          color: AppColors.surface,
-                                          child: const Icon(Icons.broken_image),
-                                        ),
+                                        (context, error, stackTrace) =>
+                                            Container(
+                                              width: 140,
+                                              color: AppColors.surface,
+                                              child: const Icon(
+                                                Icons.broken_image,
+                                              ),
+                                            ),
                                   ),
                                 ),
                               ),
@@ -421,20 +431,15 @@ class ServiceProductDetailScreen extends StatelessWidget {
     );
   }
 
-  void _openImageViewer(
-    BuildContext context,
-    String imageUrl,
-    String heroTag,
-  ) {
+  void _openImageViewer(BuildContext context, String imageUrl, String heroTag) {
     Navigator.push(
       context,
       PageRouteBuilder(
         opaque: false,
         barrierColor: Colors.black.withOpacity(0.9),
-        pageBuilder: (context, _, __) => _FullScreenImageViewer(
-          imageUrl: imageUrl,
-          heroTag: heroTag,
-        ),
+        pageBuilder:
+            (context, _, __) =>
+                _FullScreenImageViewer(imageUrl: imageUrl, heroTag: heroTag),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },

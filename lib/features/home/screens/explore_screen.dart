@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/models/user_type.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import '../../../core/widgets/empty_state_widget.dart';
+import '../../../core/widgets/expert_card.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../providers/consumer_provider.dart';
 import '../models/service_product_model.dart';
+import '../services/consumer_service.dart';
 import 'service_product_detail_screen.dart';
+import 'service_provider_detail_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -33,7 +39,7 @@ class _ExploreScreenState extends State<ExploreScreen>
 
     // Fetch leaderboard on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ConsumerProvider>().fetchLeaderboard();
+      context.read<ConsumerProvider>().fetchLeaderboard(true);
     });
   }
 
@@ -312,6 +318,101 @@ class _ExploreScreenState extends State<ExploreScreen>
                 const SizedBox(height: 16),
                 _buildExpandableLeaderboard(provider),
                 const SizedBox(height: 32),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Trending Technicians', style: AppTextStyles.h4),
+                  ],
+                ),
+                Consumer<ConsumerProvider>(
+                  builder: (context, provider, child) {
+                    if (provider.isLoadingTrendingServices) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: 3,
+                        itemBuilder:
+                            (context, index) => const ListCardShimmer(),
+                      );
+                    }
+
+                    if (provider.trendingServicesError != null) {
+                      return Center(
+                        child: Text(
+                          'Error: ${provider.trendingServicesError}',
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      );
+                    }
+
+                    if (provider.trendingServices.isEmpty) {
+                      return const EmptyStateWidget(
+                        icon: Iconsax.user_tag,
+                        title: 'No Trending Technicians',
+                        subtitle:
+                            'We couldn\'t find any trending technicians at the moment. Check back soon!',
+                        iconSize: 48,
+                      );
+                    }
+
+                    return ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: provider.trendingServices.length,
+                      itemBuilder: (context, index) {
+                        final service = provider.trendingServices[index];
+                        return AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            final delay = 0.4 + (index * 0.1);
+                            final curve = CurvedAnimation(
+                              parent: _controller,
+                              curve: Interval(
+                                delay.clamp(0.0, 1.0),
+                                (delay + 0.5).clamp(0.0, 1.0),
+                                curve: Curves.easeOut,
+                              ),
+                            );
+                            return Opacity(
+                              opacity: curve.value,
+                              child: Transform.translate(
+                                offset: Offset(0, 30 * (1 - curve.value)),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: ExpertCard(
+                              name: service.providerName,
+                              image: service.image,
+                              profession: service.profession,
+                              rating: service.rating,
+                              reviews: service.reviewsCount,
+                              onTap: () {
+                                // Construct a partial UserModel to navigate
+                                final providerUser = UserModel(
+                                  id: service.providerId,
+                                  name: service.providerName,
+                                  phone: '', // Not available in service model
+                                  userType: UserType.serviceBoy,
+                                  profession: service.profession,
+                                  rating: service.rating,
+                                  reviewsCount: service.reviewsCount,
+                                  serviceImage: service.image,
+                                  // Add other fields with default/empty values
+                                );
+                                navigateToProviderDetail(providerUser);
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 32),
 
                 /// FEATURED
                 Text('Featured', style: AppTextStyles.h4),
@@ -467,6 +568,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                     },
                   ),
                 ),
+
                 const SizedBox(height: 32),
                 Text('New Arrivals', style: AppTextStyles.h4),
                 const SizedBox(height: 16),
@@ -576,6 +678,42 @@ class _ExploreScreenState extends State<ExploreScreen>
         },
       ),
     );
+  }
+
+  navigateToProviderDetail(UserModel userData) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final consumerService = ConsumerService();
+      final provider = await consumerService.getProviderById(userData.id);
+
+      // Hide loading details
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Pop loading dialog
+      }
+
+      // Navigate to detail screen
+      if (context.mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => ServiceProviderDetailScreen(provider: provider),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hide loading details
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Pop loading dialog
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   Widget _buildExpandableLeaderboard(ConsumerProvider provider) {

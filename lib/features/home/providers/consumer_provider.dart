@@ -181,7 +181,6 @@ class ConsumerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-
       _services = await _service.getServicesByCategory(categoryId);
     } catch (e) {
       _servicesError = e.toString().replaceAll('Exception: ', '');
@@ -840,13 +839,13 @@ class ConsumerProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> fetchLeaderboard() async {
+  Future<void> fetchLeaderboard(bool isCustomer) async {
     _isLoadingLeaderboard = true;
     _leaderboardError = null;
     notifyListeners();
 
     try {
-      _leaderboard = await _service.getLeaderboard();
+      _leaderboard = await _service.getLeaderboard(isCustomer);
     } catch (e) {
       _leaderboardError = e.toString().replaceAll('Exception: ', '');
     } finally {

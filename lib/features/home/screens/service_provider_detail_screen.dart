@@ -27,7 +27,7 @@ class _ServiceProviderDetailScreenState
   void initState() {
     super.initState();
     Future.microtask(() {
-      context.read<ConsumerProvider>().fetchAllServices();
+      // context.read<ConsumerProvider>().fetchAllServices();
     });
   }
 
@@ -63,23 +63,26 @@ class _ServiceProviderDetailScreenState
                             CircleAvatar(
                               radius: 50,
                               backgroundColor: AppColors.white.withOpacity(0.2),
-                              backgroundImage: provider.profilePhoto.startsWith('http')
-                                  ? NetworkImage(provider.profilePhoto)
-                                  : AssetImage(provider.profilePhoto) as ImageProvider,
+                              backgroundImage:
+                                  provider.profilePhoto.startsWith('http')
+                                      ? NetworkImage(provider.profilePhoto)
+                                      : AssetImage(provider.profilePhoto)
+                                          as ImageProvider,
                               onBackgroundImageError: (exception, stackTrace) {
                                 // Fallback is handled by background color if needed
                               },
-                              child: provider.profilePhoto.isEmpty
-                                  ? Text(
-                                      (provider.name?.isNotEmpty == true
-                                          ? provider.name![0]
-                                          : 'P'),
-                                      style: AppTextStyles.h1.copyWith(
-                                        color: AppColors.white,
-                                        fontSize: 40,
-                                      ),
-                                    )
-                                  : null,
+                              child:
+                                  provider.profilePhoto.isEmpty
+                                      ? Text(
+                                        (provider.name?.isNotEmpty == true
+                                            ? provider.name![0]
+                                            : 'P'),
+                                        style: AppTextStyles.h1.copyWith(
+                                          color: AppColors.white,
+                                          fontSize: 40,
+                                        ),
+                                      )
+                                      : null,
                             ),
                             if (provider.location.isNotEmpty &&
                                 provider.location != 'Unknown') ...[
@@ -348,7 +351,7 @@ class _ServiceProviderDetailScreenState
 
                       // Services Provided by this Professional
                       Text(
-                        'Services Offer ed',
+                        'Services Offered',
                         style: AppTextStyles.h4.copyWith(
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
@@ -385,6 +388,9 @@ class _ServiceProviderDetailScreenState
                               (context, index) => const SizedBox(height: 16),
                           itemBuilder: (context, index) {
                             final service = providerServices[index];
+                            print("------");
+                            print(providerServices[0].id);
+                            print("---------");
                             return _buildServiceItem(context, service);
                           },
                         ),

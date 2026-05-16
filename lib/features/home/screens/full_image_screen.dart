@@ -19,6 +19,7 @@ class FullImageScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("This is image of ${uploader.profilePhoto}");
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -38,7 +39,7 @@ class FullImageScreen extends StatelessWidget {
               backgroundColor: AppColors.white,
               backgroundImage:
                   (isNetworkImage
-                          ? NetworkImage(uploader.serviceImage)
+                          ? NetworkImage(uploader.profilePhoto)
                           : AssetImage(uploader.serviceImage))
                       as ImageProvider,
             ),
@@ -87,7 +88,7 @@ class FullImageScreen extends StatelessWidget {
                     radius: 20,
                     backgroundImage:
                         (isNetworkImage
-                                ? NetworkImage(uploader.serviceImage)
+                                ? NetworkImage(uploader.profilePhoto)
                                 : AssetImage(uploader.serviceImage))
                             as ImageProvider,
                   ),
@@ -129,6 +130,52 @@ class FullImageScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  static Future<void> navigateTo(
+    BuildContext context, {
+    required String imagePath,
+    required String providerId,
+    bool isNetworkImage = false,
+  }) async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+
+    try {
+      final consumerService = ConsumerService();
+      final provider = await consumerService.getProviderById(providerId);
+
+      // Hide loading details
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Pop loading dialog
+      }
+
+      // Navigate to full image screen
+      if (context.mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => FullImageScreen(
+                  imagePath: imagePath,
+                  uploader: provider,
+                  isNetworkImage: isNetworkImage,
+                ),
+          ),
+        );
+      }
+    } catch (e) {
+      // Hide loading details
+      if (context.mounted) {
+        Navigator.of(context).pop(); // Pop loading dialog
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
   }
 
   Future<void> _fetchAndNavigateToProfile(

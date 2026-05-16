@@ -182,8 +182,9 @@ class ConsumerService {
   }) async {
     final url = Uri.parse('$baseUrl/services?page=$page&limit=$limit');
     try {
+      print(url);
       final headers = await _getHeaders();
-
+      print(headers);
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
@@ -192,6 +193,7 @@ class ConsumerService {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
+          print(servicesJson[0]["images"]);
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
               .where((service) => service.isCommissionPending == false)
@@ -352,12 +354,16 @@ class ConsumerService {
       request.headers['Authorization'] = 'Bearer $token';
 
       request.files.add(
-        await http.MultipartFile.fromPath('profilePhoto', photo.path),
+        await http.MultipartFile.fromPath(
+          // 'profilePhoto',
+          'pendingProfilePhoto',
+          photo.path,
+        ),
       );
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
@@ -720,6 +726,8 @@ class ConsumerService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
+          UserModel ab = UserModel.fromJson(data['provider']);
+          print(ab.profilePhoto);
           return UserModel.fromJson(data['provider']);
         } else {
           throw Exception(data['message'] ?? 'Failed to load provider details');
@@ -1062,16 +1070,26 @@ class ConsumerService {
   // }
 
   // Get Leaderboard
-  Future<List<UserModel>> getLeaderboard() async {
-    final url = Uri.parse('$baseUrl/users/leaderboard/customers');
+  Future<List<UserModel>> getLeaderboard(bool isCustomer) async {
+    String urlString = '';
+    if (isCustomer) {
+      print(1);
+      urlString = '$baseUrl/users/leaderboard/customers';
+    } else {
+      print(2);
+      urlString = '$baseUrl/users/leaderboard/technicians';
+    }
+    final url = Uri.parse(urlString);
+    print(url);
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          final List<dynamic> leaderboardJson = data['customers'];
+          final List<dynamic> leaderboardJson =
+              isCustomer ? data['customers'] : data['technicians'];
           return leaderboardJson
               .map((json) => UserModel.fromJson(json))
               .toList();

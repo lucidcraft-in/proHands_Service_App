@@ -308,7 +308,7 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                                     serviceImage: service.image,
                                     // Add other fields with default/empty values
                                   );
-                                  _navigateToProviderDetail(providerUser);
+                                  navigateToProviderDetail(providerUser);
                                 },
                               ),
                             ),
@@ -414,7 +414,7 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
     );
   }
 
-  void _navigateToProviderDetail(UserModel userData) async {
+  navigateToProviderDetail(UserModel userData) async {
     showDialog(
       context: context,
       barrierDismissible: false,

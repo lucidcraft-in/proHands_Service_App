@@ -32,6 +32,7 @@ class ServiceBoyDashboardScreen extends StatefulWidget {
 class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
   String? _profileImage; // null means default person icon
   final ImagePicker _picker = ImagePicker();
+  bool _isLeaderboardExpanded = false;
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
       if (userId != null) {
         sbProvider.fetchGalleryImages(userId);
       }
+      consProvider.fetchLeaderboard(false);
       context.read<NotificationProvider>().fetchNotifications();
     });
   }
@@ -341,7 +343,6 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -383,8 +384,38 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                             user.name ?? 'Guest User',
                             style: AppTextStyles.h3,
                           ),
-                          const SizedBox(height: 4),
-                          Row(children: const []),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.primary.withOpacity(0.2),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Iconsax.star1,
+                                  color: Colors.amber,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '${user.points} Points',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                       Row(
@@ -582,82 +613,89 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   final isIncomplete = user.isCommissionPending;
 
                   if (isIncomplete == true) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 24),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.orangeGradient,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.orange.withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
+                    return Column(
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 24),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.orangeGradient,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.orange.withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Commission Pending',
-                                  style: AppTextStyles.h4.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.surface,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Commission Pending',
+                                      style: AppTextStyles.h4.copyWith(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Your commission is pending',
+                                      style: AppTextStyles.bodySmall.copyWith(
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              ElevatedButton(
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'connect to admin to pay commission',
+                                      ),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.surface,
+                                  foregroundColor: AppColors.orange,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  'Pay Now',
+                                  style: AppTextStyles.labelMedium.copyWith(
+                                    color: AppColors.orange,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Your commission is pending',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'connect to admin to pay commission',
-                                  ),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.surface,
-                              foregroundColor: AppColors.orange,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              'Pay Now',
-                              style: AppTextStyles.labelMedium.copyWith(
-                                color: AppColors.orange,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        // const SizedBox(height: 24),
+                      ],
                     );
                   }
                   return const SizedBox.shrink();
                 },
               ),
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
               // Overall Analytics Card
               GestureDetector(
@@ -723,6 +761,15 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                     ],
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Leaderboard
+              Consumer<ConsumerProvider>(
+                builder: (context, provider, child) {
+                  return _buildExpandableLeaderboard(provider);
+                },
               ),
 
               const SizedBox(height: 24),
@@ -1278,13 +1325,13 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: AppColors.shadowLight,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -1341,6 +1388,297 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
             style: AppTextStyles.bodySmall.copyWith(
               color: AppColors.textSecondary,
               height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandableLeaderboard(ConsumerProvider provider) {
+    return Container(
+      // decoration: BoxDecoration(
+      //   color: AppColors.white,
+      //   borderRadius: BorderRadius.circular(16),
+      //   border: Border.all(
+      //     color: Theme.of(context).dividerColor.withOpacity(0.5),
+      //   ),
+      //   boxShadow: [
+      //     BoxShadow(
+      //       color: Colors.black.withOpacity(0.05),
+      //       blurRadius: 10,
+      //       offset: const Offset(0, 4),
+      //     ),
+      //   ],
+      // ),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowLight,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isLeaderboardExpanded = !_isLeaderboardExpanded;
+              });
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Iconsax.cup,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Service Leaderboard',
+                          style: AppTextStyles.h4.copyWith(fontSize: 16),
+                        ),
+                        Text(
+                          'Top performing partners this month',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.textTertiary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    _isLeaderboardExpanded
+                        ? Iconsax.arrow_up_1
+                        : Iconsax.arrow_down_1,
+                    color: AppColors.textTertiary,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (_isLeaderboardExpanded) ...[
+            const Divider(height: 1),
+            if (provider.isLoadingLeaderboard && provider.leaderboard.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (provider.leaderboard.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: Text('No leaderboard data available')),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Podium
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        if (provider.leaderboard.length >= 2)
+                          _buildPodiumItem(
+                            user: provider.leaderboard[1],
+                            rank: 2,
+                            size: 70,
+                          ),
+                        const SizedBox(width: 16),
+                        if (provider.leaderboard.isNotEmpty)
+                          _buildPodiumItem(
+                            user: provider.leaderboard[0],
+                            rank: 1,
+                            size: 90,
+                            isFirst: true,
+                          ),
+                        const SizedBox(width: 16),
+                        if (provider.leaderboard.length >= 3)
+                          _buildPodiumItem(
+                            user: provider.leaderboard[2],
+                            rank: 3,
+                            size: 70,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    // List
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount:
+                          provider.leaderboard.length > 3
+                              ? provider.leaderboard.length - 3
+                              : 0,
+                      itemBuilder: (context, index) {
+                        final user = provider.leaderboard[index + 3];
+                        return _buildLeaderboardTile(user, index + 4);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPodiumItem({
+    required UserModel user,
+    required int rank,
+    required double size,
+    bool isFirst = false,
+  }) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isFirst ? Colors.amber : Colors.grey.shade300,
+                  width: 3,
+                ),
+                boxShadow:
+                    isFirst
+                        ? [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.3),
+                            blurRadius: 10,
+                            spreadRadius: 2,
+                          ),
+                        ]
+                        : null,
+              ),
+              child: ClipOval(
+                child:
+                    user.profilePhoto.isNotEmpty
+                        ? Image.network(
+                          user.profilePhoto,
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) =>
+                                  const Icon(Iconsax.user, size: 30),
+                        )
+                        : const Icon(Iconsax.user, size: 30),
+              ),
+            ),
+            if (isFirst)
+              Positioned(
+                top: -10,
+                child: const Icon(Iconsax.crown, color: Colors.amber, size: 24),
+              ),
+            Positioned(
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isFirst ? Colors.amber : Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '#$rank',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          user.name ?? 'Partner',
+          style: AppTextStyles.bodySmall.copyWith(fontWeight: FontWeight.bold),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Text(
+          '${user.points} pts',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.primary,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLeaderboardTile(UserModel user, int rank) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text(
+              '$rank',
+              style: AppTextStyles.bodySmall.copyWith(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textTertiary,
+              ),
+            ),
+          ),
+          CircleAvatar(
+            radius: 16,
+            child:
+                user.profilePhoto.isNotEmpty
+                    ? Image.network(
+                      user.profilePhoto,
+                      fit: BoxFit.cover,
+                      errorBuilder:
+                          (context, error, stackTrace) =>
+                              const Icon(Iconsax.user, size: 16),
+                    )
+                    : const Icon(Iconsax.user, size: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              user.name ?? 'Partner',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Text(
+            '${user.points} pts',
+            style: AppTextStyles.bodySmall.copyWith(
+              fontWeight: FontWeight.bold,
+              color: AppColors.primary,
             ),
           ),
         ],
