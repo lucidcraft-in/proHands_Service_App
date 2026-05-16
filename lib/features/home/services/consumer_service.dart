@@ -209,6 +209,32 @@ class ConsumerService {
     }
   }
 
+  // Get Service Details by ID
+  Future<ServiceProductModel> getServiceById(String id) async {
+    final url = Uri.parse('$baseUrl/services/$id');
+    try {
+      final headers = await _getHeaders();
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          return ServiceProductModel.fromJson(data['service']);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load service details');
+        }
+      } else {
+        throw Exception(
+          'Failed to load service details: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error fetching service details: $e');
+    }
+  }
+
   // Get My Bookings
   Future<List<BookingModel>> getMyBookings() async {
     final url = Uri.parse('$baseUrl/bookings/my-bookings');

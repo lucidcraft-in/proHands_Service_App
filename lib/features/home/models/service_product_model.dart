@@ -13,6 +13,8 @@ class ServiceProductModel {
   final String image;
   final List<String> gallery;
   final String subcategoryName;
+  final String categoryName;
+  final String categoryImage;
   final List<String> specialties;
   final List<String> servicesOffered;
   final List<String> additionalSkills;
@@ -33,54 +35,13 @@ class ServiceProductModel {
     this.image = '',
     this.gallery = const [],
     this.subcategoryName = '',
+    this.categoryName = '',
+    this.categoryImage = '',
     this.specialties = const [],
     this.servicesOffered = const [],
     this.additionalSkills = const [],
     this.isCommissionPending = false,
   });
-
-  // factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
-  //   String providerName = 'Unknown Provider';
-  //   String providerImage = '';
-  //   String providerId = '';
-  //   double rating = 0.0;
-  //   int reviewsCount = 0;
-  //   String profession = '';
-
-  //   if (json['providerId'] != null) {
-  //     if (json['providerId'] is Map) {
-  //       final provider = json['providerId'];
-  //       providerName = provider['name'] ?? 'Unknown Provider';
-  //       providerId = provider['_id'] ?? '';
-  //       rating = (provider['rating'] ?? 0).toDouble();
-  //       reviewsCount = provider['reviewsCount'] ?? 0;
-  //       profession = provider['profession'] ?? '';
-  //       // portfolioImages is a list, take first if available
-  //       if (provider['portfolioImages'] != null &&
-  //           (provider['portfolioImages'] as List).isNotEmpty) {
-  //         providerImage = provider['portfolioImages'][0];
-  //       }
-  //     } else if (json['providerId'] is String) {
-  //       providerId = json['providerId'];
-  //     }
-  //   }
-
-  //   return ServiceProductModel(
-  //     id: json['_id'] ?? '',
-  //     name: json['name'] ?? '',
-  //     description: json['description'] ?? '',
-  //     price: (json['price'] ?? 0).toDouble(),
-  //     duration: json['duration'] ?? 0,
-  //     providerName: providerName,
-  //     providerImage: providerImage,
-  //     providerId: providerId,
-  //     rating: rating,
-  //     reviewsCount: reviewsCount,
-  //     profession: profession,
-  //     image: json['image'] ?? '',
-  //     gallery: List<String>.from(json['gallery'] ?? []),
-  //   );
-  // }
 
   factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
     String providerName = 'Service Expert';
@@ -93,6 +54,7 @@ class ServiceProductModel {
     List<String> servicesOffered = [];
     List<String> additionalSkills = [];
 
+    // Parse provider info
     if (json['providerId'] != null) {
       if (json['providerId'] is Map) {
         final provider = json['providerId'];
@@ -111,6 +73,35 @@ class ServiceProductModel {
       } else if (json['providerId'] is String) {
         providerId = json['providerId'];
       }
+    }
+
+    // Parse category info
+    String catName = '';
+    String catImage = '';
+    if (json['categoryId'] != null && json['categoryId'] is Map) {
+      catName = json['categoryId']['name'] ?? '';
+      catImage = json['categoryId']['image'] ?? '';
+    }
+
+    // Parse subcategory info
+    String subCatName = '';
+    if (json['subcategoryId'] != null && json['subcategoryId'] is Map) {
+      subCatName = json['subcategoryId']['name'] ?? '';
+      // If categoryId was not direct, try to get it from subcategory
+      if (catName.isEmpty && json['subcategoryId']['categoryId'] != null && json['subcategoryId']['categoryId'] is Map) {
+        catName = json['subcategoryId']['categoryId']['name'] ?? '';
+        catImage = json['subcategoryId']['categoryId']['image'] ?? '';
+      }
+    }
+
+    // Parse images robustly
+    String serviceImage = '';
+    if (json['image'] != null && json['image'] is String && (json['image'] as String).isNotEmpty) {
+      serviceImage = json['image'];
+    } else if (json['images'] != null && json['images'] is List && (json['images'] as List).isNotEmpty) {
+      serviceImage = json['images'][0];
+    } else if (json['image'] != null && json['image'] is Map) {
+      serviceImage = (json['image']['imageUrl'] ?? '').toString();
     }
 
     if (json['additionalSkills'] is List) {
@@ -134,17 +125,16 @@ class ServiceProductModel {
       rating: rating,
       reviewsCount: reviewsCount,
       profession: profession,
-      image: json['image'] ?? '',
+      image: serviceImage,
       gallery: (json['gallery'] as List? ?? []).map((e) {
         if (e is Map) {
           return (e['imageUrl'] ?? '').toString();
         }
         return e.toString();
       }).toList(),
-      subcategoryName:
-          json['subcategoryId'] != null && json['subcategoryId'] is Map
-              ? json['subcategoryId']['name'] ?? ''
-              : '',
+      subcategoryName: subCatName,
+      categoryName: catName,
+      categoryImage: catImage,
       specialties: specialties,
       servicesOffered: servicesOffered,
       additionalSkills: additionalSkills,

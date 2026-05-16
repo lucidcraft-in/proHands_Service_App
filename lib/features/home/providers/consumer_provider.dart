@@ -51,6 +51,10 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isLoadingLeaderboard = false;
   String? _leaderboardError;
 
+  ServiceProductModel? _currentService;
+  bool _isLoadingServiceDetails = false;
+  String? _serviceDetailsError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
@@ -87,6 +91,10 @@ class ConsumerProvider extends ChangeNotifier {
   bool get isLoadingLeaderboard => _isLoadingLeaderboard;
   String? get leaderboardError => _leaderboardError;
 
+  ServiceProductModel? get currentService => _currentService;
+  bool get isLoadingServiceDetails => _isLoadingServiceDetails;
+  String? get serviceDetailsError => _serviceDetailsError;
+
   Future<void> fetchCategories() async {
     if (_isLoadingCategories) return;
 
@@ -115,6 +123,21 @@ class ConsumerProvider extends ChangeNotifier {
       _allServicesError = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoadingAllServices = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchServiceDetails(String id) async {
+    _isLoadingServiceDetails = true;
+    _serviceDetailsError = null;
+    notifyListeners();
+
+    try {
+      _currentService = await _service.getServiceById(id);
+    } catch (e) {
+      _serviceDetailsError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingServiceDetails = false;
       notifyListeners();
     }
   }
