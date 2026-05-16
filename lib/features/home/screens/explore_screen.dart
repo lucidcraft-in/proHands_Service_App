@@ -295,16 +295,15 @@ class _ExploreScreenState extends State<ExploreScreen>
                                     ),
                                   ),
 
-                                  trailing: Text(
-                                    '₹${option.price}',
+                                  // trailing: Text(
+                                  //   '₹${option.price}',
 
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      fontWeight: FontWeight.bold,
+                                  // style: AppTextStyles.bodySmall.copyWith(
+                                  //   fontWeight: FontWeight.bold,
 
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-
+                                  //   color: AppColors.primary,
+                                  // ),
+                                  // ),
                                   onTap: () => onSelected(option),
                                 );
                               },

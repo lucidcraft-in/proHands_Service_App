@@ -16,6 +16,7 @@ import 'service_boy_overall_analytics_screen.dart';
 import 'package:provider/provider.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
 import '../../home/providers/consumer_provider.dart';
+import '../../profile/screens/point_history_screen.dart';
 import '../../home/widgets/banner_carousel.dart';
 import '../../home/providers/notification_provider.dart';
 import '../../home/screens/notification_screen.dart';
@@ -386,35 +387,46 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                             style: AppTextStyles.h3,
                           ),
                           const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.primary.withOpacity(0.2),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => const PointHistoryScreen(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
                               ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(
-                                  Iconsax.star1,
-                                  color: Colors.amber,
-                                  size: 16,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.2),
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '${user.points} Points',
-                                  style: AppTextStyles.labelMedium.copyWith(
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.bold,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Iconsax.star1,
+                                    color: Colors.amber,
+                                    size: 16,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${user.points} Points',
+                                    style: AppTextStyles.labelMedium.copyWith(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

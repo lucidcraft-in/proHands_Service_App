@@ -22,6 +22,7 @@ import 'service_product_list_screen.dart';
 import 'customer_bookings_screen.dart';
 import 'notification_screen.dart';
 import '../providers/notification_provider.dart';
+import '../../profile/screens/point_history_screen.dart';
 
 import '../../cart/screens/cart_screen.dart';
 
@@ -105,35 +106,47 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               builder: (context, provider, child) {
                                 final points =
                                     provider.currentUser?.points ?? 0;
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.amber.withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: Colors.amber.withOpacity(0.5),
+                                return GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) =>
+                                                const PointHistoryScreen(),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
                                     ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.stars,
-                                        color: Colors.amber,
-                                        size: 16,
+                                    decoration: BoxDecoration(
+                                      color: Colors.amber.withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.amber.withOpacity(0.5),
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        '$points pts',
-                                        style: AppTextStyles.labelSmall
-                                            .copyWith(
-                                              color: Colors.amber.shade800,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.stars,
+                                          color: Colors.amber,
+                                          size: 16,
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          '$points pts',
+                                          style: AppTextStyles.labelSmall
+                                              .copyWith(
+                                                color: Colors.amber.shade800,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 );
                               },

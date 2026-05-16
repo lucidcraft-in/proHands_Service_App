@@ -8,6 +8,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/review_model.dart';
 import '../../../core/models/booking_log_model.dart';
+import '../../../core/models/point_log_model.dart';
 import '../models/banner_model.dart';
 import '../services/consumer_service.dart';
 import '../../../core/services/storage_service.dart';
@@ -60,6 +61,10 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isLoadingBanners = false;
   String? _bannersError;
 
+  List<PointLogModel> _pointLogs = [];
+  bool _isLoadingPointLogs = false;
+  String? _pointLogsError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
@@ -103,6 +108,10 @@ class ConsumerProvider extends ChangeNotifier {
   List<BannerModel> get banners => _banners;
   bool get isLoadingBanners => _isLoadingBanners;
   String? get bannersError => _bannersError;
+
+  List<PointLogModel> get pointLogs => _pointLogs;
+  bool get isLoadingPointLogs => _isLoadingPointLogs;
+  String? get pointLogsError => _pointLogsError;
 
   Future<void> fetchCategories() async {
     if (_isLoadingCategories) return;
@@ -897,6 +906,23 @@ class ConsumerProvider extends ChangeNotifier {
       _bannersError = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoadingBanners = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchPointLogs() async {
+    _isLoadingPointLogs = true;
+    _pointLogsError = null;
+    notifyListeners();
+
+    try {
+      _pointLogs = await _service.getPointLogs();
+      // Sort by date descending
+      _pointLogs.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    } catch (e) {
+      _pointLogsError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingPointLogs = false;
       notifyListeners();
     }
   }

@@ -12,6 +12,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/review_model.dart';
 import '../../../core/models/booking_log_model.dart';
+import '../../../core/models/point_log_model.dart';
 
 class ConsumerService {
   final String baseUrl = AuthService.baseUrl;
@@ -28,9 +29,7 @@ class ConsumerService {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
           final List<dynamic> bannersJson = data['banners'];
-          return bannersJson
-              .map((json) => BannerModel.fromJson(json))
-              .toList();
+          return bannersJson.map((json) => BannerModel.fromJson(json)).toList();
         } else {
           throw Exception(data['message'] ?? 'Failed to load banners');
         }
@@ -1154,6 +1153,31 @@ class ConsumerService {
       }
     } catch (e) {
       throw Exception('Error fetching leaderboard: $e');
+    }
+    // Get Point Logs
+  }
+
+  Future<List<PointLogModel>> getPointLogs() async {
+    final url = Uri.parse('$baseUrl/users/me/point-logs');
+    try {
+      final headers = await _getHeaders();
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> logsJson = data['logs'];
+          return logsJson.map((json) => PointLogModel.fromJson(json)).toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load point logs');
+        }
+      } else {
+        throw Exception('Failed to load point logs: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching point logs: $e');
     }
   }
 }
