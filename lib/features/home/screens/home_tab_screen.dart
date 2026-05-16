@@ -288,19 +288,18 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       },
                       onSelected: (ServiceProductModel selection) {
                         if (selection.id == 'empty') return;
-                        fetchAndNavigateToProfile(
-                          context,
-                          selection.providerId,
-                        );
-                        // Navigator.push(
+                        // fetchAndNavigateToProfile(
                         //   context,
-                        //   MaterialPageRoute(
-                        //     builder:
-                        //         (context) => ServiceProductDetailScreen(
-                        //           service: selection,
-                        //         ),
-                        //   ),
+                        //   selection.providerId,
                         // );
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (context) => ServiceProductDetailScreen(
+                                  service: selection,
+                                ),
+                          ),
+                        );
                       },
                       fieldViewBuilder: (
                         context,
