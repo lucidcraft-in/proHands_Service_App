@@ -16,6 +16,7 @@ import 'service_boy_overall_analytics_screen.dart';
 import 'package:provider/provider.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
 import '../../home/providers/consumer_provider.dart';
+import '../../home/widgets/banner_carousel.dart';
 import '../../home/providers/notification_provider.dart';
 import '../../home/screens/notification_screen.dart';
 import '../../../core/models/user_model.dart';
@@ -840,6 +841,8 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   );
                 },
               ),
+
+              const BannerCarousel(linkType: 'redeem_points_ad'),
 
               const SizedBox(height: 24),
 

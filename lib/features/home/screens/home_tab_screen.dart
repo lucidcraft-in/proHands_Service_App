@@ -15,6 +15,7 @@ import 'location_search_screen.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../core/widgets/empty_state_widget.dart';
 import '../widgets/category_item.dart';
+import '../widgets/banner_carousel.dart';
 import 'full_image_screen.dart';
 import 'main_screen.dart';
 import 'service_product_list_screen.dart';
@@ -675,6 +676,10 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   },
                 ),
               ),
+            ),
+
+            const SliverToBoxAdapter(
+              child: BannerCarousel(linkType: 'redeem_points_ad'),
             ),
 
             const SliverToBoxAdapter(child: SizedBox(height: 100)),

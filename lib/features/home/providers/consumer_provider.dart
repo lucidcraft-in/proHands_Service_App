@@ -8,6 +8,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/models/review_model.dart';
 import '../../../core/models/booking_log_model.dart';
+import '../models/banner_model.dart';
 import '../services/consumer_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/services/location_service.dart';
@@ -55,6 +56,10 @@ class ConsumerProvider extends ChangeNotifier {
   bool _isLoadingServiceDetails = false;
   String? _serviceDetailsError;
 
+  List<BannerModel> _banners = [];
+  bool _isLoadingBanners = false;
+  String? _bannersError;
+
   List<ServiceCategoryModel> get categories => _categories;
   bool get isLoadingCategories => _isLoadingCategories;
   String? get categoriesError => _categoriesError;
@@ -94,6 +99,10 @@ class ConsumerProvider extends ChangeNotifier {
   ServiceProductModel? get currentService => _currentService;
   bool get isLoadingServiceDetails => _isLoadingServiceDetails;
   String? get serviceDetailsError => _serviceDetailsError;
+
+  List<BannerModel> get banners => _banners;
+  bool get isLoadingBanners => _isLoadingBanners;
+  String? get bannersError => _bannersError;
 
   Future<void> fetchCategories() async {
     if (_isLoadingCategories) return;
@@ -873,6 +882,21 @@ class ConsumerProvider extends ChangeNotifier {
       _leaderboardError = e.toString().replaceAll('Exception: ', '');
     } finally {
       _isLoadingLeaderboard = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchBanners(String linkType) async {
+    _isLoadingBanners = true;
+    _bannersError = null;
+    notifyListeners();
+
+    try {
+      _banners = await _service.getBanners(linkType);
+    } catch (e) {
+      _bannersError = e.toString().replaceAll('Exception: ', '');
+    } finally {
+      _isLoadingBanners = false;
       notifyListeners();
     }
   }

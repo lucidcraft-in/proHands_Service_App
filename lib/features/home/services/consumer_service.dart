@@ -6,6 +6,7 @@ import '../../../core/services/storage_service.dart';
 import '../../service_boy/models/service_category_model.dart';
 import '../../service_boy/models/service_subcategory_model.dart';
 import '../models/service_product_model.dart';
+import '../models/banner_model.dart';
 import '../models/feed_model.dart';
 import '../../../core/models/booking_model.dart';
 import '../../../core/models/user_model.dart';
@@ -14,6 +15,32 @@ import '../../../core/models/booking_log_model.dart';
 
 class ConsumerService {
   final String baseUrl = AuthService.baseUrl;
+
+  // Get banners
+  Future<List<BannerModel>> getBanners(String linkType) async {
+    final url = Uri.parse('$baseUrl/banners?linkType=$linkType');
+    try {
+      final headers = await _getHeaders();
+      final response = await http
+          .get(url, headers: headers)
+          .timeout(const Duration(seconds: 20));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          final List<dynamic> bannersJson = data['banners'];
+          return bannersJson
+              .map((json) => BannerModel.fromJson(json))
+              .toList();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to load banners');
+        }
+      } else {
+        throw Exception('Failed to load banners: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching banners: $e');
+    }
+  }
 
   // Get headers with token
   Future<Map<String, String>> _getHeaders() async {
