@@ -594,4 +594,24 @@ class ServiceBoyService {
       throw Exception('Error submitting delay request: $e');
     }
   }
+  // Resend OTP
+  Future<bool> resendCompleteOtp(String bookingId) async {
+    final url = Uri.parse('$baseUrl/bookings/$bookingId/resend-otp');
+    try {
+      final headers = await _getHeaders();
+      final response = await http.post(url, headers: headers);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      } else {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ?? 'Failed to resend OTP: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Error resending OTP: $e');
+    }
+  }
 }

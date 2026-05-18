@@ -9,6 +9,7 @@ import '../../../core/models/booking_model.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 
 import '../../../core/widgets/full_screen_image_viewer.dart';
+import '../../../core/widgets/full_screen_gallery_viewer.dart';
 import 'service_boy_task_details_screen.dart';
 import '../../profile/screens/edit_profile_screen.dart';
 import 'service_boy_overall_analytics_screen.dart';
@@ -960,10 +961,9 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder:
-                                        (context) => FullScreenImageViewer(
-                                          imagePath: image.imageUrl,
-                                          tag: 'dashboard_gallery_${image.id}',
-                                          isFile: true,
+                                        (context) => FullScreenGalleryViewer(
+                                          imagePaths: galleryImages.map((img) => img.imageUrl).toList(),
+                                          initialIndex: index,
                                         ),
                                   ),
                                 );

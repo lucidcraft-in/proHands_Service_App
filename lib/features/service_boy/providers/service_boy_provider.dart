@@ -603,4 +603,30 @@ class ServiceBoyProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // Resend OTP state
+  bool _isResendingOtp = false;
+  String? _resendOtpError;
+
+  bool get isResendingOtp => _isResendingOtp;
+  String? get resendOtpError => _resendOtpError;
+
+  // Resend Complete OTP
+  Future<bool> resendCompleteOtp(String bookingId) async {
+    _isResendingOtp = true;
+    _resendOtpError = null;
+    notifyListeners();
+
+    try {
+      final success = await _service.resendCompleteOtp(bookingId);
+      _isResendingOtp = false;
+      notifyListeners();
+      return success;
+    } catch (e) {
+      _isResendingOtp = false;
+      _resendOtpError = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
 }

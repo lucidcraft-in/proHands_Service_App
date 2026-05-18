@@ -806,7 +806,52 @@ class _ServiceBoyTaskDetailsScreenState
                         keyboardType: TextInputType.number,
                         prefixIcon: const Icon(Iconsax.lock),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Consumer<ServiceBoyProvider>(
+                          builder: (context, provider, child) {
+                            return TextButton(
+                              onPressed: provider.isResendingOtp
+                                  ? null
+                                  : () async {
+                                      final success = await provider.resendCompleteOtp(booking.id);
+                                      if (!mounted) return;
+                                      
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            success
+                                                ? 'OTP resent successfully to customer.'
+                                                : (provider.resendOtpError ?? 'Failed to resend OTP'),
+                                          ),
+                                          backgroundColor: success ? AppColors.success : AppColors.error,
+                                        ),
+                                      );
+                                    },
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: provider.isResendingOtp
+                                  ? const SizedBox(
+                                      height: 14,
+                                      width: 14,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : Text(
+                                      'Resend OTP',
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: AppColors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Consumer<ServiceBoyProvider>(
                         builder: (context, provider, child) {
                           return CustomButton(
@@ -1183,67 +1228,72 @@ class _ServiceBoyTaskDetailsScreenState
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'Cancel',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ),
-            Consumer<ServiceBoyProvider>(
-              builder: (consumerContext, provider, child) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8, bottom: 8),
-                  child: CustomButton(
-                    text: 'Submit',
-                    isLoading: provider.isRequestingDelay,
-                    onPressed: () async {
-                      if (timeController.text.isEmpty) {
-                        ScaffoldMessenger.of(consumerContext).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please enter delay time'),
-                          ),
-                        );
-                        return;
-                      }
-                      final messenger = ScaffoldMessenger.of(context);
-                      final success = await provider.requestDelay(
-                        bookingId: bookingId,
-                        delayTime: timeController.text.trim(),
-                        delayNote: noteController.text.trim(),
-                      );
-
-                      if (!mounted) return;
-
-                      // Always use the dialog context to pop the dialog
-                      Navigator.of(dialogContext).pop();
-
-                      if (success) {
-                        messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Delay request submitted'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                      } else {
-                        messenger.showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              provider.delayError ?? 'Failed to submit',
-                            ),
-                            backgroundColor: AppColors.error,
-                          ),
-                        );
-                      }
-                    },
-                    width: 100,
-                    height: 40,
-                    fontSize: 13,
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(dialogContext),
+                    child: Text(
+                      'Cancel',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Consumer<ServiceBoyProvider>(
+                    builder: (consumerContext, provider, child) {
+                      return CustomButton(
+                        text: 'Submit',
+                        height: 48,
+                        fontSize: 14,
+                        isLoading: provider.isRequestingDelay,
+                        onPressed: () async {
+                          if (timeController.text.isEmpty) {
+                            ScaffoldMessenger.of(consumerContext).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter delay time'),
+                              ),
+                            );
+                            return;
+                          }
+                          final messenger = ScaffoldMessenger.of(context);
+                          final success = await provider.requestDelay(
+                            bookingId: bookingId,
+                            delayTime: timeController.text.trim(),
+                            delayNote: noteController.text.trim(),
+                          );
+
+                          if (!mounted) return;
+
+                          // Always use the dialog context to pop the dialog
+                          Navigator.of(dialogContext).pop();
+
+                          if (success) {
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('Delay request submitted'),
+                                backgroundColor: AppColors.success,
+                              ),
+                            );
+                          } else {
+                            messenger.showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  provider.delayError ?? 'Failed to submit',
+                                ),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         );

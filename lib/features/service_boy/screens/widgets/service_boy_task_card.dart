@@ -475,64 +475,69 @@ class _ServiceBoyTaskCardState extends State<ServiceBoyTaskCard> {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Cancel',
-                style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textTertiary,
-                ),
-              ),
-            ),
-            Consumer<ServiceBoyProvider>(
-              builder: (context, provider, child) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8, bottom: 8),
-                  child: CustomButton(
-                    text: 'Submit',
-                    isLoading: provider.isRequestingDelay,
-                    onPressed: () async {
-                      if (timeController.text.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Please enter delay time'),
-                          ),
-                        );
-                        return;
-                      }
-                      final success = await provider.requestDelay(
-                        bookingId: bookingId,
-                        delayTime: timeController.text.trim(),
-                        delayNote: noteController.text.trim(),
-                      );
-
-                      if (mounted) {
-                        Navigator.pop(context);
-                        if (success) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Delay request submitted'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                provider.delayError ?? 'Failed to submit',
-                              ),
-                              backgroundColor: AppColors.error,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    width: 100,
-                    height: 40,
-                    fontSize: 13,
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancel',
+                      style: AppTextStyles.labelSmall.copyWith(
+                        color: AppColors.textTertiary,
+                      ),
+                    ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Consumer<ServiceBoyProvider>(
+                    builder: (context, provider, child) {
+                      return CustomButton(
+                        text: 'Submit',
+                        height: 48,
+                        fontSize: 14,
+                        isLoading: provider.isRequestingDelay,
+                        onPressed: () async {
+                          if (timeController.text.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter delay time'),
+                              ),
+                            );
+                            return;
+                          }
+                          final success = await provider.requestDelay(
+                            bookingId: bookingId,
+                            delayTime: timeController.text.trim(),
+                            delayNote: noteController.text.trim(),
+                          );
+
+                          if (mounted) {
+                            Navigator.pop(context);
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Delay request submitted'),
+                                  backgroundColor: AppColors.success,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    provider.delayError ?? 'Failed to submit',
+                                  ),
+                                  backgroundColor: AppColors.error,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         );
