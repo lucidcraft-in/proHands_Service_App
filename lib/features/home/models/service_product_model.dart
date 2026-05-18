@@ -65,11 +65,11 @@ class ServiceProductModel {
         profession = provider['profession'] ?? '';
         specialties = List<String>.from(provider['specialties'] ?? []);
         servicesOffered = List<String>.from(provider['servicesOffered'] ?? []);
-
-        if (provider['portfolioImages'] != null &&
-            (provider['portfolioImages'] as List).isNotEmpty) {
-          providerImage = provider['portfolioImages'][0];
-        }
+        providerImage = provider['profilePhoto'] ?? '';
+        // if (provider['portfolioImages'] != null &&
+        //     (provider['portfolioImages'] as List).isNotEmpty) {
+        //   providerImage = provider['portfolioImages'][0];
+        // }
       } else if (json['providerId'] is String) {
         providerId = json['providerId'];
       }
@@ -88,7 +88,9 @@ class ServiceProductModel {
     if (json['subcategoryId'] != null && json['subcategoryId'] is Map) {
       subCatName = json['subcategoryId']['name'] ?? '';
       // If categoryId was not direct, try to get it from subcategory
-      if (catName.isEmpty && json['subcategoryId']['categoryId'] != null && json['subcategoryId']['categoryId'] is Map) {
+      if (catName.isEmpty &&
+          json['subcategoryId']['categoryId'] != null &&
+          json['subcategoryId']['categoryId'] is Map) {
         catName = json['subcategoryId']['categoryId']['name'] ?? '';
         catImage = json['subcategoryId']['categoryId']['image'] ?? '';
       }
@@ -96,21 +98,26 @@ class ServiceProductModel {
 
     // Parse images robustly
     String serviceImage = '';
-    if (json['image'] != null && json['image'] is String && (json['image'] as String).isNotEmpty) {
+    if (json['image'] != null &&
+        json['image'] is String &&
+        (json['image'] as String).isNotEmpty) {
       serviceImage = json['image'];
-    } else if (json['images'] != null && json['images'] is List && (json['images'] as List).isNotEmpty) {
+    } else if (json['images'] != null &&
+        json['images'] is List &&
+        (json['images'] as List).isNotEmpty) {
       serviceImage = json['images'][0];
     } else if (json['image'] != null && json['image'] is Map) {
       serviceImage = (json['image']['imageUrl'] ?? '').toString();
     }
 
     if (json['additionalSkills'] is List) {
-      additionalSkills = (json['additionalSkills'] as List).map((e) {
-        if (e is Map) {
-          return (e['name'] ?? '').toString();
-        }
-        return e.toString();
-      }).toList();
+      additionalSkills =
+          (json['additionalSkills'] as List).map((e) {
+            if (e is Map) {
+              return (e['name'] ?? '').toString();
+            }
+            return e.toString();
+          }).toList();
     }
 
     return ServiceProductModel(
@@ -126,12 +133,13 @@ class ServiceProductModel {
       reviewsCount: reviewsCount,
       profession: profession,
       image: serviceImage,
-      gallery: (json['gallery'] as List? ?? []).map((e) {
-        if (e is Map) {
-          return (e['imageUrl'] ?? '').toString();
-        }
-        return e.toString();
-      }).toList(),
+      gallery:
+          (json['gallery'] as List? ?? []).map((e) {
+            if (e is Map) {
+              return (e['imageUrl'] ?? '').toString();
+            }
+            return e.toString();
+          }).toList(),
       subcategoryName: subCatName,
       categoryName: catName,
       categoryImage: catImage,

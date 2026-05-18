@@ -119,9 +119,10 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    color: _currentPage == index
-                        ? AppColors.primary
-                        : AppColors.primary.withValues(alpha: 0.2),
+                    color:
+                        _currentPage == index
+                            ? AppColors.primary
+                            : AppColors.primary.withValues(alpha: 0.2),
                   ),
                 ),
               ),
@@ -145,7 +146,7 @@ class _BannerCarouselState extends State<BannerCarousel> {
           print('Banner clicked: ${banner.title}');
         },
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8),
+          // margin: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -172,47 +173,47 @@ class _BannerCarouselState extends State<BannerCarousel> {
                   },
                 ),
                 // Overlay for text readability if needed
-                if (banner.title.isNotEmpty || banner.description.isNotEmpty)
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.7),
-                          ],
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (banner.title.isNotEmpty)
-                            Text(
-                              banner.title,
-                              style: AppTextStyles.h4.copyWith(
-                                color: Colors.white,
-                                fontSize: 18,
-                              ),
-                            ),
-                          if (banner.description.isNotEmpty)
-                            Text(
-                              banner.description,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
+                // if (banner.title.isNotEmpty || banner.description.isNotEmpty)
+                //   Positioned(
+                //     bottom: 0,
+                //     left: 0,
+                //     right: 0,
+                //     child: Container(
+                //       padding: const EdgeInsets.all(16),
+                //       decoration: BoxDecoration(
+                //         gradient: LinearGradient(
+                //           begin: Alignment.topCenter,
+                //           end: Alignment.bottomCenter,
+                //           colors: [
+                //             Colors.transparent,
+                //             Colors.black.withValues(alpha: 0.7),
+                //           ],
+                //         ),
+                //       ),
+                //       child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //         children: [
+                //           if (banner.title.isNotEmpty)
+                //             Text(
+                //               banner.title,
+                //               style: AppTextStyles.h4.copyWith(
+                //                 color: Colors.white,
+                //                 fontSize: 18,
+                //               ),
+                //             ),
+                //           if (banner.description.isNotEmpty)
+                //             Text(
+                //               banner.description,
+                //               style: AppTextStyles.bodySmall.copyWith(
+                //                 color: Colors.white.withValues(alpha: 0.9),
+                //               ),
+                //               maxLines: 1,
+                //               overflow: TextOverflow.ellipsis,
+                //             ),
+                //         ],
+                //       ),
+                //     ),
+                //   ),
               ],
             ),
           ),

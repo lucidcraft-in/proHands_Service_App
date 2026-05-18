@@ -291,7 +291,7 @@ class _ProfessionalScreenState extends State<ProfessionalScreen>
                               padding: const EdgeInsets.only(bottom: 16),
                               child: ExpertCard(
                                 name: service.providerName,
-                                image: service.image,
+                                image: service.providerImage,
                                 profession: service.profession,
                                 rating: service.rating,
                                 reviews: service.reviewsCount,

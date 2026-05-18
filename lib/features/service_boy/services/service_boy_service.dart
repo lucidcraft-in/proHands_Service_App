@@ -233,9 +233,13 @@ class ServiceBoyService {
     try {
       final headers = await _getHeaders();
       final response = await http.get(url, headers: headers);
-
+      print('==== $url');
+      print('==== $headers');
+      print('==== $response');
+      print(response.body);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        print(data);
         if (data['success'] == true) {
           return ServiceModel.fromJson(data['service']);
         } else {

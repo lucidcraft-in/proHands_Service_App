@@ -633,116 +633,116 @@ class _ServiceBoyTaskDetailsScreenState
                       ),
                       const SizedBox(height: 16),
                       // Points Redemption
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.amber.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.amber.withOpacity(0.2),
-                          ),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _isRedeemingPoints,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _isRedeemingPoints = val ?? false;
-                                      if (_isRedeemingPoints) {
-                                        _pointsToRedeem =
-                                            booking.redeemedPoints > 0
-                                                ? booking.redeemedPoints
-                                                : 0;
-                                      }
-                                    });
-                                  },
-                                  activeColor: Colors.amber,
-                                ),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            'Redeem Points',
-                                            style: AppTextStyles.labelMedium,
-                                          ),
-                                          Text(
-                                            'Available: ${booking.customerPoints} pts',
-                                            style: AppTextStyles.bodySmall
-                                                .copyWith(
-                                                  color: AppColors.primary,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                      Text(
-                                        '1 point = ₹40',
-                                        style: AppTextStyles.bodySmall.copyWith(
-                                          color: Colors.amber.shade700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (_isRedeemingPoints) ...[
-                              const Divider(),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  const Text('Points to use:'),
-                                  SizedBox(
-                                    width: 100,
-                                    child: TextField(
-                                      keyboardType: TextInputType.number,
-                                      decoration: const InputDecoration(
-                                        isDense: true,
-                                        hintText: 'Qty',
-                                      ),
-                                      onChanged: (val) {
-                                        setState(() {
-                                          _pointsToRedeem =
-                                              int.tryParse(val) ?? 0;
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Discount:',
-                                    style: AppTextStyles.bodySmall,
-                                  ),
-                                  Text(
-                                    '- ₹${(_pointsToRedeem * 40).toStringAsFixed(2)}',
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
+                      // Container(
+                      //   padding: const EdgeInsets.all(12),
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.amber.withOpacity(0.05),
+                      //     borderRadius: BorderRadius.circular(12),
+                      //     border: Border.all(
+                      //       color: Colors.amber.withOpacity(0.2),
+                      //     ),
+                      //   ),
+                      //   child: Column(
+                      //     children: [
+                      //       Row(
+                      //         children: [
+                      //           Checkbox(
+                      //             value: _isRedeemingPoints,
+                      //             onChanged: (val) {
+                      //               setState(() {
+                      //                 _isRedeemingPoints = val ?? false;
+                      //                 if (_isRedeemingPoints) {
+                      //                   _pointsToRedeem =
+                      //                       booking.redeemedPoints > 0
+                      //                           ? booking.redeemedPoints
+                      //                           : 0;
+                      //                 }
+                      //               });
+                      //             },
+                      //             activeColor: Colors.amber,
+                      //           ),
+                      //           Expanded(
+                      //             child: Column(
+                      //               crossAxisAlignment:
+                      //                   CrossAxisAlignment.start,
+                      //               children: [
+                      //                 Row(
+                      //                   mainAxisAlignment:
+                      //                       MainAxisAlignment.spaceBetween,
+                      //                   children: [
+                      //                     Text(
+                      //                       'Redeem Points',
+                      //                       style: AppTextStyles.labelMedium,
+                      //                     ),
+                      //                     Text(
+                      //                       'Available: ${booking.customerPoints} pts',
+                      //                       style: AppTextStyles.bodySmall
+                      //                           .copyWith(
+                      //                             color: AppColors.primary,
+                      //                             fontWeight: FontWeight.bold,
+                      //                           ),
+                      //                     ),
+                      //                   ],
+                      //                 ),
+                      //                 Text(
+                      //                   '1 point = ₹40',
+                      //                   style: AppTextStyles.bodySmall.copyWith(
+                      //                     color: Colors.amber.shade700,
+                      //                   ),
+                      //                 ),
+                      //               ],
+                      //             ),
+                      //           ),
+                      //         ],
+                      //       ),
+                      //       if (_isRedeemingPoints) ...[
+                      //         const Divider(),
+                      //         Row(
+                      //           mainAxisAlignment:
+                      //               MainAxisAlignment.spaceBetween,
+                      //           children: [
+                      //             const Text('Points to use:'),
+                      //             SizedBox(
+                      //               width: 100,
+                      //               child: TextField(
+                      //                 keyboardType: TextInputType.number,
+                      //                 decoration: const InputDecoration(
+                      //                   isDense: true,
+                      //                   hintText: 'Qty',
+                      //                 ),
+                      //                 onChanged: (val) {
+                      //                   setState(() {
+                      //                     _pointsToRedeem =
+                      //                         int.tryParse(val) ?? 0;
+                      //                   });
+                      //                 },
+                      //               ),
+                      //             ),
+                      //           ],
+                      //         ),
+                      //         const SizedBox(height: 8),
+                      //         Row(
+                      //           mainAxisAlignment:
+                      //               MainAxisAlignment.spaceBetween,
+                      //           children: [
+                      //             Text(
+                      //               'Discount:',
+                      //               style: AppTextStyles.bodySmall,
+                      //             ),
+                      //             Text(
+                      //               '- ₹${(_pointsToRedeem * 40).toStringAsFixed(2)}',
+                      //               style: AppTextStyles.bodySmall.copyWith(
+                      //                 color: Colors.green,
+                      //                 fontWeight: FontWeight.bold,
+                      //               ),
+                      //             ),
+                      //           ],
+                      //         ),
+                      //       ],
+                      //     ],
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 24),
                       // Final Amount Calculation Display
                       Column(
                         children: [

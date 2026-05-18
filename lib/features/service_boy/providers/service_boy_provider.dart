@@ -373,6 +373,7 @@ class ServiceBoyProvider extends ChangeNotifier {
     _isLoadingServiceDetails = true;
     _serviceDetailsError = null;
     _selectedService = null;
+    print(serviceId);
     notifyListeners();
 
     try {

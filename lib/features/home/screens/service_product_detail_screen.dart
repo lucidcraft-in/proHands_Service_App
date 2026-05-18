@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
+import '../../../../core/widgets/full_screen_image_viewer.dart';
 import '../models/service_product_model.dart';
 import '../../booking/screens/booking_checkout_screen.dart';
 import '../providers/consumer_provider.dart';
@@ -14,10 +15,12 @@ class ServiceProductDetailScreen extends StatefulWidget {
   const ServiceProductDetailScreen({super.key, required this.service});
 
   @override
-  State<ServiceProductDetailScreen> createState() => _ServiceProductDetailScreenState();
+  State<ServiceProductDetailScreen> createState() =>
+      _ServiceProductDetailScreenState();
 }
 
-class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen> {
+class _ServiceProductDetailScreenState
+    extends State<ServiceProductDetailScreen> {
   @override
   void initState() {
     super.initState();
@@ -31,9 +34,11 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
     return Consumer<ConsumerProvider>(
       builder: (context, provider, child) {
         // Use fetched service if available, otherwise fallback to constructor service
-        final service = (provider.currentService != null && provider.currentService!.id == widget.service.id)
-            ? provider.currentService!
-            : widget.service;
+        final service =
+            (provider.currentService != null &&
+                    provider.currentService!.id == widget.service.id)
+                ? provider.currentService!
+                : widget.service;
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -63,7 +68,9 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                         ),
                       ),
                       if (provider.isLoadingServiceDetails)
-                        const Center(child: CircularProgressIndicator(color: Colors.white)),
+                        const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
                     ],
                   ),
                 ),
@@ -97,16 +104,20 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                                 Text(
                                   service.name,
                                   style: AppTextStyles.h3.copyWith(
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
-                                if (service.subcategoryName.isNotEmpty || service.categoryName.isNotEmpty)
+                                if (service.subcategoryName.isNotEmpty ||
+                                    service.categoryName.isNotEmpty)
                                   Text(
-                                    service.subcategoryName.isNotEmpty 
-                                        ? service.subcategoryName 
+                                    service.subcategoryName.isNotEmpty
+                                        ? service.subcategoryName
                                         : service.categoryName,
                                     style: AppTextStyles.bodyMedium.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withOpacity(0.6),
                                     ),
                                   ),
                               ],
@@ -119,7 +130,11 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                       // Rating and Info
                       Row(
                         children: [
-                          const Icon(Iconsax.star1, size: 18, color: Colors.amber),
+                          const Icon(
+                            Iconsax.star1,
+                            size: 18,
+                            color: Colors.amber,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             service.rating > 0
@@ -133,7 +148,9 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                           Text(
                             ' (${service.reviewsCount} reviews)',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onSurface.withOpacity(0.5),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -174,16 +191,20 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                           children: [
                             CircleAvatar(
                               radius: 24,
-                              backgroundImage: service.providerImage.isNotEmpty
-                                  ? NetworkImage(service.providerImage)
-                                  : null,
-                              backgroundColor: AppColors.primary.withOpacity(0.1),
-                              child: service.providerImage.isEmpty
-                                  ? const Icon(
-                                      Icons.person,
-                                      color: AppColors.primary,
-                                    )
-                                  : null,
+                              backgroundImage:
+                                  service.providerImage.isNotEmpty
+                                      ? NetworkImage(service.providerImage)
+                                      : null,
+                              backgroundColor: AppColors.primary.withOpacity(
+                                0.1,
+                              ),
+                              child:
+                                  service.providerImage.isEmpty
+                                      ? const Icon(
+                                        Icons.person,
+                                        color: AppColors.primary,
+                                      )
+                                      : null,
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -194,7 +215,10 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                                     service.providerName,
                                     style: AppTextStyles.bodyMedium.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Theme.of(context).colorScheme.onSurface,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -202,7 +226,9 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                                   Text(
                                     service.profession,
                                     style: AppTextStyles.caption.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface.withOpacity(0.6),
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -232,16 +258,20 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: service.specialties
-                              .map((s) => _buildSkillChip(s, AppColors.primary))
-                              .toList(),
+                          children:
+                              service.specialties
+                                  .map(
+                                    (s) =>
+                                        _buildSkillChip(s, AppColors.primary),
+                                  )
+                                  .toList(),
                         ),
                       ],
 
                       if (service.servicesOffered.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Text(
-                          'Services Offered',
+                          'Additional Skills',
                           style: AppTextStyles.labelLarge.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
@@ -250,9 +280,10 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: service.servicesOffered
-                              .map((s) => _buildSkillChip(s, Colors.blue))
-                              .toList(),
+                          children:
+                              service.additionalSkills
+                                  .map((s) => _buildSkillChip(s, Colors.blue))
+                                  .toList(),
                         ),
                       ],
 
@@ -269,7 +300,9 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                       Text(
                         service.description,
                         style: AppTextStyles.bodyMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.7),
                           height: 1.5,
                         ),
                       ),
@@ -296,11 +329,12 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                               return Padding(
                                 padding: const EdgeInsets.only(right: 12),
                                 child: GestureDetector(
-                                  onTap: () => _openImageViewer(
-                                    context,
-                                    imageUrl,
-                                    heroTag,
-                                  ),
+                                  onTap:
+                                      () => _openImageViewer(
+                                        context,
+                                        imageUrl,
+                                        heroTag,
+                                      ),
                                   child: Hero(
                                     tag: heroTag,
                                     child: ClipRRect(
@@ -310,11 +344,15 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                                         width: 140,
                                         height: 100,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          width: 140,
-                                          color: AppColors.surface,
-                                          child: const Icon(Icons.broken_image),
-                                        ),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                                  width: 140,
+                                                  color: AppColors.surface,
+                                                  child: const Icon(
+                                                    Icons.broken_image,
+                                                  ),
+                                                ),
                                       ),
                                     ),
                                   ),
@@ -351,12 +389,13 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BookingCheckoutScreen(
-                        serviceName: service.name,
-                        serviceId: service.id,
-                        price: service.price,
-                        serviceDescription: service.description,
-                      ),
+                      builder:
+                          (context) => BookingCheckoutScreen(
+                            serviceName: service.name,
+                            serviceId: service.id,
+                            price: service.price,
+                            serviceDescription: service.description,
+                          ),
                     ),
                   );
                 },
@@ -386,6 +425,7 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
   Widget _buildHeaderImage(BuildContext context, ServiceProductModel service) {
     // Priority: 1. Service Image, 2. Category Image, 3. Gradient Placeholder
     String? imageUrl;
+
     if (service.image.isNotEmpty) {
       imageUrl = service.image;
     } else if (service.categoryImage.isNotEmpty) {
@@ -393,56 +433,55 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
     }
 
     return GestureDetector(
-      onTap: () => imageUrl != null
-          ? _openImageViewer(context, imageUrl, 'header_image')
-          : null,
+      onTap:
+          () =>
+              imageUrl != null
+                  ? _openImageViewer(context, imageUrl, 'header_image')
+                  : null,
       child: Hero(
         tag: 'header_image',
-        child: imageUrl != null
-            ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  // If primary image fails, try category image if not already tried
-                  if (service.image.isNotEmpty && service.categoryImage.isNotEmpty) {
-                    return Image.network(
-                      service.categoryImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-                    );
-                  }
-                  return _buildPlaceholder();
-                },
-              )
-            : _buildPlaceholder(),
+        child:
+            imageUrl != null
+                ? Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // If primary image fails, try category image if not already tried
+                    if (service.image.isNotEmpty &&
+                        service.categoryImage.isNotEmpty) {
+                      return Image.network(
+                        service.categoryImage,
+                        fit: BoxFit.cover,
+                        errorBuilder:
+                            (context, error, stackTrace) => _buildPlaceholder(),
+                      );
+                    }
+                    return _buildPlaceholder();
+                  },
+                )
+                : _buildPlaceholder(),
       ),
     );
   }
 
   Widget _buildPlaceholder() {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: AppColors.primaryGradient,
-      ),
-      child: const Icon(
-        Icons.image,
-        size: 80,
-        color: Colors.white,
-      ),
+      decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+      child: const Icon(Icons.image, size: 80, color: Colors.white),
     );
   }
 
   void _openImageViewer(BuildContext context, String imageUrl, String heroTag) {
     Navigator.push(
       context,
-      PageRouteBuilder(
-        opaque: false,
-        barrierColor: Colors.black.withOpacity(0.9),
-        pageBuilder: (context, _, __) =>
-            _FullScreenImageViewer(imageUrl: imageUrl, heroTag: heroTag),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
+      MaterialPageRoute(
+        builder:
+            (context) => FullScreenImageViewer(
+              imagePath: imageUrl,
+              tag: heroTag,
+              isFile:
+                  true, // It uses Image.network internally in this app's widget
+            ),
       ),
     );
   }
@@ -461,57 +500,6 @@ class _ServiceProductDetailScreenState extends State<ServiceProductDetailScreen>
           color: color,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-}
-
-class _FullScreenImageViewer extends StatelessWidget {
-  final String imageUrl;
-  final String heroTag;
-
-  const _FullScreenImageViewer({required this.imageUrl, required this.heroTag});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(color: Colors.transparent),
-          ),
-          Center(
-            child: Hero(
-              tag: heroTag,
-              child: InteractiveViewer(
-                minScale: 0.5,
-                maxScale: 4.0,
-                child: Image.network(
-                  imageUrl,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) => const Icon(
-                    Icons.broken_image,
-                    size: 100,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            right: 20,
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close, color: Colors.white, size: 30),
-              style: IconButton.styleFrom(
-                backgroundColor: Colors.black.withOpacity(0.3),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

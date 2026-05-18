@@ -46,7 +46,10 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).colorScheme.onSurface),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -89,7 +92,9 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
                                     color:
                                         isSelected
                                             ? Colors.white
-                                            : Theme.of(context).colorScheme.onSurface,
+                                            : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
                                     fontWeight:
                                         isSelected
                                             ? FontWeight.bold
@@ -119,7 +124,8 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
                                     }
                                   }
                                 },
-                                backgroundColor: Theme.of(context).colorScheme.surface,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.surface,
                                 selectedColor: AppColors.primary,
                                 checkmarkColor: Colors.white,
                                 shape: RoundedRectangleBorder(
@@ -230,6 +236,7 @@ class _ServiceProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(service.providerImage);
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -300,9 +307,9 @@ class _ServiceProductCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child:
-                      service.image.isNotEmpty
+                      service.providerImage.isNotEmpty
                           ? Image.network(
-                            service.image,
+                            service.providerImage,
                             width: 48,
                             height: 48,
                             fit: BoxFit.cover,
@@ -310,7 +317,8 @@ class _ServiceProductCard extends StatelessWidget {
                                 (context, error, stackTrace) => Container(
                                   width: 48,
                                   height: 48,
-                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                   child: const Icon(
                                     Icons.broken_image,
                                     size: 20,
@@ -392,7 +400,10 @@ class _ServiceProductCard extends StatelessWidget {
                                   errorBuilder:
                                       (context, error, stackTrace) => Container(
                                         height: 72,
-                                        color: Theme.of(context).scaffoldBackgroundColor,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).scaffoldBackgroundColor,
                                         child: const Icon(
                                           Icons.broken_image,
                                           size: 20,
@@ -401,7 +412,8 @@ class _ServiceProductCard extends StatelessWidget {
                                 )
                                 : Container(
                                   height: 72,
-                                  color: Theme.of(context).scaffoldBackgroundColor,
+                                  color:
+                                      Theme.of(context).scaffoldBackgroundColor,
                                   child: const Icon(
                                     Icons.image_outlined,
                                     size: 20,

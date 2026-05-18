@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../providers/service_boy_provider.dart';
+import '../models/service_model.dart';
+import '../../../core/widgets/full_screen_image_viewer.dart';
 import 'edit_service_screen.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 
@@ -22,6 +24,7 @@ class _ServiceBoyServiceDetailsScreenState
   @override
   void initState() {
     super.initState();
+    print("-------");
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ServiceBoyProvider>().fetchServiceDetails(widget.serviceId);
     });
@@ -85,7 +88,8 @@ class _ServiceBoyServiceDetailsScreenState
               body: Center(child: Text('Service not found')),
             );
           }
-          print(service.categoryImage);
+          print("=============");
+          print(service.imageUrl);
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
             body: CustomScrollView(
@@ -133,18 +137,7 @@ class _ServiceBoyServiceDetailsScreenState
                     ),
                   ],
                   flexibleSpace: FlexibleSpaceBar(
-                    background:
-                        service.imageUrl != null && service.imageUrl!.isNotEmpty
-                            ? Image.network(
-                              service.imageUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (context, error, stack) =>
-                                      _buildImagePlaceholder(
-                                        service.categoryImage,
-                                      ),
-                            )
-                            : _buildImagePlaceholder(service.categoryImage),
+                    background: _buildHeaderImage(context, service),
                   ),
                 ),
 
@@ -490,6 +483,50 @@ class _ServiceBoyServiceDetailsScreenState
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildHeaderImage(BuildContext context, ServiceModel service) {
+    String? imageUrl =
+        service.imageUrl != null && service.imageUrl!.isNotEmpty
+            ? service.imageUrl
+            : service.categoryImage.isNotEmpty
+                ? service.categoryImage
+                : null;
+
+    return GestureDetector(
+      onTap:
+          () =>
+              imageUrl != null
+                  ? _openImageViewer(context, imageUrl, 'header_image_${service.id}')
+                  : null,
+      child: Hero(
+        tag: 'header_image_${service.id}',
+        child:
+            imageUrl != null
+                ? Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder:
+                      (context, error, stack) =>
+                          _buildImagePlaceholder(imageUrl!),
+                )
+                : _buildImagePlaceholder(service.categoryImage),
+      ),
+    );
+  }
+
+  void _openImageViewer(BuildContext context, String imageUrl, String heroTag) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => FullScreenImageViewer(
+              imagePath: imageUrl,
+              tag: heroTag,
+              isFile: true,
+            ),
       ),
     );
   }

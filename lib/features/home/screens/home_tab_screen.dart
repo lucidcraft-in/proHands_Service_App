@@ -47,9 +47,9 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
       if (context.read<ConsumerProvider>().categories.isEmpty) {
         context.read<ConsumerProvider>().fetchCategories();
       }
-      if (context.read<ConsumerProvider>().feeds.isEmpty) {
-        context.read<ConsumerProvider>().fetchFeeds();
-      }
+      // if (context.read<ConsumerProvider>().feeds.isEmpty) {
+      context.read<ConsumerProvider>().fetchFeeds();
+      // }
       context.read<NotificationProvider>().fetchNotifications();
     });
   }

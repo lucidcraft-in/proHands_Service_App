@@ -40,6 +40,7 @@ class _ExploreScreenState extends State<ExploreScreen>
     // Fetch leaderboard on load
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ConsumerProvider>().fetchLeaderboard(true);
+      context.read<ConsumerProvider>().fetchTrendingServices();
     });
   }
 
@@ -384,7 +385,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                             padding: const EdgeInsets.only(bottom: 16),
                             child: ExpertCard(
                               name: service.providerName,
-                              image: service.image,
+                              image: service.providerImage,
                               profession: service.profession,
                               rating: service.rating,
                               reviews: service.reviewsCount,
