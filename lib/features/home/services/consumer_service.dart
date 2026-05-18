@@ -92,7 +92,12 @@ class ConsumerService {
 
         if (data['success'] == true) {
           final List<dynamic> servicesJson = data['services'];
-
+          print(
+            servicesJson
+                .map((json) => ServiceProductModel.fromJson(json))
+                .where((service) => service.isCommissionPending == false)
+                .toList(),
+          );
           return servicesJson
               .map((json) => ServiceProductModel.fromJson(json))
               .where((service) => service.isCommissionPending == false)

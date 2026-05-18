@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/full_screen_image_viewer.dart';
+import '../../../../core/widgets/full_screen_gallery_viewer.dart';
 import '../models/service_product_model.dart';
 import '../../booking/screens/booking_checkout_screen.dart';
 import '../providers/consumer_provider.dart';
@@ -334,6 +335,8 @@ class _ServiceProductDetailScreenState
                                         context,
                                         imageUrl,
                                         heroTag,
+                                        galleryImages: service.gallery,
+                                        initialIndex: index,
                                       ),
                                   child: Hero(
                                     tag: heroTag,
@@ -471,19 +474,37 @@ class _ServiceProductDetailScreenState
     );
   }
 
-  void _openImageViewer(BuildContext context, String imageUrl, String heroTag) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => FullScreenImageViewer(
-              imagePath: imageUrl,
-              tag: heroTag,
-              isFile:
-                  true, // It uses Image.network internally in this app's widget
-            ),
-      ),
-    );
+  void _openImageViewer(
+    BuildContext context,
+    String imageUrl,
+    String heroTag, {
+    List<String>? galleryImages,
+    int? initialIndex,
+  }) {
+    if (galleryImages != null && galleryImages.isNotEmpty && initialIndex != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => FullScreenGalleryViewer(
+                imagePaths: galleryImages,
+                initialIndex: initialIndex,
+              ),
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => FullScreenImageViewer(
+                imagePath: imageUrl,
+                tag: heroTag,
+                isFile: true,
+              ),
+        ),
+      );
+    }
   }
 
   Widget _buildSkillChip(String label, Color color) {

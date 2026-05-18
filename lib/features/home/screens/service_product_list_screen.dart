@@ -222,6 +222,7 @@ class _ServiceProductListScreenState extends State<ServiceProductListScreen> {
       padding: const EdgeInsets.all(16),
       itemCount: provider.services.length,
       itemBuilder: (context, index) {
+        print(provider.services);
         final service = provider.services[index];
         return _ServiceProductCard(service: service);
       },
@@ -236,7 +237,7 @@ class _ServiceProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(service.providerImage);
+    print(service.gallery);
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(

@@ -44,6 +44,8 @@ class ServiceProductModel {
   });
 
   factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
+    // print('service json: $json');
+    print(json['gallery']);
     String providerName = 'Service Expert';
     String providerImage = '';
     String providerId = '';

@@ -644,11 +644,14 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                           mainAxisCellCount: mainAxisCellCount,
                           child: GestureDetector(
                             onTap: () {
-                              FullImageScreen.navigateTo(
-                                context,
-                                imagePath: imageUrl,
-                                isNetworkImage: true,
-                                providerId: feed.provider.id,
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => FullImageScreen(
+                                        feeds: provider.feeds,
+                                        initialIndex: index,
+                                      ),
+                                ),
                               );
                             },
                             child: Hero(
