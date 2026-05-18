@@ -96,10 +96,13 @@ class _ServiceBoyTaskDetailsScreenState
       // final googleMapsUrl = Uri.parse(
       //   "https://www.google.com/maps/search/?api=1&query=${booking.coordinates![1]},${booking.coordinates![0]}",
       // );
-      Navigator.push(
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => MapScreen(booking: booking)),
       );
+      if (mounted) {
+        provider.fetchBookingDetails(booking.id);
+      }
       // try {
       //   if (await canLaunchUrl(googleMapsUrl)) {
       //     await launchUrl(googleMapsUrl, mode: LaunchMode.externalApplication);
@@ -197,7 +200,7 @@ class _ServiceBoyTaskDetailsScreenState
               booking.status == BookingStatus.closed ||
               booking.status == BookingStatus.closedByCustomer ||
               booking.status == BookingStatus.commissionPaymentPending;
-
+          print(booking.status);
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -812,41 +815,56 @@ class _ServiceBoyTaskDetailsScreenState
                         child: Consumer<ServiceBoyProvider>(
                           builder: (context, provider, child) {
                             return TextButton(
-                              onPressed: provider.isResendingOtp
-                                  ? null
-                                  : () async {
-                                      final success = await provider.resendCompleteOtp(booking.id);
-                                      if (!mounted) return;
-                                      
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            success
-                                                ? 'OTP resent successfully to customer.'
-                                                : (provider.resendOtpError ?? 'Failed to resend OTP'),
+                              onPressed:
+                                  provider.isResendingOtp
+                                      ? null
+                                      : () async {
+                                        final success = await provider
+                                            .resendCompleteOtp(booking.id);
+                                        if (!mounted) return;
+
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success
+                                                  ? 'OTP resent successfully to customer.'
+                                                  : (provider.resendOtpError ??
+                                                      'Failed to resend OTP'),
+                                            ),
+                                            backgroundColor:
+                                                success
+                                                    ? AppColors.success
+                                                    : AppColors.error,
                                           ),
-                                          backgroundColor: success ? AppColors.success : AppColors.error,
-                                        ),
-                                      );
-                                    },
+                                        );
+                                      },
                               style: TextButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 minimumSize: Size.zero,
                                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               ),
-                              child: provider.isResendingOtp
-                                  ? const SizedBox(
-                                      height: 14,
-                                      width: 14,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : Text(
-                                      'Resend OTP',
-                                      style: AppTextStyles.labelSmall.copyWith(
-                                        color: AppColors.primary,
-                                        fontWeight: FontWeight.w600,
+                              child:
+                                  provider.isResendingOtp
+                                      ? const SizedBox(
+                                        height: 14,
+                                        width: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : Text(
+                                        'Resend OTP',
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                       ),
-                                    ),
                             );
                           },
                         ),

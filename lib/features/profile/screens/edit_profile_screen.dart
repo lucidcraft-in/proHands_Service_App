@@ -786,7 +786,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 popupProps: const PopupProps.menu(showSearchBox: true),
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText: "User Profession (Category)",
+                    labelText:
+                        "User Profession (Category & it becomes job title)",
                     hintText: "Select Profession",
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -805,6 +806,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     _selectedCategoryId = selected?.id;
                     if (selected != null) {
                       _professionController.text = selected.name;
+                      _serviceNameController.text = selected.name;
                       sbProvider.fetchSubcategories(selected.id);
                     } else {
                       _professionController.clear();
@@ -812,7 +814,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     }
                     _selectedAdditionalSkills = [];
                     _selectedSubcategoryId = null;
-                    _serviceNameController.clear();
                   });
                 },
                 validator:
@@ -880,7 +881,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (_selectedCategoryId != null) ...[
             Text(
               // 'Services Offered (first service name selected is the main service)',
-              'Services Offered (first selected becomes job title)',
+              'Services Offered',
               style: AppTextStyles.labelMedium,
             ),
             const SizedBox(height: 12),
@@ -928,7 +929,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 // Auto-set service title and subcategory ID from first selected skill
                                 if (_servicesOffered.isNotEmpty) {
                                   final firstSkill = _servicesOffered.first;
-                                  _serviceNameController.text = firstSkill;
+                                  // _serviceNameController.text = firstSkill;
 
                                   // Find the ID for the first skill
                                   try {
@@ -941,7 +942,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     _selectedSubcategoryId = null;
                                   }
                                 } else {
-                                  _serviceNameController.clear();
+                                  // _serviceNameController.clear();
                                   _selectedSubcategoryId = null;
                                 }
                               });
@@ -1322,7 +1323,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               label: 'Service Title',
               hint: 'e.g. Expert AC Repair',
               controller: _serviceNameController,
-              readOnly: true,
+              // readOnly: true,
               prefixIcon: const Icon(
                 Iconsax.briefcase,
                 color: AppColors.textTertiary,

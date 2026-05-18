@@ -481,7 +481,9 @@ class _ServiceProductDetailScreenState
     List<String>? galleryImages,
     int? initialIndex,
   }) {
-    if (galleryImages != null && galleryImages.isNotEmpty && initialIndex != null) {
+    if (galleryImages != null &&
+        galleryImages.isNotEmpty &&
+        initialIndex != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
