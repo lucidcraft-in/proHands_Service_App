@@ -22,12 +22,21 @@ class ServiceProductDetailScreen extends StatefulWidget {
 
 class _ServiceProductDetailScreenState
     extends State<ServiceProductDetailScreen> {
+  final PageController _pageController = PageController();
+  int _currentImageIndex = 0;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ConsumerProvider>().fetchServiceDetails(widget.service.id);
     });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   @override
@@ -54,17 +63,19 @@ class _ServiceProductDetailScreenState
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      _buildHeaderImage(context, service),
+                      _buildHeaderCarousel(context, service),
                       // Gradient Overlay
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.6),
-                              Colors.transparent,
-                            ],
+                      IgnorePointer(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.6),
+                                Colors.transparent,
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -425,45 +436,79 @@ class _ServiceProductDetailScreenState
     );
   }
 
-  Widget _buildHeaderImage(BuildContext context, ServiceProductModel service) {
-    // Priority: 1. Service Image, 2. Category Image, 3. Gradient Placeholder
-    String? imageUrl;
-
+  Widget _buildHeaderCarousel(BuildContext context, ServiceProductModel service) {
+    final List<String> allImages = [];
     if (service.image.isNotEmpty) {
-      imageUrl = service.image;
+      allImages.add(service.image);
     } else if (service.categoryImage.isNotEmpty) {
-      imageUrl = service.categoryImage;
+      allImages.add(service.categoryImage);
+    }
+    if (service.gallery.isNotEmpty) {
+      allImages.addAll(service.gallery);
     }
 
-    return GestureDetector(
-      onTap:
-          () =>
-              imageUrl != null
-                  ? _openImageViewer(context, imageUrl, 'header_image')
-                  : null,
-      child: Hero(
-        tag: 'header_image',
-        child:
-            imageUrl != null
-                ? Image.network(
+    final uniqueImages = allImages.toSet().toList();
+
+    if (uniqueImages.isEmpty) {
+      return _buildPlaceholder();
+    }
+
+    return Stack(
+      children: [
+        PageView.builder(
+          controller: _pageController,
+          itemCount: uniqueImages.length,
+          onPageChanged: (index) {
+            setState(() {
+              _currentImageIndex = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            final imageUrl = uniqueImages[index];
+            return GestureDetector(
+              onTap: () => _openImageViewer(
+                context, 
+                imageUrl, 
+                'header_image_$index',
+                galleryImages: uniqueImages,
+                initialIndex: index,
+                heroTagPrefix: 'header_image_',
+              ),
+              child: Hero(
+                tag: 'header_image_$index',
+                child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    // If primary image fails, try category image if not already tried
-                    if (service.image.isNotEmpty &&
-                        service.categoryImage.isNotEmpty) {
-                      return Image.network(
-                        service.categoryImage,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) => _buildPlaceholder(),
-                      );
-                    }
-                    return _buildPlaceholder();
-                  },
-                )
-                : _buildPlaceholder(),
-      ),
+                  errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                ),
+              ),
+            );
+          },
+        ),
+        if (uniqueImages.length > 1)
+          Positioned(
+            bottom: 24, // Above the curved container in the body
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                uniqueImages.length,
+                (index) => Container(
+                  width: _currentImageIndex == index ? 20 : 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    color: _currentImageIndex == index
+                        ? AppColors.primary
+                        : Colors.white.withOpacity(0.5),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -480,6 +525,7 @@ class _ServiceProductDetailScreenState
     String heroTag, {
     List<String>? galleryImages,
     int? initialIndex,
+    String? heroTagPrefix,
   }) {
     if (galleryImages != null &&
         galleryImages.isNotEmpty &&
@@ -491,6 +537,7 @@ class _ServiceProductDetailScreenState
               (context) => FullScreenGalleryViewer(
                 imagePaths: galleryImages,
                 initialIndex: initialIndex,
+                heroTagPrefix: heroTagPrefix ?? 'gallery_image_',
               ),
         ),
       );

@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class FullScreenGalleryViewer extends StatefulWidget {
   final List<String> imagePaths;
   final int initialIndex;
+  final String heroTagPrefix;
 
   const FullScreenGalleryViewer({
     super.key,
     required this.imagePaths,
     required this.initialIndex,
+    this.heroTagPrefix = 'gallery_image_',
   });
 
   @override
@@ -41,7 +43,7 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
             itemCount: widget.imagePaths.length,
             itemBuilder: (context, index) {
               final imagePath = widget.imagePaths[index];
-              final tag = 'gallery_image_$index'; // Consistent with ServiceProductDetailScreen
+              final tag = '${widget.heroTagPrefix}$index';
 
               return Center(
                 child: Hero(
