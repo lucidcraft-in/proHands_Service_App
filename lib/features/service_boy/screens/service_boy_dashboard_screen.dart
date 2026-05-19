@@ -62,7 +62,10 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
 
   Future<void> _showAddGalleryImageDialog() async {
     final sbProvider = context.read<ServiceBoyProvider>();
-    String? selectedServiceId;
+    String? selectedServiceId =
+        sbProvider.myServices.isNotEmpty
+            ? sbProvider.myServices.first.id
+            : null;
     final TextEditingController descriptionController = TextEditingController();
     File? selectedFile;
 
@@ -99,7 +102,10 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                 provider.myServices.map((service) {
                                   return DropdownMenuItem(
                                     value: service.id,
-                                    child: Text(service.name),
+                                    child: Text(
+                                      service.name,
+                                      style: AppTextStyles.bodySmall,
+                                    ),
                                   );
                                 }).toList(),
                             onChanged: (value) {
@@ -109,11 +115,12 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                         },
                       ),
                       const SizedBox(height: 16),
-                      // Description Field
+                      // Note Field
                       TextField(
+                        style: AppTextStyles.bodySmall,
                         controller: descriptionController,
                         decoration: const InputDecoration(
-                          labelText: 'Description',
+                          labelText: 'Note (Optional)',
                           hintText: 'e.g., painting works done',
                           border: OutlineInputBorder(),
                         ),
@@ -178,12 +185,12 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      if (selectedServiceId == null ||
-                          selectedFile == null ||
-                          descriptionController.text.isEmpty) {
+                      if (selectedServiceId == null || selectedFile == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Please fill all fields'),
+                            content: Text(
+                              'Please select a service and an image',
+                            ),
                             backgroundColor: AppColors.error,
                           ),
                         );
@@ -962,7 +969,14 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                   MaterialPageRoute(
                                     builder:
                                         (context) => FullScreenGalleryViewer(
-                                          imagePaths: galleryImages.map((img) => img.imageUrl).toList(),
+                                          imagePaths:
+                                              galleryImages
+                                                  .map((img) => img.imageUrl)
+                                                  .toList(),
+                                          notes:
+                                              galleryImages
+                                                  .map((img) => img.description)
+                                                  .toList(),
                                           initialIndex: index,
                                         ),
                                   ),

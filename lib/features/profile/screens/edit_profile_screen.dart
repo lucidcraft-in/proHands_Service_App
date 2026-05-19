@@ -786,8 +786,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 popupProps: const PopupProps.menu(showSearchBox: true),
                 dropdownDecoratorProps: DropDownDecoratorProps(
                   dropdownSearchDecoration: InputDecoration(
-                    labelText:
-                        "User Profession (Category & it becomes job title)",
+                    labelText: "Profession (Category)",
                     hintText: "Select Profession",
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -801,6 +800,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
                 ),
+                dropdownBuilder: (context, selectedItem) {
+                  return Text(
+                    selectedItem?.name ?? "Select Profession",
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.bodyMedium,
+                  );
+                },
                 onChanged: (ServiceCategoryModel? selected) {
                   setState(() {
                     _selectedCategoryId = selected?.id;
@@ -820,6 +827,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     (value) => value == null ? 'Profession is required' : null,
               );
             },
+          ),
+          const SizedBox(height: 20),
+          // Service Title
+          CustomTextField(
+            label: 'Service Title',
+            hint: 'e.g. Expert AC Repair',
+            controller: _serviceNameController,
+            // readOnly: true,
+            prefixIcon: const Icon(
+              Iconsax.briefcase,
+              color: AppColors.textTertiary,
+              size: 20,
+            ),
           ),
           const SizedBox(height: 20),
           CustomTextField(
@@ -1317,20 +1337,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 20),
 
             const SizedBox(height: 10),
-
-            // Service Title
-            CustomTextField(
-              label: 'Service Title',
-              hint: 'e.g. Expert AC Repair',
-              controller: _serviceNameController,
-              // readOnly: true,
-              prefixIcon: const Icon(
-                Iconsax.briefcase,
-                color: AppColors.textTertiary,
-                size: 20,
-              ),
-            ),
-            const SizedBox(height: 20),
 
             // Description
             CustomTextField(

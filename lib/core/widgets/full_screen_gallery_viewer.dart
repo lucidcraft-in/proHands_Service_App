@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class FullScreenGalleryViewer extends StatefulWidget {
   final List<String> imagePaths;
+  final List<String?>? notes;
   final int initialIndex;
   final String heroTagPrefix;
 
@@ -9,6 +10,7 @@ class FullScreenGalleryViewer extends StatefulWidget {
     super.key,
     required this.imagePaths,
     required this.initialIndex,
+    this.notes,
     this.heroTagPrefix = 'gallery_image_',
   });
 
@@ -79,6 +81,48 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
               ),
             ),
           ),
+          // Note Indicator
+          if (widget.notes != null)
+            Positioned(
+              bottom: widget.imagePaths.length > 1
+                  ? MediaQuery.of(context).padding.bottom + 70
+                  : MediaQuery.of(context).padding.bottom + 20,
+              left: 20,
+              right: 20,
+              child: Center(
+                child: AnimatedBuilder(
+                  animation: _pageController,
+                  builder: (context, child) {
+                    int currentPage = widget.initialIndex;
+                    if (_pageController.hasClients) {
+                      currentPage = _pageController.page?.round() ?? widget.initialIndex;
+                    }
+                    if (currentPage < widget.notes!.length) {
+                      final note = widget.notes![currentPage];
+                      if (note != null && note.isNotEmpty) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.6),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white.withOpacity(0.15)),
+                          ),
+                          child: Text(
+                            note,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ),
           // Page Indicator
           if (widget.imagePaths.length > 1)
             Positioned(

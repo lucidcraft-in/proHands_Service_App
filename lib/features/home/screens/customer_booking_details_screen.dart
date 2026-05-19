@@ -364,7 +364,9 @@ class _CustomerBookingDetailsScreenState
                               children: [
                                 Text(
                                   'Total Amount',
-                                  style: AppTextStyles.h4.copyWith(fontSize: 18),
+                                  style: AppTextStyles.h4.copyWith(
+                                    fontSize: 18,
+                                  ),
                                 ),
                                 Text(
                                   '₹${_currentBooking.totalAmount.toStringAsFixed(0)}',
@@ -376,8 +378,7 @@ class _CustomerBookingDetailsScreenState
                               ],
                             ),
                             if (_currentBooking.additionalNote != null &&
-                                _currentBooking.additionalNote!
-                                    .isNotEmpty) ...[
+                                _currentBooking.additionalNote!.isNotEmpty) ...[
                               const Divider(height: 32),
                               Text(
                                 'Additional Note',

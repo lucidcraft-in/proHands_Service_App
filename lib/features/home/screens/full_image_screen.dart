@@ -71,6 +71,33 @@ class _FullImageScreenState extends State<FullImageScreen> {
                       ),
                     ),
                   ),
+                  if (feed.description.isNotEmpty)
+                    Positioned(
+                      bottom: 130,
+                      left: 20,
+                      right: 20,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.15),
+                          ),
+                        ),
+                        child: Text(
+                          feed.description,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                   Positioned(
                     bottom: 40,
                     left: 20,
