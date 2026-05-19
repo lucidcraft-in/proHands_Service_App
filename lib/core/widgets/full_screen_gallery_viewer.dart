@@ -58,8 +58,11 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
                       fit: BoxFit.contain,
                       width: double.infinity,
                       height: double.infinity,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.broken_image, color: Colors.white),
+                      errorBuilder:
+                          (context, error, stackTrace) => const Icon(
+                            Icons.broken_image,
+                            color: Colors.white,
+                          ),
                     ),
                   ),
                 ),
@@ -84,9 +87,10 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
           // Note Indicator
           if (widget.notes != null)
             Positioned(
-              bottom: widget.imagePaths.length > 1
-                  ? MediaQuery.of(context).padding.bottom + 70
-                  : MediaQuery.of(context).padding.bottom + 20,
+              bottom:
+                  widget.imagePaths.length > 1
+                      ? MediaQuery.of(context).padding.bottom + 70
+                      : MediaQuery.of(context).padding.bottom + 20,
               left: 20,
               right: 20,
               child: Center(
@@ -95,17 +99,23 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
                   builder: (context, child) {
                     int currentPage = widget.initialIndex;
                     if (_pageController.hasClients) {
-                      currentPage = _pageController.page?.round() ?? widget.initialIndex;
+                      currentPage =
+                          _pageController.page?.round() ?? widget.initialIndex;
                     }
                     if (currentPage < widget.notes!.length) {
                       final note = widget.notes![currentPage];
                       if (note != null && note.isNotEmpty) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.6),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withOpacity(0.15)),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.15),
+                            ),
                           ),
                           child: Text(
                             note,
@@ -113,7 +123,7 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
                               color: Colors.white,
                               fontSize: 14,
                             ),
-                            textAlign: TextAlign.center,
+                            textAlign: TextAlign.left,
                           ),
                         );
                       }
@@ -131,7 +141,10 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
               right: 0,
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20),
@@ -141,7 +154,9 @@ class _FullScreenGalleryViewerState extends State<FullScreenGalleryViewer> {
                     builder: (context, child) {
                       int currentPage = widget.initialIndex;
                       if (_pageController.hasClients) {
-                        currentPage = _pageController.page?.round() ?? widget.initialIndex;
+                        currentPage =
+                            _pageController.page?.round() ??
+                            widget.initialIndex;
                       }
                       return Text(
                         '${currentPage + 1} / ${widget.imagePaths.length}',
