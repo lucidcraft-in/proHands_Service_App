@@ -133,7 +133,11 @@ class _CustomerBookingDetailsScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CompanyAccountDetailsScreen(),
+                  builder: (context) => CompanyAccountDetailsScreen(
+                    bookingId: _currentBooking.id,
+                    displayBookingId: _currentBooking.bookingId,
+                    customerName: _currentBooking.customerName,
+                  ),
                 ),
               );
             },

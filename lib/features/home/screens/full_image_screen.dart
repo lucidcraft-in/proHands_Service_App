@@ -94,7 +94,7 @@ class _FullImageScreenState extends State<FullImageScreen> {
                             color: Colors.white,
                             fontSize: 14,
                           ),
-                          textAlign: TextAlign.center,
+                          textAlign: TextAlign.left,
                         ),
                       ),
                     ),

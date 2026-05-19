@@ -148,7 +148,11 @@ class _ServiceBoyTaskDetailsScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CompanyAccountDetailsScreen(),
+                  builder: (context) => CompanyAccountDetailsScreen(
+                    bookingId: widget.booking.id,
+                    displayBookingId: widget.booking.bookingId,
+                    customerName: widget.booking.customerName,
+                  ),
                 ),
               );
             },
