@@ -12,6 +12,7 @@ import '../../../../core/widgets/full_screen_image.dart';
 import '../../../../core/models/review_model.dart';
 import '../providers/consumer_provider.dart';
 import '../widgets/timelinechip.dart';
+import '../../booking/screens/company_account_details_screen.dart';
 
 class CustomerBookingDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -122,6 +123,22 @@ class _CustomerBookingDetailsScreenState
           ),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              Iconsax.card,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CompanyAccountDetailsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<ConsumerProvider>(
         builder: (context, provider, child) {

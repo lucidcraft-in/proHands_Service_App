@@ -16,6 +16,7 @@ import '../../../core/widgets/full_screen_image.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/services/location_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../booking/screens/company_account_details_screen.dart';
 
 class ServiceBoyTaskDetailsScreen extends StatefulWidget {
   final BookingModel booking;
@@ -140,6 +141,19 @@ class _ServiceBoyTaskDetailsScreenState
       appBar: AppBar(
         title: Text('Work Details', style: AppTextStyles.h4),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Iconsax.card),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CompanyAccountDetailsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<ServiceBoyProvider>(
         builder: (context, provider, child) {
