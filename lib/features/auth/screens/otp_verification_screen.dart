@@ -32,13 +32,11 @@ class OTPVerificationScreen extends StatefulWidget {
 
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final _otpController = TextEditingController();
-  var _fcmToken;
   int _secondsRemaining = 60;
   bool _canResend = false;
 
   @override
   void initState() {
-    _fcmToken = StorageService.getFCMToken();
     super.initState();
     _startTimer();
   }
@@ -47,8 +45,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   void dispose() {
     try {
       _otpController.dispose();
-    } catch (e) {
-    }
+    } catch (e) {}
     super.dispose();
   }
 
@@ -112,14 +109,10 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     }
 
     try {
-      setState(() {
-        _fcmToken = "";
-      });
-      await context.read<AuthProvider>().verifyOtp(
-        widget.email!,
-        otp,
-        _fcmToken,
-      );
+      final token = await StorageService.getFCMToken() ?? "";
+      print("Token : =======================================================");
+      print(token);
+      await context.read<AuthProvider>().verifyOtp(widget.email!, otp, token);
 
       if (mounted) {
         final user = context.read<AuthProvider>().currentUser;
@@ -127,7 +120,6 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         // For now, assume if we have a user (which should be true after verifyOtp), we proceed
 
         if (user != null) {
-
           // Navigate based on user type
 
           if (user.userType == UserType.customer) {
@@ -177,8 +169,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   return;
                 }
               }
-            } catch (e) {
-            }
+            } catch (e) {}
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder:
@@ -200,8 +191,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             }
           });
         }
-      } else {
-      }
+      } else {}
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

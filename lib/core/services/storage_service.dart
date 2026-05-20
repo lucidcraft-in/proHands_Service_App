@@ -172,7 +172,7 @@ class StorageService {
     await prefs.setString(_fcmTokenKey, token);
   }
 
-  static Future getFCMToken() async {
+  static Future<String?> getFCMToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_fcmTokenKey);
   }

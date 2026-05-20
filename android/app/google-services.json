@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1047311674706",
+    "project_id": "prohands-320b7",
+    "storage_bucket": "prohands-320b7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1047311674706:android:78f59cac8e27f884b5de8b",
+        "android_client_info": {
+          "package_name": "com.prohands.service_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxXLxxe09TobZ__8_0JJ2XwdsCYJKBfDE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

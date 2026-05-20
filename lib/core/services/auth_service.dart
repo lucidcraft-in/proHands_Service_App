@@ -43,6 +43,10 @@ class AuthService {
   ) async {
     final url = Uri.parse('$baseUrl/auth/verify-otp');
     // try {
+    print(
+      'FCM Token : =======================================================$fcmToken',
+    );
+    print(fcmToken);
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
