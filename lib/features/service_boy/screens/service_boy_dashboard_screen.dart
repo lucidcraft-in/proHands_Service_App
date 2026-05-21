@@ -162,7 +162,7 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(
-                                        Iconsax.image,
+                                        Icons.image,
                                         size: 40,
                                         color: AppColors.textTertiary,
                                       ),
@@ -467,31 +467,67 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                           ),
                           Stack(
                             children: [
+                              // CircleAvatar(
+                              //   radius: 28,
+                              //   backgroundColor:
+                              //       user.profilePhoto.isEmpty
+                              //           ? Theme.of(
+                              //             context,
+                              //           ).scaffoldBackgroundColor
+                              //           : AppColors.primary,
+                              //   backgroundImage:
+                              //       user.profilePhoto.isNotEmpty
+                              //           ? NetworkImage(user.profilePhoto)
+                              //           : null,
+                              //   child:
+                              //       user.profilePhoto.isNotEmpty
+                              //           ? null
+                              //           : Icon(
+                              //             Icons.person,
+                              //             size: 28,
+                              //             color: Color.fromARGB(
+                              //               255,
+                              //               243,
+                              //               243,
+                              //               245,
+                              //             ),
+                              //           ),
+                              // ),
                               CircleAvatar(
                                 radius: 28,
                                 backgroundColor:
-                                    user.profilePhoto.isEmpty
+                                    user.profilePhoto.isNotEmpty
                                         ? Theme.of(
                                           context,
                                         ).scaffoldBackgroundColor
                                         : AppColors.primary,
-                                backgroundImage:
-                                    user.profilePhoto.isNotEmpty
-                                        ? NetworkImage(user.profilePhoto)
-                                        : null,
-                                child:
-                                    user.profilePhoto.isNotEmpty
-                                        ? null
-                                        : Icon(
-                                          Icons.person,
-                                          size: 28,
-                                          color: Color.fromARGB(
-                                            255,
-                                            243,
-                                            243,
-                                            245,
+
+                                child: ClipOval(
+                                  child:
+                                      user.profilePhoto.isNotEmpty
+                                          ? Image.network(
+                                            user.profilePhoto,
+                                            width: 56,
+                                            height: 56,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (
+                                              context,
+                                              error,
+                                              stackTrace,
+                                            ) {
+                                              return const Icon(
+                                                Icons.person,
+                                                size: 28,
+                                                color: Color(0xFFF3F3F5),
+                                              );
+                                            },
+                                          )
+                                          : const Icon(
+                                            Icons.person,
+                                            size: 28,
+                                            color: Color(0xFFF3F3F5),
                                           ),
-                                        ),
+                                ),
                               ),
                               Positioned(
                                 bottom: 0,
@@ -1075,12 +1111,20 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                   return Column(
                     children:
                         recentTasks.map((booking) {
+                          print(
+                            'Recent Tasks : =======================================================$recentTasks',
+                          );
+                          print("Booking  Status : ${booking.status}");
                           Color statusColor;
                           String statusText;
                           switch (booking.status) {
                             case BookingStatus.assigned:
                               statusColor = AppColors.warning;
                               statusText = 'Assigned';
+                              break;
+                            case BookingStatus.reassignRequested:
+                              statusColor = AppColors.warning;
+                              statusText = 'Reassign Requested';
                               break;
                             case BookingStatus.reached:
                               statusColor = AppColors.primary;
@@ -1681,18 +1725,38 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
               ),
             ),
           ),
+          // CircleAvatar(
+          //   radius: 16,
+
+          //   child:
+          //       user.profilePhoto.isNotEmpty
+          //           ? Image.network(
+          //             user.profilePhoto,
+          //             fit: BoxFit.cover,
+          //             errorBuilder:
+          //                 (context, error, stackTrace) =>
+          //                     const Icon(Iconsax.user, size: 16),
+          //           )
+          //           : const Icon(Iconsax.user, size: 16),
+          // ),
           CircleAvatar(
             radius: 16,
-            child:
-                user.profilePhoto.isNotEmpty
-                    ? Image.network(
-                      user.profilePhoto,
-                      fit: BoxFit.cover,
-                      errorBuilder:
-                          (context, error, stackTrace) =>
-                              const Icon(Iconsax.user, size: 16),
-                    )
-                    : const Icon(Iconsax.user, size: 16),
+            backgroundColor: AppColors.background,
+
+            child: ClipOval(
+              child:
+                  (user.profilePhoto?.trim().isNotEmpty ?? false)
+                      ? Image.network(
+                        user.profilePhoto!,
+                        width: 32,
+                        height: 32,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) {
+                          return const Icon(Iconsax.user, size: 16);
+                        },
+                      )
+                      : const Icon(Iconsax.user, size: 16),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

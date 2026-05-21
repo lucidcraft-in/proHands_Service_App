@@ -907,6 +907,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             const SizedBox(height: 12),
             Consumer<ServiceBoyProvider>(
               builder: (context, sbProvider, _) {
+                final standardNames =
+                    sbProvider.subcategories.map((s) => s.name).toList();
+                final allDisplayNames = [
+                  ...standardNames,
+                  ..._servicesOffered.where(
+                    (skill) => !standardNames.contains(skill),
+                  ),
+                ];
+
                 return Container(
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
@@ -920,38 +929,31 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           padding: EdgeInsets.all(20),
                           child: Center(child: CircularProgressIndicator()),
                         )
-                      else if (sbProvider.subcategories.isEmpty)
+                      else if (sbProvider.subcategories.isEmpty &&
+                          _servicesOffered.isEmpty)
                         const Padding(
                           padding: EdgeInsets.all(20),
                           child: Text('No services found for this category'),
                         )
                       else
-                        ...sbProvider.subcategories.map((sub) {
-                          final isSelected = _servicesOffered.contains(
-                            sub.name,
-                          );
+                        ...allDisplayNames.map((name) {
+                          final isSelected = _servicesOffered.contains(name);
                           return CheckboxListTile(
-                            title: Text(
-                              sub.name,
-                              style: AppTextStyles.bodyMedium,
-                            ),
+                            title: Text(name, style: AppTextStyles.bodyMedium),
                             value: isSelected,
                             onChanged: (bool? value) {
                               setState(() {
                                 if (value == true) {
-                                  if (!_servicesOffered.contains(sub.name)) {
-                                    _servicesOffered.add(sub.name);
+                                  if (!_servicesOffered.contains(name)) {
+                                    _servicesOffered.add(name);
                                   }
                                 } else {
-                                  _servicesOffered.remove(sub.name);
+                                  _servicesOffered.remove(name);
                                 }
 
                                 // Auto-set service title and subcategory ID from first selected skill
                                 if (_servicesOffered.isNotEmpty) {
                                   final firstSkill = _servicesOffered.first;
-                                  // _serviceNameController.text = firstSkill;
-
-                                  // Find the ID for the first skill
                                   try {
                                     final sub = sbProvider.subcategories
                                         .firstWhere(
@@ -962,7 +964,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     _selectedSubcategoryId = null;
                                   }
                                 } else {
-                                  // _serviceNameController.clear();
                                   _selectedSubcategoryId = null;
                                 }
                               });
@@ -970,6 +971,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             activeColor: AppColors.primary,
                           );
                         }).toList(),
+
                       // Custom skills input
                       Padding(
                         padding: const EdgeInsets.all(12),
@@ -999,21 +1001,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     }
 
                                     // Update title and ID if this is the first skill
-                                    if (_servicesOffered.isNotEmpty) {
-                                      final firstSkill = _servicesOffered.first;
-                                      _serviceNameController.text = firstSkill;
+                                    // if (_servicesOffered.isNotEmpty) {
+                                    //   final firstSkill = _servicesOffered.first;
+                                    //   _serviceNameController.text = firstSkill;
 
-                                      // Find the ID for the first skill
-                                      try {
-                                        final sub = sbProvider.subcategories
-                                            .firstWhere(
-                                              (s) => s.name == firstSkill,
-                                            );
-                                        _selectedSubcategoryId = sub.id;
-                                      } catch (_) {
-                                        _selectedSubcategoryId = null;
-                                      }
-                                    }
+                                    //   // Find the ID for the first skill
+                                    //   try {
+                                    //     final sub = sbProvider.subcategories
+                                    //         .firstWhere(
+                                    //           (s) => s.name == firstSkill,
+                                    //         );
+                                    //     _selectedSubcategoryId = sub.id;
+                                    //   } catch (_) {
+                                    //     _selectedSubcategoryId = null;
+                                    //   }
+                                    // }
                                     _customSkillController.clear();
                                   });
                                 }
@@ -1312,6 +1314,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             width: double.infinity,
                             height: double.infinity,
                             fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Center(
+                                child: Icon(
+                                  Icons.error_outline,
+                                  color: AppColors.error,
+                                  size: 40,
+                                ),
+                              );
+                            },
                           ),
                         )
                         : Column(
