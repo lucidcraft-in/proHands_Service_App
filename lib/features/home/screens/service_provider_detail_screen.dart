@@ -331,22 +331,21 @@ class _ServiceProviderDetailScreenState
                       // const SizedBox(height: 32),
 
                       // Specialties
-                      Text(
-                        'Specialties',
-                        style: AppTextStyles.labelLarge.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children:
-                            provider.specialties
-                                .map((s) => _buildBadge(s))
-                                .toList(),
-                      ),
-
+                      // Text(
+                      //   'Specialties',
+                      //   style: AppTextStyles.labelLarge.copyWith(
+                      //     color: Theme.of(context).colorScheme.onSurface,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 12),
+                      // Wrap(
+                      //   spacing: 8,
+                      //   runSpacing: 8,
+                      //   children:
+                      //       provider.specialties
+                      //           .map((s) => _buildBadge(s))
+                      //           .toList(),
+                      // ),
                       const SizedBox(height: 32),
 
                       // Services Provided by this Professional

@@ -38,7 +38,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // Technician Fields
   late TextEditingController _professionController;
   late TextEditingController _experienceController;
-  late TextEditingController _specialtiesController; // Comma separated
+  // late TextEditingController _specialtiesController; // Comma separated
   late TextEditingController
   _workLocationPreferredController; // Comma separated for now
 
@@ -90,7 +90,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _addressController = TextEditingController();
     _professionController = TextEditingController();
     _experienceController = TextEditingController();
-    _specialtiesController = TextEditingController();
+    // _specialtiesController = TextEditingController();
     _workLocationPreferredController = TextEditingController();
     _bankNameController = TextEditingController();
     _accountNumberController = TextEditingController();
@@ -178,7 +178,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _professionController.text = user.profession;
     _experienceController.text = user.experience;
     _servicesOffered = List<String>.from(user.servicesOffered);
-    _specialtiesController.text = user.specialties.join(', ');
+    // _specialtiesController.text = user.specialties.join(', ');
     _workLocationPreferredController.text =
         ''; // We use _selectedPreferredLocations instead
     _selectedPreferredLocations = [];
@@ -226,7 +226,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _addressController.dispose();
     _professionController.dispose();
     _experienceController.dispose();
-    _specialtiesController.dispose();
+    // _specialtiesController.dispose();
     _workLocationPreferredController.dispose();
     _bankNameController.dispose();
     _accountNumberController.dispose();
@@ -429,14 +429,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isServiceBoy ? _experienceController.text.trim() : null,
               servicesOffered: isServiceBoy ? _servicesOffered : null,
 
-              specialties:
-                  isServiceBoy
-                      ? _specialtiesController.text
-                          .split(',')
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList()
-                      : null,
+              // specialties:
+              //     isServiceBoy
+              //         ? _specialtiesController.text
+              //             .split(',')
+              //             .map((e) => e.trim())
+              //             .where((e) => e.isNotEmpty)
+              //             .toList()
+              //         : null,
               workPreference:
                   isServiceBoy
                       ? (_selectedWorkPreference != null
@@ -1037,34 +1037,34 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 20),
 
           // Additional Skills Section
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Additional Skills', style: AppTextStyles.labelMedium),
-              if (_specialtiesController.text.isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    final skills = _specialtiesController.text.split(',');
-                    setState(() {
-                      for (var skill in skills) {
-                        final trimmed = skill.trim();
-                        if (trimmed.isNotEmpty &&
-                            !_selectedAdditionalSkills.contains(trimmed)) {
-                          _selectedAdditionalSkills.add(trimmed);
-                        }
-                      }
-                    });
-                  },
-                  child: Text(
-                    'Import from Specialties',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     Text('Additional Skills', style: AppTextStyles.labelMedium),
+          //     if (_specialtiesController.text.isNotEmpty)
+          //       GestureDetector(
+          //         onTap: () {
+          //           final skills = _specialtiesController.text.split(',');
+          //           setState(() {
+          //             for (var skill in skills) {
+          //               final trimmed = skill.trim();
+          //               if (trimmed.isNotEmpty &&
+          //                   !_selectedAdditionalSkills.contains(trimmed)) {
+          //                 _selectedAdditionalSkills.add(trimmed);
+          //               }
+          //             }
+          //           });
+          //         },
+          //         child: Text(
+          //           'Import from Specialties',
+          //           style: AppTextStyles.bodySmall.copyWith(
+          //             color: AppColors.primary,
+          //             fontWeight: FontWeight.w600,
+          //           ),
+          //         ),
+          //       ),
+          //   ],
+          // ),
           const SizedBox(height: 12),
           CustomTextField(
             label: 'Add Skills',
@@ -1131,18 +1131,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   }).toList(),
             ),
           ],
-          const SizedBox(height: 20),
-          CustomTextField(
-            label: 'Specialties',
-            hint: 'e.g. Electrical Wiring, AC Repair (comma separated)',
-            controller: _specialtiesController,
-            prefixIcon: const Icon(
-              Iconsax.star,
-              color: AppColors.textTertiary,
-              size: 20,
-            ),
-            maxLines: 2,
-          ),
+          // const SizedBox(height: 20),
+          // CustomTextField(
+          //   label: 'Specialties',
+          //   hint: 'e.g. Electrical Wiring, AC Repair (comma separated)',
+          //   controller: _specialtiesController,
+          //   prefixIcon: const Icon(
+          //     Iconsax.star,
+          //     color: AppColors.textTertiary,
+          //     size: 20,
+          //   ),
+          //   maxLines: 2,
+          // ),
           const SizedBox(height: 20),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

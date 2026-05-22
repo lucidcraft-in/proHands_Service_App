@@ -258,28 +258,27 @@ class _ServiceProductDetailScreenState
                         ),
                       ),
 
-                      if (service.specialties.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Text(
-                          'Specialties',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children:
-                              service.specialties
-                                  .map(
-                                    (s) =>
-                                        _buildSkillChip(s, AppColors.primary),
-                                  )
-                                  .toList(),
-                        ),
-                      ],
-
+                      // if (service.specialties.isNotEmpty) ...[
+                      //   const SizedBox(height: 16),
+                      //   Text(
+                      //     'Specialties',
+                      //     style: AppTextStyles.labelLarge.copyWith(
+                      //       color: Theme.of(context).colorScheme.onSurface,
+                      //     ),
+                      //   ),
+                      //   const SizedBox(height: 8),
+                      //   Wrap(
+                      //     spacing: 8,
+                      //     runSpacing: 8,
+                      //     children:
+                      //         service.specialties
+                      //             .map(
+                      //               (s) =>
+                      //                   _buildSkillChip(s, AppColors.primary),
+                      //             )
+                      //             .toList(),
+                      //   ),
+                      // ],
                       if (service.servicesOffered.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Text(
@@ -436,7 +435,10 @@ class _ServiceProductDetailScreenState
     );
   }
 
-  Widget _buildHeaderCarousel(BuildContext context, ServiceProductModel service) {
+  Widget _buildHeaderCarousel(
+    BuildContext context,
+    ServiceProductModel service,
+  ) {
     final List<String> allImages = [];
     if (service.image.isNotEmpty) {
       allImages.add(service.image);
@@ -466,20 +468,22 @@ class _ServiceProductDetailScreenState
           itemBuilder: (context, index) {
             final imageUrl = uniqueImages[index];
             return GestureDetector(
-              onTap: () => _openImageViewer(
-                context, 
-                imageUrl, 
-                'header_image_$index',
-                galleryImages: uniqueImages,
-                initialIndex: index,
-                heroTagPrefix: 'header_image_',
-              ),
+              onTap:
+                  () => _openImageViewer(
+                    context,
+                    imageUrl,
+                    'header_image_$index',
+                    galleryImages: uniqueImages,
+                    initialIndex: index,
+                    heroTagPrefix: 'header_image_',
+                  ),
               child: Hero(
                 tag: 'header_image_$index',
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
+                  errorBuilder:
+                      (context, error, stackTrace) => _buildPlaceholder(),
                 ),
               ),
             );
@@ -500,9 +504,10 @@ class _ServiceProductDetailScreenState
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    color: _currentImageIndex == index
-                        ? AppColors.primary
-                        : Colors.white.withOpacity(0.5),
+                    color:
+                        _currentImageIndex == index
+                            ? AppColors.primary
+                            : Colors.white.withOpacity(0.5),
                   ),
                 ),
               ),
