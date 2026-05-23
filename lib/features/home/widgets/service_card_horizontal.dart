@@ -4,8 +4,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../models/service_product_model.dart';
 import '../screens/service_product_detail_screen.dart';
-import '../screens/service_provider_detail_screen.dart';
-import '../services/consumer_service.dart';
 
 class ServiceCardHorizontal extends StatelessWidget {
   final ServiceProductModel service;
@@ -16,13 +14,11 @@ class ServiceCardHorizontal extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        fetchAndNavigateToProfile(context, service.providerId);
-
-        // Navigator.of(context).push(
-        //   MaterialPageRoute(
-        //     builder: (context) => ServiceProductDetailScreen(service: service),
-        //   ),
-        // );
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ServiceProductDetailScreen(service: service),
+          ),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -115,44 +111,5 @@ class ServiceCardHorizontal extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-Future<void> fetchAndNavigateToProfile(
-  BuildContext context,
-  String providerId,
-) async {
-  // Show loading indicator
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (context) => const Center(child: CircularProgressIndicator()),
-  );
-
-  try {
-    final consumerService = ConsumerService();
-    final provider = await consumerService.getProviderById(providerId);
-
-    // Hide loading details
-    if (context.mounted) {
-      Navigator.of(context).pop(); // Pop loading dialog
-    }
-
-    // Navigate to detail screen
-    if (context.mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ServiceProviderDetailScreen(provider: provider),
-        ),
-      );
-    }
-  } catch (e) {
-    // Hide loading details
-    if (context.mounted) {
-      Navigator.of(context).pop(); // Pop loading dialog
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(e.toString())));
-    }
   }
 }

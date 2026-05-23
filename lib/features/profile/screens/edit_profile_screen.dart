@@ -335,10 +335,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
+  File? _selectedImage;
+  // Future<void> _updateProfilePhoto() async {
+  //   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (image != null) {
+  //     final provider = context.read<ConsumerProvider>();
+  //     final success = await provider.updateProfilePhoto(File(image.path));
+
+  //     if (mounted) {
+  //       if (success) {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           const SnackBar(
+  //             content: Text('Profile picture updated successfully'),
+  //             backgroundColor: AppColors.success,
+  //           ),
+  //         );
+  //       } else {
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(
+  //             content: Text(
+  //               provider.updatePhotoError ?? 'Failed to update profile picture',
+  //             ),
+  //             backgroundColor: AppColors.error,
+  //           ),
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
+
   Future<void> _updateProfilePhoto() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
+      setState(() {
+        _selectedImage = File(image.path);
+      });
+
       final provider = context.read<ConsumerProvider>();
+
       final success = await provider.updateProfilePhoto(File(image.path));
 
       if (mounted) {
@@ -670,26 +705,49 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           borderRadius: BorderRadius.circular(60),
           child: Stack(
             children: [
+              // CircleAvatar(
+              //   radius: 60,
+              //   backgroundColor: Theme.of(context).colorScheme.surface,
+              //   backgroundImage:
+              //       (user?.profilePhoto != null &&
+              //               user!.profilePhoto.isNotEmpty &&
+              //               !user.profilePhoto.contains('default'))
+              //           ? NetworkImage(user.profilePhoto)
+              //           : null,
+              //   child:
+              //       (user?.profilePhoto == null ||
+              //               user!.profilePhoto.isEmpty ||
+              //               user.profilePhoto.contains('default'))
+              //           ? const Icon(
+              //             Icons.person,
+              //             size: 60,
+              //             color: AppColors.primary,
+              //           )
+              //           : provider.isUpdatingPhoto
+              //           ? const CircularProgressIndicator()
+              //           : null,
+              // ),
               CircleAvatar(
                 radius: 60,
                 backgroundColor: Theme.of(context).colorScheme.surface,
                 backgroundImage:
-                    (user?.profilePhoto != null &&
+                    _selectedImage != null
+                        ? FileImage(_selectedImage!)
+                        : (user?.profilePhoto != null &&
                             user!.profilePhoto.isNotEmpty &&
                             !user.profilePhoto.contains('default'))
                         ? NetworkImage(user.profilePhoto)
                         : null,
                 child:
-                    (user?.profilePhoto == null ||
-                            user!.profilePhoto.isEmpty ||
-                            user.profilePhoto.contains('default'))
+                    _selectedImage == null &&
+                            (user?.profilePhoto == null ||
+                                user!.profilePhoto.isEmpty ||
+                                user.profilePhoto.contains('default'))
                         ? const Icon(
                           Icons.person,
                           size: 60,
                           color: AppColors.primary,
                         )
-                        : provider.isUpdatingPhoto
-                        ? const CircularProgressIndicator()
                         : null,
               ),
               Positioned(

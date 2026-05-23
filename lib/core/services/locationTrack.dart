@@ -358,8 +358,11 @@ class _MapScreenState extends State<MapScreen> {
                     (b) => b.id == widget.booking.id,
                     orElse: () => widget.booking,
                   );
+                  print(currentBooking.status);
                   final bool isReached =
                       currentBooking.status == BookingStatus.reached;
+                  final bool isClosed =
+                      currentBooking.status == BookingStatus.closed;
 
                   return Container(
                     decoration: const BoxDecoration(
@@ -428,10 +431,8 @@ class _MapScreenState extends State<MapScreen> {
                                       ),
                                       child: Text(
                                         currentBooking.bookingId,
-                                        style:
-                                            AppTextStyles.labelSmall.copyWith(
-                                              color: AppColors.primary,
-                                            ),
+                                        style: AppTextStyles.labelSmall
+                                            .copyWith(color: AppColors.primary),
                                       ),
                                     ),
                                   ],
@@ -506,21 +507,40 @@ class _MapScreenState extends State<MapScreen> {
                                             ? "ARRIVED"
                                             : isTrackingStarted
                                             ? "MARK AS ARRIVED"
+                                            : isClosed
+                                            ? "TRIP ENDED"
                                             : "START TRIP",
                                     isLoading: provider.isReaching,
                                     onPressed:
                                         isReached
                                             ? null
+                                            : isClosed
+                                            ? null
                                             : isTrackingStarted
                                             ? _markAsArrived
                                             : _startRide,
                                     backgroundColor:
-                                        isReached
+                                        isClosed
+                                            ? const Color.fromARGB(
+                                              129,
+                                              29,
+                                              28,
+                                              28,
+                                            )
+                                            : isReached
                                             ? AppColors.primary
                                             : isTrackingStarted
                                             ? AppColors.error
                                             : AppColors.primary,
-                                    textColor: Colors.white,
+                                    textColor:
+                                        isClosed
+                                            ? const Color.fromARGB(
+                                              255,
+                                              173,
+                                              171,
+                                              171,
+                                            )
+                                            : Colors.white,
                                     height: 56,
                                     borderRadius: 16,
                                     fontSize: 16,

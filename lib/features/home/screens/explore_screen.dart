@@ -12,7 +12,6 @@ import '../providers/consumer_provider.dart';
 import '../models/service_product_model.dart';
 import '../services/consumer_service.dart';
 import 'service_product_detail_screen.dart';
-import 'service_provider_detail_screen.dart';
 
 class ExploreScreen extends StatefulWidget {
   const ExploreScreen({super.key});
@@ -680,40 +679,8 @@ class _ExploreScreenState extends State<ExploreScreen>
     );
   }
 
-  navigateToProviderDetail(UserModel userData) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final consumerService = ConsumerService();
-      final provider = await consumerService.getProviderById(userData.id);
-
-      // Hide loading details
-      if (context.mounted) {
-        Navigator.of(context).pop(); // Pop loading dialog
-      }
-
-      // Navigate to detail screen
-      if (context.mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (context) => ServiceProviderDetailScreen(provider: provider),
-          ),
-        );
-      }
-    } catch (e) {
-      // Hide loading details
-      if (context.mounted) {
-        Navigator.of(context).pop(); // Pop loading dialog
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
-    }
+  void navigateToProviderDetail(UserModel userData) {
+    ServiceProductDetailScreen.navigateWithProviderId(context, userData.id);
   }
 
   Widget _buildExpandableLeaderboard(ConsumerProvider provider) {

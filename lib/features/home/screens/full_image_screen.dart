@@ -3,7 +3,7 @@ import '../../../core/models/user_model.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../services/consumer_service.dart';
-import 'service_provider_detail_screen.dart';
+import 'service_product_detail_screen.dart';
 
 import '../models/feed_model.dart';
 
@@ -195,39 +195,6 @@ class _FullImageScreenState extends State<FullImageScreen> {
     BuildContext context,
     String providerId,
   ) async {
-    // Show loading indicator
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    try {
-      final consumerService = ConsumerService();
-      final provider = await consumerService.getProviderById(providerId);
-
-      // Hide loading details
-      if (context.mounted) {
-        Navigator.of(context).pop(); // Pop loading dialog
-      }
-
-      // Navigate to detail screen
-      if (context.mounted) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (context) => ServiceProviderDetailScreen(provider: provider),
-          ),
-        );
-      }
-    } catch (e) {
-      // Hide loading details
-      if (context.mounted) {
-        Navigator.of(context).pop(); // Pop loading dialog
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
-    }
+    await ServiceProductDetailScreen.navigateWithProviderId(context, providerId);
   }
 }

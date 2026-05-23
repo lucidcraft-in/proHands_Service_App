@@ -702,6 +702,28 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LocationSearchScreen(),
+            ),
+          );
+        },
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+        label: const Text(
+          'Explore Nearby',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.5,
+            fontFamily: 'Inter',
+          ),
+        ),
+        icon: const Icon(Iconsax.location, size: 20),
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+      ),
     );
   }
 }

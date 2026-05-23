@@ -4,7 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/models/user_model.dart';
 import '../../../core/services/dummy_data_service.dart';
-import 'service_provider_detail_screen.dart';
+import 'service_product_detail_screen.dart';
 
 class ServiceProviderListScreen extends StatelessWidget {
   final String category;
@@ -64,7 +64,7 @@ class ServiceProviderListScreen extends StatelessWidget {
           Expanded(
             child:
                 providers.isEmpty
-                    ? _buildEmptyState()
+                     ? _buildEmptyState()
                     : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: providers.length,
@@ -234,13 +234,7 @@ class ServiceProviderListScreen extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) => ServiceProviderDetailScreen(provider: provider),
-            ),
-          );
+          ServiceProductDetailScreen.navigateWithProviderId(context, provider.id);
         },
         child: Column(
           children: [
