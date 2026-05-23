@@ -1,3 +1,5 @@
+import '../../home/models/service_product_model.dart';
+
 class ServiceModel {
   final String id;
   final String name;
@@ -21,6 +23,7 @@ class ServiceModel {
   final String subcategoryName;
   final bool isCommissionPending;
   final List<String> additionalSkills;
+  final List<SubcategoryModel> subcategories;
 
   ServiceModel({
     required this.id,
@@ -45,9 +48,11 @@ class ServiceModel {
     this.subcategoryName = '',
     this.isCommissionPending = false,
     this.additionalSkills = const [],
+    this.subcategories = const [],
   });
 
   factory ServiceModel.fromJson(Map<String, dynamic> json) {
+    print(json['subcategories']);
     String catId = '';
     String catName = '';
     String catIcon = '';
@@ -108,6 +113,12 @@ class ServiceModel {
       additionalSkills:
           json['additionalSkills'] != null
               ? List<String>.from(json['additionalSkills'])
+              : [],
+      subcategories:
+          json['subcategories'] is List
+              ? (json['subcategories'] as List)
+                  .map((e) => SubcategoryModel.fromJson(e))
+                  .toList()
               : [],
     );
   }

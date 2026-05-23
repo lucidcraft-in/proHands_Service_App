@@ -19,6 +19,7 @@ class ServiceProductModel {
   final List<String> servicesOffered;
   final List<String> additionalSkills;
   final bool isCommissionPending;
+  final List<SubcategoryModel> subcategories;
 
   ServiceProductModel({
     required this.id,
@@ -41,6 +42,7 @@ class ServiceProductModel {
     this.servicesOffered = const [],
     this.additionalSkills = const [],
     this.isCommissionPending = false,
+    this.subcategories = const [],
   });
 
   factory ServiceProductModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,7 @@ class ServiceProductModel {
     List<String> specialties = [];
     List<String> servicesOffered = [];
     List<String> additionalSkills = [];
+    List<SubcategoryModel> subcategories = [];
 
     // Parse provider info
     if (json['providerId'] != null) {
@@ -149,6 +152,30 @@ class ServiceProductModel {
       servicesOffered: servicesOffered,
       additionalSkills: additionalSkills,
       isCommissionPending: json['isCommissionPending'] ?? false,
+      subcategories:
+          json['subcategories'] is List
+              ? (json['subcategories'] as List)
+                  .map((e) => SubcategoryModel.fromJson(e))
+                  .toList()
+              : [],
     );
+  }
+}
+
+class SubcategoryModel {
+  final String id;
+  final String name;
+
+  SubcategoryModel({this.id = '', required this.name});
+
+  factory SubcategoryModel.fromJson(Map<String, dynamic> json) {
+    return SubcategoryModel(
+      id: json['id']?.toString() ?? '',
+      name: json['name']?.toString() ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name};
   }
 }

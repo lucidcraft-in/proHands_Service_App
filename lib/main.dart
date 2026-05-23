@@ -14,6 +14,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'core/services/push_notification_service.dart';
 import 'dart:developer' as developer;
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -59,6 +60,7 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return MaterialApp(
             title: 'PRO HNADS',
+            navigatorKey: navigatorKey,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,

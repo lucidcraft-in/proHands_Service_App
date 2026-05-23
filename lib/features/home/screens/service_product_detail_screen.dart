@@ -364,19 +364,41 @@ class _ServiceProductDetailScreenState
                       //             .toList(),
                       //   ),
                       // ],
-                      if (service.subcategoryName.isNotEmpty ||
-                          service.categoryName.isNotEmpty)
+                      // if (service.subcategoryName.isNotEmpty ||
+                      //     service.categoryName.isNotEmpty)
+                      //   Text(
+                      //     service.subcategoryName.isNotEmpty
+                      //         ? service.subcategoryName
+                      //         : service.categoryName,
+                      //     style: AppTextStyles.bodyMedium.copyWith(
+                      //       color: Theme.of(
+                      //         context,
+                      //       ).colorScheme.onSurface.withOpacity(0.6),
+                      //     ),
+                      //   ),
+                      if (service.subcategories.isNotEmpty) ...[
+                        const SizedBox(height: 16),
                         Text(
-                          service.subcategoryName.isNotEmpty
-                              ? service.subcategoryName
-                              : service.categoryName,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.6),
+                          'Services Offered',
+                          style: AppTextStyles.labelLarge.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
-
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children:
+                              service.subcategories
+                                  .map(
+                                    (sub) => _buildSkillChip(
+                                      sub.name,
+                                      AppColors.primary,
+                                    ),
+                                  )
+                                  .toList(),
+                        ),
+                      ],
                       if (service.servicesOffered.isNotEmpty) ...[
                         const SizedBox(height: 16),
                         Text(
@@ -532,26 +554,26 @@ class _ServiceProductDetailScreenState
                         // ],
 
                         // Services Offered
-                        if (_providerDetails!.servicesOffered.isNotEmpty) ...[
-                          Text(
-                            'Services Offered',
-                            style: AppTextStyles.labelLarge.copyWith(
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children:
-                                _providerDetails!.servicesOffered
-                                    .map(
-                                      (s) => _buildChip(s, AppColors.primary),
-                                    )
-                                    .toList(),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
+                        // if (_providerDetails!.servicesOffered.isNotEmpty) ...[
+                        //   Text(
+                        //     'Services Offered',
+                        //     style: AppTextStyles.labelLarge.copyWith(
+                        //       color: Theme.of(context).colorScheme.onSurface,
+                        //     ),
+                        //   ),
+                        //   const SizedBox(height: 12),
+                        //   Wrap(
+                        //     spacing: 8,
+                        //     runSpacing: 8,
+                        //     children:
+                        //         _providerDetails!.servicesOffered
+                        //             .map(
+                        //               (s) => _buildChip(s, AppColors.primary),
+                        //             )
+                        //             .toList(),
+                        //   ),
+                        //   const SizedBox(height: 24),
+                        // ],
 
                         // Work Preference
                         if (_providerDetails!.workPreference.isNotEmpty) ...[

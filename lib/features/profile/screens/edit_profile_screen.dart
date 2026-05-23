@@ -118,6 +118,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Future<void> _fetchServiceInfo() async {
     setState(() => _isLoadingService = true);
+
     try {
       final serviceProvider = context.read<ServiceBoyProvider>();
       await serviceProvider.fetchCategories();
@@ -125,11 +126,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
       if (serviceProvider.myServices.isNotEmpty && mounted) {
         final service = serviceProvider.myServices.first;
+
         _existingServiceId = service.id;
         _serviceNameController.text = service.name;
         _serviceDescriptionController.text = service.description;
         _selectedCategoryId = service.categoryId;
         _selectedSubcategoryId = service.subcategoryId;
+
+        _servicesOffered = service.subcategories.map((e) => e.name).toList();
         _selectedAdditionalSkills = List<String>.from(service.additionalSkills);
         _isTrending = service.isTrending;
 
@@ -462,7 +466,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   isServiceBoy ? _professionController.text.trim() : null,
               experience:
                   isServiceBoy ? _experienceController.text.trim() : null,
-              servicesOffered: isServiceBoy ? _servicesOffered : null,
+              // servicesOffered: isServiceBoy ? _servicesOffered : null,
 
               // specialties:
               //     isServiceBoy
@@ -510,6 +514,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           if (_serviceImage != null) {
             imageUrl = await serviceProvider.uploadServiceImage(_serviceImage!);
           }
+
+          print(
+            'service offered: ${_servicesOffered.map((e) {
+              try {
+                final sub = serviceProvider.subcategories.firstWhere((s) => s.name == e);
+
+                return {'id': sub.id, 'name': sub.name};
+              } catch (_) {
+                return {'id': '', 'name': e};
+              }
+            }).toList()}',
+          );
           final serviceData = {
             'name': _serviceNameController.text.trim(),
             'description': _serviceDescriptionController.text.trim(),
@@ -517,6 +533,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'subcategoryId':
                 _selectedSubcategoryId ??
                 '', // Use existing or empty if none selected
+            'subcategories':
+                _servicesOffered.map((skill) {
+                  try {
+                    final sub = serviceProvider.subcategories.firstWhere(
+                      (s) => s.name == skill,
+                    );
+
+                    return {'id': sub.id, 'name': sub.name};
+                  } catch (_) {
+                    return {'id': '', 'name': skill};
+                  }
+                }).toList(),
             'additionalSkills': _selectedAdditionalSkills,
             'isTrending': _isTrending,
             if (imageUrl != null) 'serviceImage': imageUrl,
@@ -1012,14 +1040,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 // Auto-set service title and subcategory ID from first selected skill
                                 if (_servicesOffered.isNotEmpty) {
                                   final firstSkill = _servicesOffered.first;
+                                  // try {
+                                  //   final sub = sbProvider.subcategories
+                                  //       .firstWhere(
+                                  //         (s) => s.name == firstSkill,
+                                  //       );
+                                  //   _selectedSubcategoryId = sub.id;
+                                  // } catch (_) {
+                                  //   _selectedSubcategoryId = null;
+                                  // }
                                   try {
                                     final sub = sbProvider.subcategories
                                         .firstWhere(
                                           (s) => s.name == firstSkill,
                                         );
+
                                     _selectedSubcategoryId = sub.id;
                                   } catch (_) {
-                                    _selectedSubcategoryId = null;
+                                    // Custom service
+                                    _selectedSubcategoryId = '';
                                   }
                                 } else {
                                   _selectedSubcategoryId = null;
