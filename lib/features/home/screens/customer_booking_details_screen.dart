@@ -133,11 +133,12 @@ class _CustomerBookingDetailsScreenState
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => CompanyAccountDetailsScreen(
-                    bookingId: _currentBooking.id,
-                    displayBookingId: _currentBooking.bookingId,
-                    customerName: _currentBooking.customerName,
-                  ),
+                  builder:
+                      (context) => CompanyAccountDetailsScreen(
+                        bookingId: _currentBooking.id,
+                        displayBookingId: _currentBooking.bookingId,
+                        customerName: _currentBooking.customerName,
+                      ),
                 ),
               );
             },
@@ -1160,8 +1161,8 @@ class _CustomerBookingDetailsScreenState
           ),
           const SizedBox(height: 12),
           _buildReassignOption(
-            title: 'Choose Another Service',
-            subtitle: 'Pick a different service that fits your needs.',
+            title: 'Choose Another Technician',
+            subtitle: 'Pick a different technician that fits your needs.',
             icon: Iconsax.search_status,
             onTap: () => _showServicePicker(),
           ),

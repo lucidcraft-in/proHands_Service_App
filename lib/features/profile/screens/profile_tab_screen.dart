@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import 'package:service_app/helper.dar/imageCroper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/providers/theme_provider.dart';
@@ -83,7 +84,10 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           if (provider.isLoadingProfile) {
             return const _ProfileShimmer();
           }
+          final bool isPending = user.pendingProfilePhoto?.isNotEmpty == true;
 
+          final String? currentImage = user.profilePhoto;
+          final String? pendingImage = user.pendingProfilePhoto;
           return SingleChildScrollView(
             child: Column(
               children: [
@@ -93,27 +97,159 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   padding: const EdgeInsets.all(20),
                   child: Column(
                     children: [
+                      // Stack(
+                      //   children: [
+                      //     CircleAvatar(
+                      //       radius: 50,
+                      //       backgroundColor:
+                      //           Theme.of(context).scaffoldBackgroundColor,
+                      //       backgroundImage:
+                      //           (user.profilePhoto.isNotEmpty &&
+                      //                   !user.profilePhoto.contains('default'))
+                      //               ? NetworkImage(user.profilePhoto)
+                      //               : null,
+                      //       child:
+                      //           (user.profilePhoto.isEmpty ||
+                      //                   user.profilePhoto.contains('default'))
+                      //               ? Icon(
+                      //                 Icons.person,
+                      //                 size: 50,
+                      //                 color: AppColors.primary,
+                      //               )
+                      //               : null,
+                      //     ),
+                      //     Positioned(
+                      //       bottom: 0,
+                      //       right: 0,
+                      //       child: GestureDetector(
+                      //         onTap: () {
+                      //           Navigator.of(context).push(
+                      //             MaterialPageRoute(
+                      //               builder:
+                      //                   (context) => const EditProfileScreen(),
+                      //             ),
+                      //           );
+                      //         },
+                      //         child: Container(
+                      //           padding: const EdgeInsets.all(6),
+                      //           decoration: BoxDecoration(
+                      //             color: AppColors.primary,
+                      //             shape: BoxShape.circle,
+                      //             border: Border.all(
+                      //               color:
+                      //                   Theme.of(context).colorScheme.surface,
+                      //               width: 2,
+                      //             ),
+                      //           ),
+                      //           child: Icon(
+                      //             Icons.edit,
+                      //             size: 16,
+                      //             color: Theme.of(context).colorScheme.surface,
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                       Stack(
+                        clipBehavior: Clip.none,
+                        alignment: Alignment.center,
                         children: [
-                          CircleAvatar(
-                            radius: 50,
-                            backgroundColor:
-                                Theme.of(context).scaffoldBackgroundColor,
-                            backgroundImage:
-                                (user.profilePhoto.isNotEmpty &&
-                                        !user.profilePhoto.contains('default'))
-                                    ? NetworkImage(user.profilePhoto)
-                                    : null,
-                            child:
-                                (user.profilePhoto.isEmpty ||
-                                        user.profilePhoto.contains('default'))
-                                    ? Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: AppColors.primary,
-                                    )
-                                    : null,
+                          GestureDetector(
+                            onLongPress: () {
+                              final imageUrl =
+                                  isPending ? pendingImage : currentImage;
+
+                              if (imageUrl != null &&
+                                  imageUrl.isNotEmpty &&
+                                  !imageUrl.contains('default')) {
+                                showFullScreenImage(imageUrl, context);
+                              }
+                            },
+                            child: CircleAvatar(
+                              radius: 50,
+                              backgroundColor:
+                                  Theme.of(context).scaffoldBackgroundColor,
+                              backgroundImage:
+                                  (isPending &&
+                                          pendingImage != null &&
+                                          pendingImage.isNotEmpty)
+                                      ? NetworkImage(pendingImage)
+                                      : (currentImage!.isNotEmpty &&
+                                          !currentImage.contains('default'))
+                                      ? NetworkImage(currentImage)
+                                      : null,
+                              child:
+                                  ((currentImage!.isEmpty ||
+                                              currentImage.contains(
+                                                'default',
+                                              )) &&
+                                          !isPending)
+                                      ? const Icon(
+                                        Icons.person,
+                                        size: 50,
+                                        color: AppColors.primary,
+                                      )
+                                      : null,
+                            ),
                           ),
+
+                          // Approved image preview
+                          if (isPending &&
+                              currentImage!.isNotEmpty &&
+                              !currentImage.contains('default'))
+                            Positioned(
+                              top: -5,
+                              right: -5,
+                              child: GestureDetector(
+                                onLongPress: () {
+                                  showFullScreenImage(currentImage, context);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.green,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 16,
+                                    backgroundImage: NetworkImage(
+                                      currentImage!,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          // Review badge
+                          if (isPending)
+                            Positioned(
+                              bottom: -22,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.orange,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Profile image is Under Review',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          // Edit button
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -121,8 +257,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                               onTap: () {
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder:
-                                        (context) => const EditProfileScreen(),
+                                    builder: (_) => const EditProfileScreen(),
                                   ),
                                 );
                               },
@@ -147,7 +282,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      SizedBox(height: isPending ? 30 : 16),
                       Text(user.name ?? 'Guest User', style: AppTextStyles.h3),
                       Text(user.phone, style: AppTextStyles.bodyMedium),
                       Text(

@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:service_app/helper.dar/imageCroper.dart';
+import 'package:service_app/helper.dar/saveimagePer.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/custom_text_field.dart';
@@ -156,8 +158,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           );
           if (match != null) {
             setState(() {
-              _selectedCategoryId = match.id;
-              _professionController.text = match.name;
+              // _selectedCategoryId = match.id;
+              // _professionController.text = match.name;
             });
             await serviceProvider.fetchSubcategories(match.id);
           }
@@ -305,19 +307,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     });
   }
 
+  // Future<void> _pickImage(String type) async {
+  //   final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+  //   if (image != null) {
+  //     setState(() {
+  //       switch (type) {
+  //         case 'adhar':
+  //           _adharCard = File(image.path);
+  //           break;
+  //         case 'license':
+  //           _license = File(image.path);
+  //           break;
+  //         case 'service':
+  //           _serviceImage = File(image.path);
+  //           break;
+  //       }
+  //     });
+  //   }
+  // }
+
   Future<void> _pickImage(String type) async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+
     if (image != null) {
+      final savedFile = await saveImagePermanently(image);
+
       setState(() {
         switch (type) {
           case 'adhar':
-            _adharCard = File(image.path);
+            _adharCard = savedFile;
             break;
           case 'license':
-            _license = File(image.path);
+            _license = savedFile;
             break;
           case 'service':
-            _serviceImage = File(image.path);
+            _serviceImage = savedFile;
             break;
         }
       });
@@ -402,7 +426,37 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     }
   }
 
+  String getSubcategoryId(ServiceBoyProvider serviceProvider) {
+    if (_servicesOffered.isEmpty) return '';
+
+    final firstSkill = _servicesOffered.first;
+
+    try {
+      final sub = serviceProvider.subcategories.firstWhere(
+        (s) => s.name == firstSkill,
+      );
+
+      if (sub.id != null && sub.id.toString().isNotEmpty) {
+        return sub.id;
+      }
+      print("===========");
+      print(firstSkill);
+      return firstSkill;
+    } catch (_) {
+      print("===========");
+      print(firstSkill);
+      return firstSkill;
+    }
+  }
+
   Future<void> _handleSave() async {
+    print("Adhar: ${_adharCard?.path}");
+    print("License: ${_license?.path}");
+    print("Service: ${_serviceImage?.path}");
+
+    print("Adhar Exists: ${_adharCard?.existsSync()}");
+    print("License Exists: ${_license?.existsSync()}");
+    print("Service Exists: ${_serviceImage?.existsSync()}");
     final consumerProvider = context.read<ConsumerProvider>();
     final serviceProvider = context.read<ServiceBoyProvider>();
     final user = consumerProvider.currentUser;
@@ -423,7 +477,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           (user?.license != null && user!.license!.isNotEmpty) ||
           _license != null;
 
-      if (!hasAdhar || !hasLicense) {
+      if (!hasAdhar) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -530,9 +584,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             'name': _serviceNameController.text.trim(),
             'description': _serviceDescriptionController.text.trim(),
             'categoryId': _selectedCategoryId,
-            'subcategoryId':
-                _selectedSubcategoryId ??
-                '', // Use existing or empty if none selected
+            // 'subcategoryId':
+            //     _selectedSubcategoryId ??
+            //     '', // Use existing or empty if none selected
+            'subcategoryId': _selectedSubcategoryId,
             'subcategories':
                 _servicesOffered.map((skill) {
                   try {
@@ -725,59 +780,113 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   Widget _buildProfileFields(UserModel? user, ConsumerProvider provider) {
     final isServiceBoy = user?.userType == UserType.serviceBoy;
+    final bool isPending = user?.pendingProfilePhoto?.isNotEmpty == true;
+
+    final String? currentImage = user?.profilePhoto;
+    final String? pendingImage = user?.pendingProfilePhoto;
+    print('currentImage : $currentImage');
+    print('pendingImage : $pendingImage');
     return Column(
       children: [
         // Avatar
         InkWell(
           onTap: provider.isUpdatingPhoto ? null : _updateProfilePhoto,
           borderRadius: BorderRadius.circular(60),
+
           child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
             children: [
-              // CircleAvatar(
-              //   radius: 60,
-              //   backgroundColor: Theme.of(context).colorScheme.surface,
-              //   backgroundImage:
-              //       (user?.profilePhoto != null &&
-              //               user!.profilePhoto.isNotEmpty &&
-              //               !user.profilePhoto.contains('default'))
-              //           ? NetworkImage(user.profilePhoto)
-              //           : null,
-              //   child:
-              //       (user?.profilePhoto == null ||
-              //               user!.profilePhoto.isEmpty ||
-              //               user.profilePhoto.contains('default'))
-              //           ? const Icon(
-              //             Icons.person,
-              //             size: 60,
-              //             color: AppColors.primary,
-              //           )
-              //           : provider.isUpdatingPhoto
-              //           ? const CircularProgressIndicator()
-              //           : null,
-              // ),
-              CircleAvatar(
-                radius: 60,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                backgroundImage:
-                    _selectedImage != null
-                        ? FileImage(_selectedImage!)
-                        : (user?.profilePhoto != null &&
-                            user!.profilePhoto.isNotEmpty &&
-                            !user.profilePhoto.contains('default'))
-                        ? NetworkImage(user.profilePhoto)
-                        : null,
-                child:
-                    _selectedImage == null &&
-                            (user?.profilePhoto == null ||
-                                user!.profilePhoto.isEmpty ||
-                                user.profilePhoto.contains('default'))
-                        ? const Icon(
-                          Icons.person,
-                          size: 60,
-                          color: AppColors.primary,
-                        )
-                        : null,
+              GestureDetector(
+                onLongPress: () {
+                  if (_selectedImage == null) {
+                    final imageUrl = isPending ? pendingImage : currentImage;
+
+                    if (imageUrl != null && imageUrl.isNotEmpty) {
+                      showFullScreenImage(imageUrl, context);
+                    }
+                  }
+                },
+                child: CircleAvatar(
+                  radius: 60,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  backgroundImage:
+                      _selectedImage != null
+                          ? FileImage(_selectedImage!)
+                          : (isPending &&
+                              pendingImage != null &&
+                              pendingImage.isNotEmpty)
+                          ? NetworkImage(pendingImage)
+                          : (currentImage != null && currentImage.isNotEmpty)
+                          ? NetworkImage(currentImage)
+                          : null,
+                  child:
+                      _selectedImage == null &&
+                              currentImage == null &&
+                              pendingImage == null
+                          ? const Icon(
+                            Icons.person,
+                            size: 60,
+                            color: AppColors.primary,
+                          )
+                          : null,
+                ),
               ),
+
+              // Approved image preview
+              if (isPending && currentImage != null && currentImage.isNotEmpty)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: GestureDetector(
+                    onLongPress: () {
+                      if (currentImage != "assets/images/default_avatar.png") {
+                        showFullScreenImage(currentImage!, context);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.green, width: 2),
+                      ),
+                      child: CircleAvatar(
+                        radius: 20,
+                        backgroundImage:
+                            currentImage == "assets/images/default_avatar.png"
+                                ? AssetImage(currentImage)
+                                : NetworkImage(currentImage),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Pending badge
+              if (isPending)
+                Positioned(
+                  bottom: -30,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Profile picture under review',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Camera button
               Positioned(
                 bottom: 0,
                 right: 0,
@@ -895,18 +1004,30 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   );
                 },
                 onChanged: (ServiceCategoryModel? selected) {
-                  setState(() {
+                  setState(()
+                  // async
+                  {
                     _selectedCategoryId = selected?.id;
                     if (selected != null) {
                       _professionController.text = selected.name;
                       _serviceNameController.text = selected.name;
+                      // await
                       sbProvider.fetchSubcategories(selected.id);
+
+                      if (sbProvider.subcategories.isNotEmpty) {
+                        setState(() {
+                          _selectedSubcategoryId =
+                              sbProvider.subcategories.first.id;
+                        });
+                      }
+
+                      print("===============");
+                      print(_selectedSubcategoryId);
                     } else {
                       _professionController.clear();
                       sbProvider.clearSubcategories();
                     }
                     _selectedAdditionalSkills = [];
-                    _selectedSubcategoryId = null;
                   });
                 },
                 validator:
@@ -918,7 +1039,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           // Service Title
           CustomTextField(
             label: 'Service Title',
-            hint: 'e.g. Expert AC Repair',
+            hint: 'Enter your Service Title',
             controller: _serviceNameController,
             // readOnly: true,
             prefixIcon: const Icon(

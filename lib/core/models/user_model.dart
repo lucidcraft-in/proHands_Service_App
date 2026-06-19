@@ -77,6 +77,7 @@ class UserModel {
   final List<String> additionalDocuments;
   final String? updatedBy;
   final BankDetails? bankDetails;
+  final String? pendingProfilePhoto;
 
   const UserModel({
     required this.id,
@@ -119,6 +120,7 @@ class UserModel {
     this.additionalDocuments = const [],
     this.updatedBy,
     this.bankDetails,
+    this.pendingProfilePhoto,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -211,6 +213,7 @@ class UserModel {
           json['bankDetails'] != null
               ? BankDetails.fromJson(json['bankDetails'])
               : null,
+      pendingProfilePhoto: json['pendingProfilePhoto'],
     );
   }
 
@@ -255,6 +258,7 @@ class UserModel {
       'additionalDocuments': additionalDocuments,
       'updatedBy': updatedBy,
       'bankDetails': bankDetails?.toJson(),
+      'pendingProfilePhoto': pendingProfilePhoto,
     };
   }
 
@@ -326,6 +330,7 @@ class UserModel {
     List<String>? additionalDocuments,
     String? updatedBy,
     BankDetails? bankDetails,
+    String? pendingProfilePhoto,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -370,6 +375,7 @@ class UserModel {
       additionalDocuments: additionalDocuments ?? this.additionalDocuments,
       updatedBy: updatedBy ?? this.updatedBy,
       bankDetails: bankDetails ?? this.bankDetails,
+      pendingProfilePhoto: pendingProfilePhoto ?? this.pendingProfilePhoto,
     );
   }
 }

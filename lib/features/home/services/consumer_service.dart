@@ -762,6 +762,7 @@ class ConsumerService {
       final response = await http
           .get(url, headers: headers)
           .timeout(const Duration(seconds: 20));
+      print(headers);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {

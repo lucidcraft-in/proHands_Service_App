@@ -100,6 +100,8 @@ class ServiceBoyProvider extends ChangeNotifier {
 
     try {
       _subcategories = await _service.getSubcategories(categoryId);
+      print("subcategories---------------");
+      print(_subcategories);
     } catch (e) {
       _subcategoriesError = e.toString().replaceAll('Exception: ', '');
     } finally {

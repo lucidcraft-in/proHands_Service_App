@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
@@ -437,73 +438,395 @@ class _ServiceProductDetailScreenState
                           height: 1.5,
                         ),
                       ),
-
-                      const SizedBox(height: 24),
-
-                      // Gallery
                       if (service.gallery.isNotEmpty) ...[
                         Text(
-                          'Service Gallery',
-                          style: AppTextStyles.labelLarge.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
+                          'SERVICE GALLERY',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                            letterSpacing: 1.2,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
+
                         SizedBox(
-                          height: 100,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: service.gallery.length,
-                            itemBuilder: (context, index) {
-                              final imageUrl = service.gallery[index];
-                              final heroTag = 'gallery_image_$index';
-                              return Padding(
-                                padding: const EdgeInsets.only(right: 12),
-                                child: GestureDetector(
+                          height: 240,
+                          child: Row(
+                            children: [
+                              // Featured large tile
+                              Expanded(
+                                flex: 2,
+                                child: _GalleryTile(
+                                  imageUrl: service.gallery[0],
+                                  heroTag: 'gallery_image_0',
+                                  borderRadius: 14,
                                   onTap:
                                       () => _openImageViewer(
                                         context,
-                                        imageUrl,
-                                        heroTag,
+                                        service.gallery[0],
+                                        'gallery_image_0',
                                         galleryImages: service.gallery,
-                                        initialIndex: index,
+                                        initialIndex: 0,
                                       ),
-                                  child: Hero(
-                                    tag: heroTag,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: Image.network(
-                                        imageUrl,
-                                        width: 140,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) =>
-                                                Container(
-                                                  width: 140,
-                                                  color: AppColors.surface,
-                                                  child: const Icon(
-                                                    Icons.broken_image,
-                                                  ),
-                                                ),
+                                  badge: 'Featured',
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+
+                              // Right 2×2 grid
+                              Expanded(
+                                flex: 1,
+                                child: Column(
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          if (service.gallery.length > 1)
+                                            Expanded(
+                                              child: _GalleryTile(
+                                                imageUrl: service.gallery[1],
+                                                heroTag: 'gallery_image_1',
+                                                borderRadius: 14,
+                                                onTap:
+                                                    () => _openImageViewer(
+                                                      context,
+                                                      service.gallery[1],
+                                                      'gallery_image_1',
+                                                      galleryImages:
+                                                          service.gallery,
+                                                      initialIndex: 1,
+                                                    ),
+                                              ),
+                                            ),
+                                        ],
                                       ),
                                     ),
-                                  ),
+                                    const SizedBox(height: 8),
+                                    Expanded(
+                                      child: Row(
+                                        children: [
+                                          if (service.gallery.length > 2)
+                                            Expanded(
+                                              child: _GalleryTile(
+                                                imageUrl: service.gallery[2],
+                                                heroTag: 'gallery_image_2',
+                                                borderRadius: 14,
+                                                onTap:
+                                                    () => _openImageViewer(
+                                                      context,
+                                                      service.gallery[2],
+                                                      'gallery_image_2',
+                                                      galleryImages:
+                                                          service.gallery,
+                                                      initialIndex: 2,
+                                                    ),
+                                              ),
+                                            ),
+                                          if (service.gallery.length > 3) ...[
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: _MoreTile(
+                                                imageUrl: service.gallery[3],
+                                                remainingCount:
+                                                    service.gallery.length - 3,
+                                                borderRadius: 14,
+                                                onTap:
+                                                    () => _openImageViewer(
+                                                      context,
+                                                      service.gallery[3],
+                                                      'gallery_image_3',
+                                                      galleryImages:
+                                                          service.gallery,
+                                                      initialIndex: 3,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
                         ),
+                        const SizedBox(height: 24),
                       ],
+                      // const SizedBox(height: 24),
+                      // if (service.gallery.isNotEmpty) ...[
+                      //   Text(
+                      //     'Service Gallery',
+                      //     style: AppTextStyles.labelLarge.copyWith(
+                      //       color: Theme.of(context).colorScheme.onSurface,
+                      //     ),
+                      //   ),
+                      //   const SizedBox(height: 12),
 
+                      //   SizedBox(
+                      //     height: 100,
+                      //     child: Row(
+                      //       children: List.generate(
+                      //         service.gallery.length > 3
+                      //             ? 4
+                      //             : service.gallery.length,
+                      //         (index) {
+                      //           // Show +N card
+                      //           if (index == 3) {
+                      //             final remainingCount =
+                      //                 service.gallery.length - 3;
+
+                      //             return Expanded(
+                      //               child: GestureDetector(
+                      //                 onTap: () {
+                      //                   final heroTag = 'gallery_image_$index';
+                      //                   _openImageViewer(
+                      //                     context,
+                      //                     service.gallery[3],
+                      //                     heroTag,
+                      //                     galleryImages: service.gallery,
+                      //                     initialIndex: index,
+                      //                   );
+                      //                 },
+                      //                 child: Container(
+                      //                   child: ClipRRect(
+                      //                     borderRadius: BorderRadius.circular(
+                      //                       12,
+                      //                     ),
+                      //                     child: Stack(
+                      //                       fit: StackFit.expand,
+                      //                       children: [
+                      //                         Image.network(
+                      //                           service.gallery[3],
+                      //                           fit: BoxFit.cover,
+                      //                         ),
+                      //                         Container(color: Colors.black54),
+                      //                         Center(
+                      //                           child: Text(
+                      //                             '+$remainingCount',
+                      //                             style: const TextStyle(
+                      //                               color: Colors.white,
+                      //                               fontSize: 30,
+                      //                               fontWeight: FontWeight.bold,
+                      //                             ),
+                      //                           ),
+                      //                         ),
+                      //                       ],
+                      //                     ),
+                      //                   ),
+                      //                   //  ClipRRect(
+                      //                   //   borderRadius: BorderRadius.circular(12),
+                      //                   //   child: Stack(
+                      //                   //     fit: StackFit.expand,
+                      //                   //     children: [
+                      //                   //       Image.network(
+                      //                   //         service.gallery[3],
+                      //                   //         fit: BoxFit.cover,
+                      //                   //       ),
+
+                      //                   //       // Glass Effect
+                      //                   //       BackdropFilter(
+                      //                   //         filter: ImageFilter.blur(
+                      //                   //           sigmaX: 8,
+                      //                   //           sigmaY: 8,
+                      //                   //         ),
+                      //                   //         child: Container(
+                      //                   //           decoration: BoxDecoration(
+                      //                   //             color: Colors.white
+                      //                   //                 .withOpacity(0.15),
+                      //                   //             borderRadius:
+                      //                   //                 BorderRadius.circular(12),
+                      //                   //             border: Border.all(
+                      //                   //               color: Colors.white
+                      //                   //                   .withOpacity(0.3),
+                      //                   //               width: 1,
+                      //                   //             ),
+                      //                   //           ),
+                      //                   //         ),
+                      //                   //       ),
+
+                      //                   //       Center(
+                      //                   //         child: Text(
+                      //                   //           '+$remainingCount',
+                      //                   //           style: const TextStyle(
+                      //                   //             color: Colors.white,
+                      //                   //             fontSize: 28,
+                      //                   //             fontWeight: FontWeight.bold,
+                      //                   //             shadows: [
+                      //                   //               Shadow(
+                      //                   //                 blurRadius: 10,
+                      //                   //                 color: Colors.black54,
+                      //                   //               ),
+                      //                   //             ],
+                      //                   //           ),
+                      //                   //         ),
+                      //                   //       ),
+                      //                   //     ],
+                      //                   //   ),
+                      //                   // ),
+                      //                 ),
+                      //               ),
+                      //             );
+                      //           }
+
+                      //           //   return Expanded(
+                      //           //     child: GestureDetector(
+                      //           //       onTap: () {
+                      //           //         final heroTag = 'gallery_image_$index';
+                      //           //         _openImageViewer(
+                      //           //           context,
+                      //           //           service.gallery[3],
+                      //           //           heroTag,
+                      //           //           galleryImages: service.gallery,
+                      //           //           initialIndex: index,
+                      //           //         );
+                      //           //       },
+                      //           //       child: Container(
+                      //           //         margin: const EdgeInsets.only(left: 8),
+                      //           //         decoration: BoxDecoration(
+                      //           //           color: const Color.fromARGB(
+                      //           //             255,
+                      //           //             255,
+                      //           //             255,
+                      //           //             255,
+                      //           //           ),
+                      //           //           borderRadius: BorderRadius.circular(
+                      //           //             12,
+                      //           //           ),
+                      //           //           image: DecorationImage(
+                      //           //             image: NetworkImage(
+                      //           //               service.gallery[3],
+                      //           //             ),
+                      //           //             fit: BoxFit.cover,
+                      //           //           ),
+                      //           //         ),
+                      //           //         child: Center(
+                      //           //           child: Text(
+                      //           //             '+$remainingCount',
+                      //           //             style: const TextStyle(
+                      //           //               color: Colors.white,
+                      //           //               fontSize: 24,
+                      //           //               fontWeight: FontWeight.bold,
+                      //           //             ),
+                      //           //           ),
+                      //           //         ),
+                      //           //       ),
+                      //           //     ),
+                      //           //   );
+                      //           // }
+
+                      //           final imageUrl = service.gallery[index];
+                      //           final heroTag = 'gallery_image_$index';
+
+                      //           return Expanded(
+                      //             child: Padding(
+                      //               padding: EdgeInsets.only(
+                      //                 right: index < 2 ? 8 : 0,
+                      //               ),
+                      //               child: GestureDetector(
+                      //                 onTap:
+                      //                     () => _openImageViewer(
+                      //                       context,
+                      //                       imageUrl,
+                      //                       heroTag,
+                      //                       galleryImages: service.gallery,
+                      //                       initialIndex: index,
+                      //                     ),
+                      //                 child: Hero(
+                      //                   tag: heroTag,
+                      //                   child: ClipRRect(
+                      //                     borderRadius: BorderRadius.circular(
+                      //                       12,
+                      //                     ),
+                      //                     child: Image.network(
+                      //                       imageUrl,
+                      //                       height: 100,
+                      //                       width: 100,
+                      //                       fit: BoxFit.cover,
+                      //                       errorBuilder:
+                      //                           (context, error, stackTrace) =>
+                      //                               Container(
+                      //                                 color: AppColors.surface,
+                      //                                 child: const Icon(
+                      //                                   Icons.broken_image,
+                      //                                 ),
+                      //                               ),
+                      //                     ),
+                      //                   ),
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //           );
+                      //         },
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ],
+
+                      // Gallery
+                      // if (service.gallery.isNotEmpty) ...[
+                      //   Text(
+                      //     'Service Gallery',
+                      //     style: AppTextStyles.labelLarge.copyWith(
+                      //       color: Theme.of(context).colorScheme.onSurface,
+                      //     ),
+                      //   ),
+                      //   const SizedBox(height: 12),
+                      //   SizedBox(
+                      //     height: 100,
+                      //     child: ListView.builder(
+                      //       scrollDirection: Axis.horizontal,
+                      //       itemCount: service.gallery.length,
+                      //       itemBuilder: (context, index) {
+                      //         final imageUrl = service.gallery[index];
+                      //         final heroTag = 'gallery_image_$index';
+                      //         return Padding(
+                      //           padding: const EdgeInsets.only(right: 12),
+                      //           child: GestureDetector(
+                      //             onTap:
+                      //                 () => _openImageViewer(
+                      //                   context,
+                      //                   imageUrl,
+                      //                   heroTag,
+                      //                   galleryImages: service.gallery,
+                      //                   initialIndex: index,
+                      //                 ),
+                      //             child: Hero(
+                      //               tag: heroTag,
+                      //               child: ClipRRect(
+                      //                 borderRadius: BorderRadius.circular(12),
+                      //                 child: Image.network(
+                      //                   imageUrl,
+                      //                   width: 140,
+                      //                   height: 100,
+                      //                   fit: BoxFit.cover,
+                      //                   errorBuilder:
+                      //                       (context, error, stackTrace) =>
+                      //                           Container(
+                      //                             width: 140,
+                      //                             color: AppColors.surface,
+                      //                             child: const Icon(
+                      //                               Icons.broken_image,
+                      //                             ),
+                      //                           ),
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         );
+                      //       },
+                      //     ),
+                      //   ),
+                      // ],
                       if (_isLoadingProviderDetails)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24.0),
                           child: Center(child: CircularProgressIndicator()),
                         )
                       else if (_providerDetails != null) ...[
-                        const SizedBox(height: 24),
-                        const Divider(),
+                        // const SizedBox(height: 24),
+                        // const Divider(),
                         const SizedBox(height: 24),
 
                         // Stats
@@ -848,9 +1171,24 @@ class _ServiceProductDetailScreenState
     int? initialIndex,
     String? heroTagPrefix,
   }) {
+    print('galleryImages: $galleryImages');
+    print('initialIndex: $initialIndex');
+    print('heroTagPrefix: $heroTagPrefix');
     if (galleryImages != null &&
         galleryImages.isNotEmpty &&
         initialIndex != null) {
+      print("----d");
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder:
+      //         (context) => FullScreenGalleryViewer(
+      //           imagePaths: galleryImages,
+      //           initialIndex: initialIndex,
+      //           heroTagPrefix: heroTagPrefix ?? 'gallery_image_',
+      //         ),
+      //   ),
+      // );
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -863,6 +1201,7 @@ class _ServiceProductDetailScreenState
         ),
       );
     } else {
+      print('----dqqq');
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -1054,6 +1393,126 @@ class _ServiceProductDetailScreenState
                         ],
                       ),
                     ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GalleryTile extends StatelessWidget {
+  final String imageUrl;
+  final String heroTag;
+  final double borderRadius;
+  final VoidCallback onTap;
+  final String? badge;
+
+  const _GalleryTile({
+    required this.imageUrl,
+    required this.heroTag,
+    required this.borderRadius,
+    required this.onTap,
+    this.badge,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Hero(
+        tag: heroTag,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder:
+                    (_, __, ___) => Container(
+                      color: Colors.grey.shade200,
+                      child: const Icon(Icons.broken_image),
+                    ),
+              ),
+              if (badge != null)
+                Positioned(
+                  bottom: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.55),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      badge!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MoreTile extends StatelessWidget {
+  final String imageUrl;
+  final int remainingCount;
+  final double borderRadius;
+  final VoidCallback onTap;
+
+  const _MoreTile({
+    required this.imageUrl,
+    required this.remainingCount,
+    required this.borderRadius,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.network(imageUrl, fit: BoxFit.cover),
+            Container(color: Colors.black.withOpacity(0.72)),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '+$remainingCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'more photos',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.6),
+                    fontSize: 10,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
