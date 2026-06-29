@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text_styles.dart';
 import '../../../../core/widgets/full_screen_image_viewer.dart';
 import '../../../../core/widgets/full_screen_gallery_viewer.dart';
+import '../../../../core/widgets/gallery_grid_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../models/service_product_model.dart';
 import '../../booking/screens/booking_checkout_screen.dart';
@@ -531,15 +532,18 @@ class _ServiceProductDetailScreenState
                                                 remainingCount:
                                                     service.gallery.length - 3,
                                                 borderRadius: 14,
-                                                onTap:
-                                                    () => _openImageViewer(
-                                                      context,
-                                                      service.gallery[3],
-                                                      'gallery_image_3',
-                                                      galleryImages:
-                                                          service.gallery,
-                                                      initialIndex: 3,
+                                                onTap: () {
+                                                  Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                      builder:
+                                                          (context) => GalleryGridScreen(
+                                                            images: service.gallery,
+                                                            title: 'Service Gallery',
+                                                          ),
                                                     ),
+                                                  );
+                                                },
                                               ),
                                             ),
                                           ],
