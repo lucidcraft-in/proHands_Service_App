@@ -3,7 +3,8 @@ import 'package:http/http.dart' as http;
 
 class AuthService {
   static const String baseUrl =
-      'https://home-serviceapp-backend.onrender.com/api';
+      // 'https://home-serviceapp-backend.onrender.com/api';
+      "http://13.232.89.252/api";
 
   // Request OTP
   static Future<Map<String, dynamic>> requestOTP(

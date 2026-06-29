@@ -47,6 +47,8 @@
 	<string>This app needs access to location when open to suggest nearby services and set booking address.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>This app needs access to location when in the background to suggest nearby services and set booking address.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to location when open and in the background to suggest nearby services and set booking address.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This app needs access to the camera to capture photos for your requested services.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
