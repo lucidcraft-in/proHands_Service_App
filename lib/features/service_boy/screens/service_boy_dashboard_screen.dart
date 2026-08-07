@@ -13,6 +13,7 @@ import '../../../core/widgets/full_screen_gallery_viewer.dart';
 import 'service_boy_task_details_screen.dart';
 import '../../profile/screens/edit_profile_screen.dart';
 import 'service_boy_overall_analytics_screen.dart';
+import 'service_boy_quotations_list_screen.dart';
 
 import 'package:provider/provider.dart';
 import '../../service_boy/providers/service_boy_provider.dart';
@@ -173,6 +174,15 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                                       ),
                                     ],
                                   ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        '* Note: Image will be published after admin verification',
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.textTertiary,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 10,
                         ),
                       ),
                     ],
@@ -820,6 +830,74 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
+              // Quote Requests Card
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => const ServiceBoyQuotationsListScreen(),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.shadowLight,
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Iconsax.document_text,
+                          color: AppColors.primary,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quote Requests',
+                              style: AppTextStyles.labelLarge,
+                            ),
+                            Text(
+                              'View and submit price estimates for quote requests',
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.textTertiary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: AppColors.textTertiary,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 24),
 
               // Leaderboard
@@ -912,9 +990,25 @@ class _ServiceBoyDashboardScreenState extends State<ServiceBoyDashboardScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'My Work Portfolio',
-                            style: AppTextStyles.labelLarge,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'My Work Portfolio',
+                                  style: AppTextStyles.labelLarge,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '* Portfolio photos will be visible after admin verification',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textTertiary,
+                                    fontStyle: FontStyle.italic,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                           IconButton(
                             onPressed: _showAddGalleryImageDialog,

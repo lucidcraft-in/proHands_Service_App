@@ -5,6 +5,8 @@ import 'package:service_app/helper.dar/imageCroper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/providers/theme_provider.dart';
+import '../../home/screens/location_search_screen.dart';
+import '../../location/screens/location_fetch_screen.dart';
 import 'edit_profile_screen.dart';
 import 'update_bank_details_screen.dart';
 import '../../service_boy/screens/service_boy_services_screen.dart';
@@ -40,6 +42,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   void initState() {
     super.initState();
     _loadUserData();
+    _loadLocation();
   }
 
   void _loadUserData() {
@@ -51,6 +54,16 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
         provider.fetchReviews(userType == UserType.serviceBoy);
       }
     });
+  }
+
+  String _locationText = 'Locating...';
+  Future<void> _loadLocation() async {
+    final locationData = await StorageService.getUserLocation();
+    if (mounted) {
+      setState(() {
+        _locationText = locationData?['address'] ?? 'Set your location';
+      });
+    }
   }
 
   @override
@@ -319,8 +332,81 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                // const SizedBox(height: 16),
+                if (user.userType == UserType.customer) ...[
+                  Consumer<ConsumerProvider>(
+                    builder: (context, provider, child) {
+                      String displayLocation =
+                          (provider.currentUser?.location != null &&
+                                  provider.currentUser!.location != 'Unknown')
+                              ? provider.currentUser!.location
+                              : _locationText;
 
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const LocationFetchScreen(),
+                            ),
+                          ).then(
+                            (_) => _loadLocation(),
+                          ); // Refresh location after returning
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.07),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Iconsax.location,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  displayLocation,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: const Icon(
+                                  Iconsax.map,
+                                  size: 18,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) =>
+                                              const LocationSearchScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
                 // GENERAL Section
                 Container(
                   color: Theme.of(context).colorScheme.surface,

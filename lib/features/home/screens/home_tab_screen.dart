@@ -11,6 +11,7 @@ import '../models/service_product_model.dart';
 import '../widgets/service_card_horizontal.dart';
 import 'service_product_detail_screen.dart';
 import 'location_search_screen.dart';
+import 'points_reward_detail_screen.dart';
 
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../core/widgets/empty_state_widget.dart';
@@ -185,81 +186,10 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    // Location Display Row
-                    Consumer<ConsumerProvider>(
-                      builder: (context, provider, child) {
-                        String displayLocation =
-                            (provider.currentUser?.location != null &&
-                                    provider.currentUser!.location != 'Unknown')
-                                ? provider.currentUser!.location
-                                : _locationText;
+                    // const SizedBox(height: 8),
+                    _buildPointsProgramRibbon(context),
 
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => const LocationFetchScreen(),
-                              ),
-                            ).then(
-                              (_) => _loadLocation(),
-                            ); // Refresh location after returning
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withOpacity(0.07),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(
-                                  Iconsax.location,
-                                  size: 16,
-                                  color: AppColors.primary,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    displayLocation,
-                                    style: AppTextStyles.bodySmall.copyWith(
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                IconButton(
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(),
-                                  icon: const Icon(
-                                    Iconsax.map,
-                                    size: 18,
-                                    color: AppColors.primary,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder:
-                                            (context) =>
-                                                const LocationSearchScreen(),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    // Location Display Row
                   ],
                 ),
               ),
@@ -723,6 +653,345 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         icon: const Icon(Iconsax.location, size: 20),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+      ),
+    );
+  }
+
+  Widget _buildPointsProgramRibbon(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const PointsRewardDetailScreen(),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 12, bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFE8EBFA), Color(0xFFF3F5FC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.white.withOpacity(0.6), width: 1.5),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: -10,
+              top: -10,
+              child: Opacity(
+                opacity: 0.05,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AppColors.primary, width: 4),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -20,
+              bottom: -20,
+              child: Opacity(
+                opacity: 0.08,
+                child: const Icon(
+                  Iconsax.gift,
+                  size: 100,
+                  color: AppColors.primary,
+                ),
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.2),
+                          width: 1.5,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'PH',
+                        style: AppTextStyles.labelLarge.copyWith(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: 'BOOK MORE ',
+                                  style: AppTextStyles.h4.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFF0F172A),
+                                    fontSize: 18,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: 'EARN MORE',
+                                  style: AppTextStyles.h4.copyWith(
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFF00C853),
+                                    fontSize: 18,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Points That Reward You',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.textSecondary,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                // const SizedBox(height: 12),
+                // Container(
+                //   height: 1.5,
+                //   width: double.infinity,
+                //   color: Colors.black.withOpacity(0.06),
+                // ),
+                // const SizedBox(height: 12),
+                // Row(
+                //   crossAxisAlignment: CrossAxisAlignment.start,
+                //   children: [
+                //     Expanded(
+                //       child: Column(
+                //         children: [
+                //           Container(
+                //             padding: const EdgeInsets.all(6),
+                //             decoration: BoxDecoration(
+                //               shape: BoxShape.circle,
+                //               border: Border.all(color: Colors.blue.withOpacity(0.4)),
+                //             ),
+                //             child: const Icon(
+                //               Iconsax.user_add,
+                //               size: 14,
+                //               color: Colors.blue,
+                //             ),
+                //           ),
+                //           const SizedBox(height: 4),
+                //           Text(
+                //             'NEW USER\nBONUS',
+                //             textAlign: TextAlign.center,
+                //             style: AppTextStyles.caption.copyWith(
+                //               fontSize: 8,
+                //               fontWeight: FontWeight.bold,
+                //               color: const Color(0xFF475569),
+                //             ),
+                //           ),
+                //           const SizedBox(height: 4),
+                //           Text(
+                //             '40',
+                //             style: AppTextStyles.labelLarge.copyWith(
+                //               fontSize: 18,
+                //               fontWeight: FontWeight.w900,
+                //               color: const Color(0xFF00C853),
+                //             ),
+                //           ),
+                //           Text(
+                //             'POINTS\nADDED',
+                //             textAlign: TextAlign.center,
+                //             style: AppTextStyles.caption.copyWith(
+                //               fontSize: 7,
+                //               fontWeight: FontWeight.bold,
+                //               color: AppColors.textSecondary,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //     Container(
+                //       width: 1,
+                //       height: 80,
+                //       color: Colors.black.withOpacity(0.06),
+                //     ),
+                //     Expanded(
+                //       child: Column(
+                //         children: [
+                //           Container(
+                //             padding: const EdgeInsets.all(6),
+                //             decoration: BoxDecoration(
+                //               shape: BoxShape.circle,
+                //               border: Border.all(color: Colors.green.withOpacity(0.4)),
+                //             ),
+                //             child: const Icon(
+                //               Iconsax.wallet_3,
+                //               size: 14,
+                //               color: Colors.green,
+                //             ),
+                //           ),
+                //           const SizedBox(height: 4),
+                //           Text(
+                //             'EARN POINTS\nON BOOKINGS',
+                //             textAlign: TextAlign.center,
+                //             style: AppTextStyles.caption.copyWith(
+                //               fontSize: 8,
+                //               fontWeight: FontWeight.bold,
+                //               color: const Color(0xFF475569),
+                //             ),
+                //           ),
+                //           const SizedBox(height: 4),
+                //           Text(
+                //             '10',
+                //             style: AppTextStyles.labelLarge.copyWith(
+                //               fontSize: 18,
+                //               fontWeight: FontWeight.w900,
+                //               color: const Color(0xFF00C853),
+                //             ),
+                //           ),
+                //           Text(
+                //             'POINTS FOR EVERY\n₹1000 BOOKING',
+                //             textAlign: TextAlign.center,
+                //             style: AppTextStyles.caption.copyWith(
+                //               fontSize: 7,
+                //               fontWeight: FontWeight.bold,
+                //               color: AppColors.textSecondary,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //     Container(
+                //       width: 1,
+                //       height: 80,
+                //       color: Colors.black.withOpacity(0.06),
+                //     ),
+                //     Expanded(
+                //       child: Column(
+                //         children: [
+                //           Container(
+                //             padding: const EdgeInsets.all(6),
+                //             decoration: BoxDecoration(
+                //               shape: BoxShape.circle,
+                //               border: Border.all(color: Colors.orange.withOpacity(0.4)),
+                //             ),
+                //             child: const Icon(
+                //               Iconsax.award,
+                //               size: 14,
+                //               color: Colors.orange,
+                //             ),
+                //           ),
+                //           const SizedBox(height: 4),
+                //           Text(
+                //             'TOP EARNERS\nWIN BIG',
+                //             textAlign: TextAlign.center,
+                //             style: AppTextStyles.caption.copyWith(
+                //               fontSize: 8,
+                //               fontWeight: FontWeight.bold,
+                //               color: const Color(0xFF475569),
+                //             ),
+                //           ),
+                //           const SizedBox(height: 4),
+                //           const Row(
+                //             mainAxisAlignment: MainAxisAlignment.center,
+                //             children: [
+                //               Icon(Iconsax.gift, size: 14, color: Color(0xFF00C853)),
+                //               SizedBox(width: 2),
+                //               Icon(Iconsax.global, size: 14, color: Color(0xFF00C853)),
+                //             ],
+                //           ),
+                //           const SizedBox(height: 4),
+                //           Text(
+                //             'GIFTS OR\nFAMILY TRIP',
+                //             textAlign: TextAlign.center,
+                //             style: AppTextStyles.caption.copyWith(
+                //               fontSize: 7,
+                //               fontWeight: FontWeight.bold,
+                //               color: AppColors.textSecondary,
+                //             ),
+                //           ),
+                //         ],
+                //       ),
+                //     ),
+                //   ],
+                // ),
+                // const SizedBox(height: 12),
+                // Align(
+                //   alignment: Alignment.bottomRight,
+                //   child: Container(
+                //     padding: const EdgeInsets.symmetric(
+                //       horizontal: 8,
+                //       vertical: 4,
+                //     ),
+                //     decoration: BoxDecoration(
+                //       borderRadius: BorderRadius.circular(6),
+                //       border: Border.all(
+                //         color: AppColors.primary.withOpacity(0.4),
+                //         width: 1,
+                //       ),
+                //       color: Colors.white,
+                //     ),
+                //     child: Column(
+                //       crossAxisAlignment: CrossAxisAlignment.end,
+                //       children: [
+                //         Text(
+                //           'BOOK | EARN | REDEEM | ENJOY |',
+                //           style: AppTextStyles.caption.copyWith(
+                //             fontSize: 7,
+                //             fontWeight: FontWeight.bold,
+                //             color: AppColors.textSecondary,
+                //             letterSpacing: 0.2,
+                //           ),
+                //         ),
+                //         Text(
+                //           'MORE BOOKINGS. MORE REWARDS.',
+                //           style: AppTextStyles.caption.copyWith(
+                //             fontSize: 7.5,
+                //             fontWeight: FontWeight.w900,
+                //             color: const Color(0xFF00C853),
+                //             letterSpacing: 0.2,
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -911,7 +911,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 42),
+        Text(
+          '* Profile photo changes will be published after admin verification',
+          style: AppTextStyles.bodySmall.copyWith(
+            color: AppColors.textTertiary,
+            fontStyle: FontStyle.italic,
+          ),
+          textAlign: TextAlign.center,
+        ),
+
+        const SizedBox(height: 20),
 
         // Common Fields
         CustomTextField(
@@ -1568,6 +1578,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                           ],
                         ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '* Service title image will be visible after admin verification',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textTertiary,
+                fontStyle: FontStyle.italic,
               ),
             ),
 

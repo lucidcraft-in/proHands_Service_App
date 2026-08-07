@@ -284,10 +284,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     children: [
                       TextSpan(
                         text:
-                            'Enter the verification code we sent to your email\n',
+                            'Enter the verification code we sent to your phone message or email\n',
                       ),
                       TextSpan(
-                        text: widget.identifier,
+                        text: widget.phone != null && widget.phone!.isNotEmpty
+                            ? '${widget.phone} / ${widget.identifier}'
+                            : widget.identifier,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,

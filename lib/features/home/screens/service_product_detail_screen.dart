@@ -11,6 +11,7 @@ import '../../../../core/widgets/gallery_grid_screen.dart';
 import '../../../core/models/user_model.dart';
 import '../models/service_product_model.dart';
 import '../../booking/screens/booking_checkout_screen.dart';
+import '../../booking/screens/request_quotation_screen.dart';
 import '../providers/consumer_provider.dart';
 import '../services/consumer_service.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
@@ -537,9 +538,13 @@ class _ServiceProductDetailScreenState
                                                     context,
                                                     MaterialPageRoute(
                                                       builder:
-                                                          (context) => GalleryGridScreen(
-                                                            images: service.gallery,
-                                                            title: 'Service Gallery',
+                                                          (
+                                                            context,
+                                                          ) => GalleryGridScreen(
+                                                            images:
+                                                                service.gallery,
+                                                            title:
+                                                                'Service Gallery',
                                                           ),
                                                     ),
                                                   );
@@ -1038,39 +1043,77 @@ class _ServiceProductDetailScreenState
                 ),
               ],
             ),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => BookingCheckoutScreen(
-                            serviceName: service.name,
-                            serviceId: service.id,
-                            price: service.price,
-                            serviceDescription: service.description,
-                          ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => RequestQuotationScreen(
+                                serviceId: service.id,
+                                serviceName: service.name,
+                              ),
+                        ),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(
+                        color: AppColors.primary,
+                        width: 2,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    child: const Text(
+                      'Request Quote',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
                 ),
-                child: const Text(
-                  'Book Now',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => BookingCheckoutScreen(
+                                serviceName: service.name,
+                                serviceId: service.id,
+                                price: service.price,
+                                serviceDescription: service.description,
+                              ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: const Text(
+                      'Book Now',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         );

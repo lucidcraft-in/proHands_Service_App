@@ -10,7 +10,12 @@ import '../../cart/screens/cart_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int initialIndex;
-  const MainScreen({super.key, this.initialIndex = 0});
+  final int bookingInitialTabIndex;
+  const MainScreen({
+    super.key,
+    this.initialIndex = 0,
+    this.bookingInitialTabIndex = 0,
+  });
 
   static MainScreenState? of(BuildContext context) {
     return context.findAncestorStateOfType<MainScreenState>();
@@ -22,24 +27,24 @@ class MainScreen extends StatefulWidget {
 
 class MainScreenState extends State<MainScreen> {
   late int currentIndex;
+  late final List<Widget> _screens;
 
   @override
   void initState() {
     super.initState();
     currentIndex = widget.initialIndex;
+    _screens = [
+      const HomeTabScreen(),
+      BookingTabScreen(initialTabIndex: widget.bookingInitialTabIndex),
+      const ExploreScreen(),
+      const ProfessionalScreen(),
+      const ProfileTabScreen(),
+    ];
   }
 
   void setIndex(int index) {
     setState(() => currentIndex = index);
   }
-
-  final List<Widget> _screens = const [
-    HomeTabScreen(),
-    BookingTabScreen(),
-    ExploreScreen(),
-    ProfessionalScreen(),
-    ProfileTabScreen(),
-  ];
 
   @override
   Widget build(BuildContext context) {

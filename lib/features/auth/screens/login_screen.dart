@@ -71,13 +71,68 @@ class _LoginScreenState extends State<LoginScreen> {
       builder:
           (context) => AlertDialog(
             title: const Text('Terms & Conditions'),
-            content: const SingleChildScrollView(
-              child: Text(
-                'Welcome to proHands! By using our platform, you agree to comply with and be bound by the following terms of service. '
-                'proHands provides a connecting platform between customers and professional service technicians. '
-                'All service bookings, payments, and deliverables are subject to the platform guidelines. '
-                'Please ensure all information provided is accurate and truthful. We reserve the right to suspend accounts '
-                'violating platform policies. Thank you for choosing proHands!',
+            content: SingleChildScrollView(
+              child: RichText(
+                text: TextSpan(
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  children: [
+                    const TextSpan(
+                      text:
+                          'Welcome to proHands! By using our platform (accessible via our app or ',
+                    ),
+                    TextSpan(
+                      text: 'https://www.prohands.in/',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer:
+                          TapGestureRecognizer()
+                            ..onTap = () async {
+                              final url = Uri.parse('https://www.prohands.in/');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              }
+                            },
+                    ),
+                    const TextSpan(
+                      text:
+                          '), you agree to comply with and be bound by the following terms of service. '
+                          'proHands provides a connecting platform between customers and professional service technicians. '
+                          'All service bookings, payments, and deliverables are subject to the platform guidelines. '
+                          'Please ensure all information provided is accurate and truthful. We reserve the right to suspend accounts '
+                          'violating platform policies. Thank you for choosing proHands! For more details, visit our official website at ',
+                    ),
+                    TextSpan(
+                      text: 'https://www.prohands.in/terms-and-conditions',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer:
+                          TapGestureRecognizer()
+                            ..onTap = () async {
+                              final url = Uri.parse(
+                                'https://www.prohands.in/terms-and-conditions',
+                              );
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              }
+                            },
+                    ),
+                    const TextSpan(text: '.'),
+                  ],
+                ),
               ),
             ),
             actions: [
@@ -96,12 +151,44 @@ class _LoginScreenState extends State<LoginScreen> {
       builder:
           (context) => AlertDialog(
             title: const Text('Privacy Policy'),
-            content: const SingleChildScrollView(
-              child: Text(
-                'At proHands, we value your privacy. We collect email, phone number, and location details '
-                'solely to facilitate service matches and authenticate users. Your personal data is stored securely '
-                'and never shared with unauthorized third parties. By registering, you consent to notifications '
-                'related to service booking statuses and OTP messages.',
+            content: SingleChildScrollView(
+              child: RichText(
+                text: TextSpan(
+                  style: AppTextStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  children: [
+                    const TextSpan(
+                      text:
+                          'At proHands, we value your privacy. We collect email, phone number, and location details '
+                          'solely to facilitate service matches and authenticate users. Your personal data is stored securely '
+                          'and never shared with unauthorized third parties. By registering, you consent to notifications '
+                          'related to service booking statuses and OTP messages. For full details on our data privacy practices, visit ',
+                    ),
+                    TextSpan(
+                      text: 'https://www.prohands.in/terms-and-conditions',
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        decoration: TextDecoration.underline,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      recognizer:
+                          TapGestureRecognizer()
+                            ..onTap = () async {
+                              final url = Uri.parse(
+                                'https://www.prohands.in/terms-and-conditions',
+                              );
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              }
+                            },
+                    ),
+                    const TextSpan(text: '.'),
+                  ],
+                ),
               ),
             ),
             actions: [

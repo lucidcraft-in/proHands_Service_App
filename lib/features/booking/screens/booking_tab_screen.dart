@@ -11,15 +11,58 @@ import 'package:provider/provider.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../../core/widgets/empty_state_widget.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import 'customer_quotations_list_screen.dart';
 
 class BookingTabScreen extends StatefulWidget {
-  const BookingTabScreen({super.key});
+  final int initialTabIndex;
+  const BookingTabScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<BookingTabScreen> createState() => _BookingTabScreenState();
 }
 
 class _BookingTabScreenState extends State<BookingTabScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      initialIndex: widget.initialTabIndex,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: Text('My Orders', style: AppTextStyles.h4),
+          centerTitle: true,
+          bottom: TabBar(
+            indicatorColor: AppColors.primary,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: Colors.grey,
+            labelStyle: AppTextStyles.labelLarge.copyWith(fontWeight: FontWeight.bold),
+            unselectedLabelStyle: AppTextStyles.labelLarge,
+            tabs: const [
+              Tab(text: 'Bookings'),
+              Tab(text: 'Quotations'),
+            ],
+          ),
+        ),
+        body: const TabBarView(
+          children: [
+            BookingsTabBody(),
+            CustomerQuotationsListScreen(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class BookingsTabBody extends StatefulWidget {
+  const BookingsTabBody({super.key});
+
+  @override
+  State<BookingsTabBody> createState() => _BookingsTabBodyState();
+}
+
+class _BookingsTabBodyState extends State<BookingsTabBody> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   BookingStatus? _selectedStatus;
@@ -46,22 +89,9 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Consumer<ConsumerProvider>(
-          builder: (context, provider, child) {
-            return Text(
-              'My Bookings (${provider.bookings.length})',
-              style: AppTextStyles.h4,
-            );
-          },
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
+    return SafeArea(
+      child: Column(
+        children: [
             Padding(
               padding: const EdgeInsets.all(20),
               child: SearchTextField(
@@ -256,9 +286,8 @@ class _BookingTabScreenState extends State<BookingTabScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
+      );
+    }
 
   void _showFilterBottomSheet() {
     showModalBottomSheet(
