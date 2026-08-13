@@ -120,6 +120,140 @@ class QuotationLocation {
   }
 }
 
+class TechnicianImage {
+  final String id;
+  final String url;
+
+  TechnicianImage({required this.id, required this.url});
+
+  factory TechnicianImage.fromJson(dynamic json) {
+    if (json is Map<String, dynamic>) {
+      return TechnicianImage(
+        id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+        url: json['url']?.toString() ?? '',
+      );
+    } else if (json is String) {
+      return TechnicianImage(id: '', url: json);
+    }
+    return TechnicianImage(id: '', url: '');
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'url': url};
+  }
+}
+
+class RequestedTechnician {
+  final String? id;
+  final String technicianId;
+  final String name;
+  final String? phone;
+  final String? email;
+  final String? status;
+  final String? profilePhoto;
+  final double? rating;
+  final double? amount;
+  final String currency;
+  final List<String> notes;
+  final List<TechnicianImage> images;
+  final String? submittedAt;
+
+  RequestedTechnician({
+    this.id,
+    required this.technicianId,
+    required this.name,
+    this.phone,
+    this.email,
+    this.status,
+    this.profilePhoto,
+    this.rating,
+    this.amount,
+    this.currency = 'INR',
+    this.notes = const [],
+    this.images = const [],
+    this.submittedAt,
+  });
+
+  String? get image => profilePhoto ?? (images.isNotEmpty ? images.first.url : null);
+
+  factory RequestedTechnician.fromJson(Map<String, dynamic> json) {
+    final techData = json['technicianId'];
+    String techId = '';
+    String? techName;
+    String? techPhone;
+    String? techEmail;
+    String? techPhoto;
+    double? techRating;
+
+    if (techData is Map<String, dynamic>) {
+      techId = techData['_id'] ?? '';
+      techName = techData['name'];
+      techPhone = techData['phone'];
+      techEmail = techData['email'];
+      techPhoto = techData['profilePhoto'] ?? techData['image'];
+      techRating = (techData['rating'] as num?)?.toDouble();
+    } else if (techData is String) {
+      techId = techData;
+    } else {
+      techId = json['_id'] ?? '';
+    }
+
+    // Parse images
+    List<TechnicianImage> parsedImages = [];
+    if (json['images'] is List) {
+      parsedImages = (json['images'] as List)
+          .map((img) => TechnicianImage.fromJson(img))
+          .where((img) => img.url.isNotEmpty)
+          .toList();
+    }
+
+    // Parse notes
+    List<String> parsedNotes = [];
+    if (json['notes'] is List) {
+      parsedNotes = (json['notes'] as List)
+          .map((n) => n.toString())
+          .where((n) => n.isNotEmpty)
+          .toList();
+    } else if (json['notes'] is String && (json['notes'] as String).isNotEmpty) {
+      parsedNotes = [(json['notes'] as String)];
+    }
+
+    return RequestedTechnician(
+      id: json['_id'],
+      technicianId: techId,
+      name: json['name'] ?? techName ?? '',
+      phone: json['phone'] ?? techPhone,
+      email: json['email'] ?? techEmail,
+      status: json['status'],
+      profilePhoto: techPhoto ?? json['profilePhoto'] ?? json['image'],
+      rating: techRating ?? (json['rating'] as num?)?.toDouble(),
+      amount: (json['amount'] as num?)?.toDouble(),
+      currency: json['currency'] ?? 'INR',
+      notes: parsedNotes,
+      images: parsedImages,
+      submittedAt: json['submittedAt'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'technicianId': technicianId,
+      'name': name,
+      'phone': phone,
+      'email': email,
+      'status': status,
+      'profilePhoto': profilePhoto,
+      'rating': rating,
+      'amount': amount,
+      'currency': currency,
+      'notes': notes,
+      'images': images.map((i) => i.toJson()).toList(),
+      'submittedAt': submittedAt,
+    };
+  }
+}
+
 class QuotationModel {
   final String id;
   final String quotationId;
@@ -135,6 +269,7 @@ class QuotationModel {
   final double? amount;
   final String? technicianNote;
   final List<String> attachments;
+  final List<RequestedTechnician> requestedTechnicians;
   final String? providerId;
   final String? createdAt;
   final String? updatedAt;
@@ -154,6 +289,7 @@ class QuotationModel {
     this.amount,
     this.technicianNote,
     required this.attachments,
+    this.requestedTechnicians = const [],
     this.providerId,
     this.createdAt,
     this.updatedAt,
@@ -225,6 +361,11 @@ class QuotationModel {
           json['attachments'] != null
               ? List<String>.from(json['attachments'])
               : const [],
+      requestedTechnicians: json['requestedTechnicians'] != null
+          ? (json['requestedTechnicians'] as List)
+              .map((t) => RequestedTechnician.fromJson(t))
+              .toList()
+          : const [],
       providerId:
           json['providerId'] is Map
               ? (json['providerId']['_id'] ?? '')
@@ -250,6 +391,7 @@ class QuotationModel {
       'amount': amount,
       'technicianNote': technicianNote,
       'attachments': attachments,
+      'requestedTechnicians': requestedTechnicians.map((t) => t.toJson()).toList(),
       'providerId': providerId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,

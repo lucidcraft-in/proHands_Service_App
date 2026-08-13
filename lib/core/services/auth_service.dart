@@ -17,7 +17,7 @@ class AuthService {
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
-        'email': email,
+        // 'email': email,
         'phone': phone,
         'userType': userType.toUpperCase(),
       }),
@@ -41,6 +41,7 @@ class AuthService {
     String email,
     String otp,
     String fcmToken,
+    String phone,
   ) async {
     final url = Uri.parse('$baseUrl/auth/verify-otp');
     // try {
@@ -51,7 +52,11 @@ class AuthService {
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'otp': otp, 'fcmToken': fcmToken}),
+      body: jsonEncode({
+        // 'email': email,
+        'phone': phone,
+        'otp': otp, 'fcmToken': fcmToken,
+      }),
     );
     if (response.statusCode == 200) {
       return jsonDecode(response.body);

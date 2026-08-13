@@ -40,13 +40,18 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> verifyOtp(String email, String otp, String fcmToken) async {
+  Future<void> verifyOtp(
+    String email,
+    String otp,
+    String fcmToken,
+    String phone,
+  ) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      final response = await AuthService.verifyOTP(email, otp, fcmToken);
+      final response = await AuthService.verifyOTP(email, otp, fcmToken, phone);
       final token = response['token'];
       final userData = response['user'];
       if (token != null && userData != null) {

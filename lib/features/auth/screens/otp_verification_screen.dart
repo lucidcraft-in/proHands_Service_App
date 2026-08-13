@@ -112,7 +112,12 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       final token = await StorageService.getFCMToken() ?? "";
       print("Token : =======================================================");
       print(token);
-      await context.read<AuthProvider>().verifyOtp(widget.email!, otp, token);
+      await context.read<AuthProvider>().verifyOtp(
+        widget.email!,
+        otp,
+        token,
+        widget.phone!,
+      );
 
       if (mounted) {
         final user = context.read<AuthProvider>().currentUser;
@@ -284,12 +289,13 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                     children: [
                       TextSpan(
                         text:
-                            'Enter the verification code we sent to your phone message or email\n',
+                            'Enter the verification code we sent to your \n phone message \n',
                       ),
                       TextSpan(
-                        text: widget.phone != null && widget.phone!.isNotEmpty
-                            ? '${widget.phone} / ${widget.identifier}'
-                            : widget.identifier,
+                        text:
+                            widget.phone != null && widget.phone!.isNotEmpty
+                                ? ' ${widget.identifier}'
+                                : widget.identifier,
                         style: AppTextStyles.bodyMedium.copyWith(
                           color: AppColors.primary,
                           fontWeight: FontWeight.w600,

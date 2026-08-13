@@ -87,7 +87,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
                 children: [
                   // Logo or App Name
                   Text(
-                    'proHands',
+                    'PreHands',
                     style: AppTextStyles.h3.copyWith(
                       color: AppColors.primary,
                       letterSpacing: -0.5,

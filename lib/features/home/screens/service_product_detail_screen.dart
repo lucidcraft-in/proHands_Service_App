@@ -1045,41 +1045,41 @@ class _ServiceProductDetailScreenState
             ),
             child: Row(
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => RequestQuotationScreen(
-                                serviceId: service.id,
-                                serviceName: service.name,
-                              ),
-                        ),
-                      );
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      side: const BorderSide(
-                        color: AppColors.primary,
-                        width: 2,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Request Quote',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
+                // Expanded(
+                //   child: OutlinedButton(
+                //     onPressed: () {
+                //       Navigator.push(
+                //         context,
+                //         MaterialPageRoute(
+                //           builder:
+                //               (context) => RequestQuotationScreen(
+                //                 serviceId: service.id,
+                //                 serviceName: service.name,
+                //               ),
+                //         ),
+                //       );
+                //     },
+                //     style: OutlinedButton.styleFrom(
+                //       padding: const EdgeInsets.symmetric(vertical: 16),
+                //       side: const BorderSide(
+                //         color: AppColors.primary,
+                //         width: 2,
+                //       ),
+                //       shape: RoundedRectangleBorder(
+                //         borderRadius: BorderRadius.circular(16),
+                //       ),
+                //     ),
+                //     child: const Text(
+                //       'Request Quote',
+                //       style: TextStyle(
+                //         fontSize: 16,
+                //         fontWeight: FontWeight.bold,
+                //         color: AppColors.primary,
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {

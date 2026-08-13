@@ -26,6 +26,7 @@ import '../providers/notification_provider.dart';
 import '../../profile/screens/point_history_screen.dart';
 
 import '../../cart/screens/cart_screen.dart';
+import '../../booking/screens/create_quotation_screen.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -93,7 +94,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'PRO HANDS',
+                          'PreHands',
                           style: AppTextStyles.h4.copyWith(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontWeight: FontWeight.w900,
@@ -153,6 +154,62 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                               },
                             ),
                             const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) =>
+                                            const CreateQuotationScreen(),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [
+                                      Color(0xFF6236FF),
+                                      Color(0xFF8E66FF),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF6236FF,
+                                      ).withOpacity(0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Iconsax.document_text5,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      'Get Quote',
+                                      style: AppTextStyles.labelSmall.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                             Consumer<NotificationProvider>(
                               builder: (context, provider, child) {
                                 return IconButton(
@@ -342,7 +399,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 ),
               ),
             ),
-
             // Categories Section
             SliverToBoxAdapter(
               child: Padding(

@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import '../../../core/models/user_type.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -80,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const TextSpan(
                       text:
-                          'Welcome to proHands! By using our platform (accessible via our app or ',
+                          'Welcome to PreHands! By using our platform (accessible via our app or ',
                     ),
                     TextSpan(
                       text: 'https://www.prohands.in/',
@@ -104,10 +106,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     const TextSpan(
                       text:
                           '), you agree to comply with and be bound by the following terms of service. '
-                          'proHands provides a connecting platform between customers and professional service technicians. '
+                          'PreHands provides a connecting platform between customers and professional service technicians. '
                           'All service bookings, payments, and deliverables are subject to the platform guidelines. '
                           'Please ensure all information provided is accurate and truthful. We reserve the right to suspend accounts '
-                          'violating platform policies. Thank you for choosing proHands! For more details, visit our official website at ',
+                          'violating platform policies. Thank you for choosing PreHands! For more details, visit our official website at ',
                     ),
                     TextSpan(
                       text: 'https://www.prohands.in/terms-and-conditions',
@@ -160,7 +162,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const TextSpan(
                       text:
-                          'At proHands, we value your privacy. We collect email, phone number, and location details '
+                          'At PreHands, we value your privacy. We collect email, phone number, and location details '
                           'solely to facilitate service matches and authenticate users. Your personal data is stored securely '
                           'and never shared with unauthorized third parties. By registering, you consent to notifications '
                           'related to service booking statuses and OTP messages. For full details on our data privacy practices, visit ',
@@ -202,11 +204,25 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _connectSupport() async {
-    const phoneNumber = '9876543210';
+    String whatsappPhone = '919744146638'; // Default fallback phone number
     const message =
-        "Hi proHands Support! I need help with logging in / using the app.";
+        "Hi PreHands Support! I need help with logging in / using the app.";
 
-    final cleanPhone = phoneNumber.replaceAll(RegExp(r'\D'), '');
+    try {
+      final response = await http
+          .get(Uri.parse('http://13.232.89.252/api/support'))
+          .timeout(const Duration(seconds: 3));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['whatsappPhone'] != null) {
+          whatsappPhone = data['whatsappPhone'].toString();
+        }
+      }
+    } catch (e) {
+      print('Error fetching support details: $e');
+    }
+
+    final cleanPhone = whatsappPhone.replaceAll(RegExp(r'\D'), '');
     final phoneWithCountry =
         cleanPhone.startsWith('91') ? cleanPhone : '91$cleanPhone';
 
@@ -256,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_formKey.currentState!.validate()) {
       try {
         await context.read<AuthProvider>().login(
-          _emailController.text.trim(),
+          "",
           _phoneController.text.trim(),
           _selectedUserType,
         );
@@ -265,11 +281,9 @@ class _LoginScreenState extends State<LoginScreen> {
             MaterialPageRoute(
               builder:
                   (context) => OTPVerificationScreen(
-                    email: _emailController.text.trim(),
+                    email: "",
                     phone: _phoneController.text.trim(),
-                    identifier:
-                        _emailController.text
-                            .trim(), // Using email as identifier
+                    identifier: _phoneController.text.trim(), // Using phone as identifier
                     userType: _selectedUserType,
                   ),
             ),
@@ -401,21 +415,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 16),
 
-                // Email field
-                CustomTextField(
-                  label: 'Email Address',
-                  hint: 'Enter your email address',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icon(
-                    Icons.email_outlined,
-                    color: AppColors.textTertiary,
-                    size: 20,
-                  ),
-                  validator: _validateEmail,
-                ),
-
-                const SizedBox(height: 20),
+                // // Email field
+                // CustomTextField(
+                //   label: 'Email Address',
+                //   hint: 'Enter your email address',
+                //   controller: _emailController,
+                //   keyboardType: TextInputType.emailAddress,
+                //   prefixIcon: Icon(
+                //     Icons.email_outlined,
+                //     color: AppColors.textTertiary,
+                //     size: 20,
+                //   ),
+                //   validator: _validateEmail,
+                // ),
+                //
+                // const SizedBox(height: 20),
 
                 // Phone field
                 CustomTextField(

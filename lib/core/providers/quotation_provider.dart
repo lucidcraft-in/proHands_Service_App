@@ -56,6 +56,11 @@ class QuotationProvider extends ChangeNotifier {
     required double longitude,
     String? description,
     String? notes,
+    String? category,
+    String? subcategory,
+    String? serviceName,
+    List<String>? images,
+    List<String>? technicianIds,
   }) async {
     _isCreating = true;
     _createError = null;
@@ -71,6 +76,11 @@ class QuotationProvider extends ChangeNotifier {
         longitude: longitude,
         description: description,
         notes: notes,
+        category: category,
+        subcategory: subcategory,
+        serviceName: serviceName,
+        images: images,
+        technicianIds: technicianIds,
       );
       // Insert at front
       _quotations.insert(0, quotation);
@@ -147,6 +157,7 @@ class QuotationProvider extends ChangeNotifier {
     required String quotationId,
     required String date,
     required String time,
+    String? technicianId,
   }) async {
     _isSubmitting = true;
     _submitError = null;
@@ -157,6 +168,7 @@ class QuotationProvider extends ChangeNotifier {
         quotationId: quotationId,
         date: date,
         time: time,
+        technicianId: technicianId,
       );
 
       // Update list
@@ -185,6 +197,32 @@ class QuotationProvider extends ChangeNotifier {
       _submitError = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
       rethrow;
+    }
+  }
+
+  // Fetch single quotation details
+  Future<QuotationModel?> fetchQuotationDetails(String quotationId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final quotation = await _service.fetchQuotationDetails(quotationId);
+      
+      // Update item in list
+      final index = _quotations.indexWhere((q) => q.id == quotationId);
+      if (index != -1) {
+        _quotations[index] = quotation;
+      } else {
+        _quotations.insert(0, quotation);
+      }
+      return quotation;
+    } catch (e) {
+      _error = e.toString().replaceAll('Exception: ', '');
+      return null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

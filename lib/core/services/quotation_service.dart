@@ -27,12 +27,33 @@ class QuotationService {
     required double longitude,
     String? description,
     String? notes,
+    String? category,
+    String? subcategory,
+    String? serviceName,
+    List<String>? images,
+    List<String>? technicianIds,
   }) async {
+    // print("technicianIds: $technicianIds");
+    // print("customer Id: $customerId");
+    // print("serviceId: $serviceId");
+    // print("locationName: $locationName");
+    // print("city: $city");
+    // print("latitude: $latitude");
+    // print("longitude: $longitude");
+    // print("description: $description");
+    // print("notes: $notes");
+    // print("category: $category");
+    // print("subcategory: $subcategory");
+    // print("serviceName: $serviceName");
+    // print("images: $images");
     final url = Uri.parse('$baseUrl/quotations');
     final headers = await _getHeaders();
     final body = jsonEncode({
       'customerId': customerId,
+      'category': category,
+      'subcategory': subcategory,
       'serviceId': serviceId,
+      'serviceName': serviceName,
       'location': {
         'location_name': locationName,
         'city': city,
@@ -41,8 +62,28 @@ class QuotationService {
       },
       if (description != null) 'description': description,
       if (notes != null) 'notes': notes,
+      'images': images ?? [],
+      'technicianIds': technicianIds,
+      // "technicianIds": ["6a460d5b3bbf7d7f2f6e8800", "6a4762292d7764b5bc3558db"],
+      "reqtec": [""],
     });
-
+    // final body = jsonEncode({
+    //   "category": "69ce1f884029e6c9271d3c85",
+    //   "subcategory": "69e6f2634851dad0a7a3d501",
+    //   "serviceId": "6a460e413bbf7d7f2f6e8858",
+    //   "serviceName": "AC Repair & Servicing",
+    //   "description": "AC is not cooling properly and making noisy sounds.",
+    //   "notes": "Please come in the morning between 10 AM and 12 PM.",
+    //   "location": {
+    //     "location_name": "123 Green Park Main Road, Sector 5",
+    //     "city": "Mumbai",
+    //     "latitude": 19.0760,
+    //     "longitude": 72.8777,
+    //   },
+    //   "images": ["https://example.com/uploads/ac-issue-1.jpg"],
+    //   "technicianIds": ["6a460d5b3bbf7d7f2f6e8800", "6a4762292d7764b5bc3558db"],
+    // });
+    print("the body is : $body");
     final response = await http.post(url, headers: headers, body: body);
     print("respponnse is : ${response.body}");
     if (response.statusCode == 201 || response.statusCode == 200) {
@@ -149,13 +190,19 @@ class QuotationService {
     required String quotationId,
     required String date,
     required String time,
+    String? technicianId,
   }) async {
     final url = Uri.parse('$baseUrl/quotations/$quotationId/convert');
     final headers = await _getHeaders();
-    final body = jsonEncode({'date': date, 'time': time});
+    final bodyMap = <String, dynamic>{'date': date, 'time': time};
+    if (technicianId != null && technicianId.isNotEmpty) {
+      bodyMap['technicianId'] = technicianId;
+    }
+    print(bodyMap);
+    final body = jsonEncode(bodyMap);
 
     final response = await http.post(url, headers: headers, body: body);
-
+    print(response.body);
     if (response.statusCode == 200 || response.statusCode == 201) {
       final data = jsonDecode(response.body);
       if (data['success'] == true) {
@@ -190,9 +237,11 @@ class QuotationService {
 
     final url = Uri.parse('$baseUrl/quotations?$query');
     final headers = await _getHeaders();
+    print("the url is : ${url}");
+    print("the headers is : ${headers}");
 
     final response = await http.get(url, headers: headers);
-
+    print(response.body);
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       if (data['success'] == true) {
@@ -290,6 +339,36 @@ class QuotationService {
       }
     } catch (e) {
       throw Exception('Error uploading files: $e');
+    }
+  }
+
+  // Fetch a single quotation by ID
+  Future<QuotationModel> fetchQuotationDetails(String quotationId) async {
+    final url = Uri.parse('$baseUrl/quotations/$quotationId');
+    final headers = await _getHeaders();
+    final response = await http.get(url, headers: headers);
+    print(url);
+    print(headers);
+    print("response: ${response.body}");
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return QuotationModel.fromJson(data['quotation']);
+      } else {
+        throw Exception(data['message'] ?? 'Failed to fetch quotation details');
+      }
+    } else {
+      try {
+        final data = jsonDecode(response.body);
+        throw Exception(
+          data['message'] ??
+              'Failed to fetch quotation details: ${response.statusCode}',
+        );
+      } catch (_) {
+        throw Exception(
+          'Failed to fetch quotation details: Server error ${response.statusCode}',
+        );
+      }
     }
   }
 }
