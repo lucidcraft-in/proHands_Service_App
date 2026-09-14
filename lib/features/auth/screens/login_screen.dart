@@ -25,7 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  UserType _selectedUserType = UserType.customer;
+  UserType _selectedUserType = UserType.serviceBoy;
   bool _acceptTerms = false;
 
   @override

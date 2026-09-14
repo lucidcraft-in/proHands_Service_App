@@ -391,7 +391,9 @@ class ConsumerService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true) {
-          return UserModel.fromJson(data['user']);
+          final user = UserModel.fromJson(data['user']);
+          await StorageService.saveUserData(data['user']);
+          return user;
         } else {
           throw Exception(data['message'] ?? 'Failed to update profile');
         }

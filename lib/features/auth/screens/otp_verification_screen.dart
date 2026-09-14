@@ -11,6 +11,7 @@ import '../providers/auth_provider.dart';
 import '../../home/services/consumer_service.dart';
 import '../../home/screens/main_screen.dart';
 import '../../../core/services/storage_service.dart';
+import 'name_update_screen.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String identifier;
@@ -128,7 +129,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           // Navigate based on user type
 
           if (user.userType == UserType.customer) {
-            // Fetch full profile to get location
+            final hasValidName = user.name != null &&
+                user.name!.trim().isNotEmpty &&
+                user.name != 'Guest';
+
+            if (!hasValidName) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (context) => const NameUpdateScreen(),
+                ),
+                (route) => false,
+              );
+              return;
+            }
+
+            // Fetch full profile to get location if name already exists
             try {
               final consumerService = ConsumerService();
               final fullProfile = await consumerService.getMe();
@@ -148,13 +163,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             } catch (e) {
               // Continue to LocationFetchScreen if profile fetch fails
             }
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder:
-                    (context) => const LocationFetchScreen(isServiceBoy: false),
-              ),
-              (route) => false,
-            );
+
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder:
+                      (context) => const LocationFetchScreen(isServiceBoy: false),
+                ),
+                (route) => false,
+              );
+            }
           } else {
             // Service Boy Profile Check
             try {
