@@ -136,7 +136,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             if (!hasValidName) {
               Navigator.of(context).pushAndRemoveUntil(
                 MaterialPageRoute(
-                  builder: (context) => const NameUpdateScreen(),
+                  builder:
+                      (context) => const NameUpdateScreen(isServiceBoy: false),
                 ),
                 (route) => false,
               );
@@ -175,6 +176,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
             }
           } else {
             // Service Boy Profile Check
+            final hasValidName = user.name != null &&
+                user.name!.trim().isNotEmpty &&
+                user.name != 'Guest';
+
+            if (!hasValidName) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder:
+                      (context) => const NameUpdateScreen(isServiceBoy: true),
+                ),
+                (route) => false,
+              );
+              return;
+            }
+
             try {
               final consumerService = ConsumerService();
               final fullProfile = await consumerService.getMe();
@@ -193,13 +209,15 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 }
               }
             } catch (e) {}
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                builder:
-                    (context) => const LocationFetchScreen(isServiceBoy: true),
-              ),
-              (route) => false,
-            );
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder:
+                      (context) => const LocationFetchScreen(isServiceBoy: true),
+                ),
+                (route) => false,
+              );
+            }
           }
 
           // Show success message after navigation

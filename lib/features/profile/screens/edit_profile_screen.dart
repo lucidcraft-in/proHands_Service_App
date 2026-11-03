@@ -327,10 +327,26 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // }
 
   Future<void> _pickImage(String type) async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 75,
+    );
 
     if (image != null) {
-      final savedFile = await saveImagePermanently(image);
+      final cropped = await cropImage(
+        imagePath: image.path,
+        title: type == 'service'
+            ? 'Crop Service Image'
+            : type == 'adhar'
+                ? 'Crop Aadhaar Card'
+                : 'Crop License',
+      );
+
+      if (cropped == null) return;
+
+      final savedFile = await saveImagePermanently(XFile(cropped.path));
 
       setState(() {
         switch (type) {
@@ -349,7 +365,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _pickPortfolioImages() async {
-    final List<XFile> images = await _picker.pickMultiImage();
+    final List<XFile> images = await _picker.pickMultiImage(
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 75,
+    );
     if (images.isNotEmpty) {
       setState(() {
         _portfolioImages.addAll(images.map((x) => File(x.path)));
@@ -393,16 +413,29 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   // }
 
   Future<void> _updateProfilePhoto() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1024,
+      maxHeight: 1024,
+      imageQuality: 75,
+    );
 
     if (image != null) {
+      final cropped = await cropImage(
+        imagePath: image.path,
+        title: 'Crop Profile Photo',
+        isCircle: true,
+      );
+
+      if (cropped == null) return;
+
       setState(() {
-        _selectedImage = File(image.path);
+        _selectedImage = cropped;
       });
 
       final provider = context.read<ConsumerProvider>();
 
-      final success = await provider.updateProfilePhoto(File(image.path));
+      final success = await provider.updateProfilePhoto(cropped);
 
       if (mounted) {
         if (success) {
@@ -413,6 +446,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           );
         } else {
+          setState(() {
+            _selectedImage = null;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -784,8 +820,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final String? currentImage = user?.profilePhoto;
     final String? pendingImage = user?.pendingProfilePhoto;
-    print('currentImage : $currentImage');
-    print('pendingImage : $pendingImage');
+
     return Column(
       children: [
         // Avatar
@@ -832,6 +867,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           : null,
                 ),
               ),
+
+              // Uploading progress loader overlay on avatar
+              if (provider.isUpdatingPhoto)
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.45),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 3,
+                    ),
+                  ),
+                ),
 
               // Approved image preview
               if (isPending && currentImage != null && currentImage.isNotEmpty)
@@ -900,11 +952,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       width: 3,
                     ),
                   ),
-                  child: const Icon(
-                    Iconsax.camera,
-                    size: 20,
-                    color: Colors.white,
-                  ),
+                  child: provider.isUpdatingPhoto
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : const Icon(
+                          Iconsax.camera,
+                          size: 20,
+                          color: Colors.white,
+                        ),
                 ),
               ),
             ],

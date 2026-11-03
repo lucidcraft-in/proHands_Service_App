@@ -432,6 +432,10 @@ class ConsumerService {
         } else {
           throw Exception(data['message'] ?? 'Failed to update profile photo');
         }
+      } else if (response.statusCode == 413) {
+        throw Exception(
+          'Image file is too large. Please select a smaller photo.',
+        );
       } else {
         throw Exception(
           'Failed to update profile photo: ${response.statusCode}',

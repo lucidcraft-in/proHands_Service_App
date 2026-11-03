@@ -8,10 +8,13 @@ import '../providers/auth_provider.dart';
 import '../../home/providers/consumer_provider.dart';
 import '../../home/services/consumer_service.dart';
 import '../../home/screens/main_screen.dart';
+import '../../service_boy/screens/service_boy_main_screen.dart';
 import '../../location/screens/location_fetch_screen.dart';
+import '../../../core/models/user_type.dart';
 
 class NameUpdateScreen extends StatefulWidget {
-  const NameUpdateScreen({super.key});
+  final bool? isServiceBoy;
+  const NameUpdateScreen({super.key, this.isServiceBoy});
 
   @override
   State<NameUpdateScreen> createState() => _NameUpdateScreenState();
@@ -21,6 +24,12 @@ class _NameUpdateScreenState extends State<NameUpdateScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   bool _isLoading = false;
+
+  bool get _isTechnician {
+    if (widget.isServiceBoy != null) return widget.isServiceBoy!;
+    final user = context.read<AuthProvider>().currentUser;
+    return user?.userType == UserType.serviceBoy;
+  }
 
   @override
   void initState() {
@@ -39,6 +48,8 @@ class _NameUpdateScreenState extends State<NameUpdateScreen> {
 
   Future<void> _proceedNext() async {
     if (!mounted) return;
+    final isServiceBoy = _isTechnician;
+
     try {
       final consumerService = ConsumerService();
       final fullProfile = await consumerService.getMe();
@@ -48,7 +59,11 @@ class _NameUpdateScreenState extends State<NameUpdateScreen> {
           fullProfile.latitude != 0.0) {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const MainScreen()),
+            MaterialPageRoute(
+              builder: (context) => isServiceBoy
+                  ? const ServiceBoyMainScreen()
+                  : const MainScreen(),
+            ),
             (route) => false,
           );
           return;
@@ -61,7 +76,7 @@ class _NameUpdateScreenState extends State<NameUpdateScreen> {
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => const LocationFetchScreen(isServiceBoy: false),
+          builder: (context) => LocationFetchScreen(isServiceBoy: isServiceBoy),
         ),
         (route) => false,
       );
@@ -202,7 +217,7 @@ class _NameUpdateScreenState extends State<NameUpdateScreen> {
                   isLoading: _isLoading,
                   width: double.infinity,
                 ),
-                if (hasExistingName) ...[
+                if (hasExistingName || _isTechnician) ...[
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: _isLoading ? null : _proceedNext,

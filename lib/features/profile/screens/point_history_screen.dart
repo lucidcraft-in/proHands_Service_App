@@ -60,11 +60,7 @@ class _PointHistoryScreenState extends State<PointHistoryScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Icon(
-                      Iconsax.star1,
-                      color: Colors.white,
-                      size: 40,
-                    ),
+                    const Icon(Iconsax.star1, color: Colors.white, size: 40),
                     const SizedBox(height: 12),
                     Text(
                       'Available Points',
@@ -103,20 +99,18 @@ class _PointHistoryScreenState extends State<PointHistoryScreen> {
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Row(
                   children: [
-                    Text(
-                      'Transaction History',
-                      style: AppTextStyles.h4,
-                    ),
+                    Text('Transaction History', style: AppTextStyles.h4),
                   ],
                 ),
               ),
 
-              Expanded(
-                child: _buildLogsList(provider),
-              ),
+              Expanded(child: _buildLogsList(provider)),
             ],
           );
         },
@@ -129,10 +123,11 @@ class _PointHistoryScreenState extends State<PointHistoryScreen> {
       return ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: 5,
-        itemBuilder: (context, index) => const Padding(
-          padding: EdgeInsets.only(bottom: 16),
-          child: CardShimmer(height: 80, borderRadius: 16),
-        ),
+        itemBuilder:
+            (context, index) => const Padding(
+              padding: EdgeInsets.only(bottom: 16),
+              child: CardShimmer(height: 80, borderRadius: 16),
+            ),
       );
     }
 
@@ -193,11 +188,7 @@ class _PointHistoryScreenState extends State<PointHistoryScreen> {
                   color: color.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 20,
-                ),
+                child: Icon(icon, color: color, size: 20),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -237,7 +228,7 @@ class _PointHistoryScreenState extends State<PointHistoryScreen> {
   String _formatDate(String dateStr) {
     try {
       final date = DateTime.parse(dateStr);
-      return DateFormat('dd MMM yyyy, hh:mm a').format(date);
+      return DateFormat('dd MMM yyyy').format(date);
     } catch (e) {
       return dateStr;
     }
