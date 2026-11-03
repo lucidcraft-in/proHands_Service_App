@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
@@ -11,8 +12,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  String _selectedLanguage = 'English';
   String _selectedTheme = 'Light';
 
   @override
@@ -30,81 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             const SizedBox(height: 8),
-            
-            // Notifications
-            Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: SwitchListTile(
-                value: _notificationsEnabled,
-                onChanged: (value) {
-                  setState(() => _notificationsEnabled = value);
-                },
-                title: Text(
-                  'Push Notifications',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                subtitle: Text(
-                  'Receive notifications about bookings',
-                  style: AppTextStyles.caption,
-                ),
-                secondary: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Iconsax.notification,
-                    color: AppColors.textPrimary,
-                    size: 20,
-                  ),
-                ),
-                activeColor: AppColors.primary,
-              ),
-            ),
-            
-            Divider(height: 1),
-            
-            // Language
-            Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: ListTile(
-                leading: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    Iconsax.language_square,
-                    color: AppColors.textPrimary,
-                    size: 20,
-                  ),
-                ),
-                title: Text(
-                  'Language',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                subtitle: Text(
-                  _selectedLanguage,
-                  style: AppTextStyles.caption,
-                ),
-                trailing: Icon(
-                  Icons.chevron_right,
-                  color: AppColors.textTertiary,
-                ),
-                onTap: () {
-                  _showLanguageDialog();
-                },
-              ),
-            ),
-            
-            Divider(height: 1),
-            
+
             // Theme
             Container(
               color: Theme.of(context).colorScheme.surface,
@@ -183,7 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Icons.chevron_right,
                       color: AppColors.textTertiary,
                     ),
-                    onTap: () {},
+                    onTap: () => _launchWebUrl('https://www.prohands.in/#about'),
                   ),
                   ListTile(
                     leading: Container(
@@ -208,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Icons.chevron_right,
                       color: AppColors.textTertiary,
                     ),
-                    onTap: () {},
+                    onTap: () => _launchWebUrl('https://www.prohands.in/terms-and-conditions'),
                   ),
                   ListTile(
                     leading: Container(
@@ -233,7 +158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Icons.chevron_right,
                       color: AppColors.textTertiary,
                     ),
-                    onTap: () {},
+                    onTap: () => _launchWebUrl('https://www.prohands.in/terms-and-conditions'),
                   ),
                   ListTile(
                     leading: Container(
@@ -270,36 +195,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showLanguageDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Select Language', style: AppTextStyles.h4),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: Text('English'),
-              value: 'English',
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() => _selectedLanguage = value!);
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              title: Text('Spanish'),
-              value: 'Spanish',
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() => _selectedLanguage = value!);
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<void> _launchWebUrl(String urlString) async {
+    final Uri uri = Uri.parse(urlString);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(uri);
+      }
+    } catch (e) {
+      debugPrint('Error launching url $urlString: $e');
+    }
   }
 
   void _showThemeDialog() {

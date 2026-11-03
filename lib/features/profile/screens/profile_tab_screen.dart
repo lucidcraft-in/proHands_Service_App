@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:service_app/helper.dar/imageCroper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -28,9 +29,6 @@ class ProfileTabScreen extends StatefulWidget {
 }
 
 class _ProfileTabScreenState extends State<ProfileTabScreen> {
-  bool _notificationsEnabled = true;
-  String _selectedLanguage = 'English';
-
   // Expansion States
   bool _isFavoritesExpanded = false;
   bool _isLocationsExpanded = false;
@@ -564,10 +562,13 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           padding: const EdgeInsets.only(left: 70, bottom: 8),
                           child: Column(
                             children: [
-                              _SubMenuItem(title: 'About Us', onTap: () {}),
-                              _SubMenuItem(
+                              _buildSubMenuItem(
+                                title: 'About Us',
+                                onTap: () => _launchWebUrl('https://www.prohands.in/#about'),
+                              ),
+                              _buildSubMenuItem(
                                 title: 'Privacy Policy',
-                                onTap: () {},
+                                onTap: () => _launchWebUrl('https://www.prohands.in/terms-and-conditions'),
                               ),
                             ],
                           ),
@@ -599,23 +600,6 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                           ),
                           child: Column(
                             children: [
-                              SwitchListTile(
-                                contentPadding: EdgeInsets.zero,
-                                value: _notificationsEnabled,
-                                onChanged: (value) {
-                                  setState(() => _notificationsEnabled = value);
-                                },
-                                title: Text(
-                                  'Push Notifications',
-                                  style: AppTextStyles.bodyMedium,
-                                ),
-                                activeColor: AppColors.primary,
-                              ),
-                              _SettingsMenuRow(
-                                title: 'Language',
-                                value: _selectedLanguage,
-                                onTap: () => _showLanguageDialog(),
-                              ),
                               _SettingsMenuRow(
                                 title: 'Theme',
                                 value: context.watch<ThemeProvider>().themeName,
@@ -674,37 +658,17 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     );
   }
 
-  void _showLanguageDialog() {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Select Language', style: AppTextStyles.h4),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                RadioListTile<String>(
-                  title: Text('English'),
-                  value: 'English',
-                  groupValue: _selectedLanguage,
-                  onChanged: (value) {
-                    setState(() => _selectedLanguage = value!);
-                    Navigator.pop(context);
-                  },
-                ),
-                RadioListTile<String>(
-                  title: Text('Spanish'),
-                  value: 'Spanish',
-                  groupValue: _selectedLanguage,
-                  onChanged: (value) {
-                    setState(() => _selectedLanguage = value!);
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-    );
+  Future<void> _launchWebUrl(String urlString) async {
+    final Uri uri = Uri.parse(urlString);
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(uri);
+      }
+    } catch (e) {
+      debugPrint('Error launching url $urlString: $e');
+    }
   }
 
   void _showThemeDialog() {
@@ -760,6 +724,30 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
           color: AppColors.textTertiary,
           fontWeight: FontWeight.bold,
           letterSpacing: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubMenuItem({
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              title,
+              style: AppTextStyles.bodySmall.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
+            Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
+          ],
         ),
       ),
     );
@@ -1283,35 +1271,6 @@ class _MenuItem extends StatelessWidget {
         size: 24,
       ),
       onTap: onTap,
-    );
-  }
-}
-
-class _SubMenuItem extends StatelessWidget {
-  final String title;
-  final VoidCallback onTap;
-
-  const _SubMenuItem({required this.title, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-            Icon(Icons.chevron_right, size: 16, color: AppColors.textTertiary),
-          ],
-        ),
-      ),
     );
   }
 }

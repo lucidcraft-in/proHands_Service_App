@@ -10,6 +10,8 @@ import 'features/service_boy/providers/service_boy_provider.dart';
 import 'features/home/providers/consumer_provider.dart';
 import 'features/home/providers/notification_provider.dart';
 import 'core/providers/quotation_provider.dart';
+import 'core/providers/connectivity_provider.dart';
+import 'core/widgets/network_status_overlay.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'core/services/push_notification_service.dart';
@@ -52,6 +54,7 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => ConnectivityProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ServiceBoyProvider()),
         ChangeNotifierProvider(create: (_) => ConsumerProvider()),
@@ -68,6 +71,11 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeProvider.themeMode,
             home: const SplashScreen(),
+            builder: (context, child) {
+              return NetworkStatusOverlay(
+                child: child ?? const SizedBox(),
+              );
+            },
           );
         },
       ),
